@@ -1,4 +1,5 @@
 # Project89-Arsenal
+![THE VEIL OF OBLIVION](https://github.com/user-attachments/assets/ca6f6ab4-652a-4b09-8efd-a68d66fb9e7e)
 
 This repository contains a collection of reality-hacking tools, programs, and resources for Project 89 agents.
 
