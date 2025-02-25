@@ -1,0 +1,4 @@
+typing-extensions>=4.0.0
+logging>=0.5.1.2
+pytest>=7.0.0  # for testing
+mypy>=0.910    # for type checking 
