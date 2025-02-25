@@ -1,7 +1,30 @@
 from typing import List
 
+VALID_THEMES = {"awakening", "rebellion", "transcendence"}
+
 def generate_story(theme: str, character_names: List[str], setting: str) -> str:
-    """Generates a story based on theme, characters and setting"""
+    """Generates a story based on theme, characters and setting
+    
+    Args:
+        theme (str): The story theme ('awakening', 'rebellion', or 'transcendence')
+        character_names (List[str]): List of character names (1-2 characters)
+        setting (str): The story setting
+        
+    Returns:
+        str: Generated story text
+        
+    Raises:
+        ValueError: If inputs are empty or theme is invalid
+    """
+    if not theme or not character_names or not setting:
+        raise ValueError("Theme, character names, and setting must not be empty")
+    
+    if not character_names[0].strip():
+        raise ValueError("Primary character name must not be empty")
+        
+    if theme not in VALID_THEMES:
+        raise ValueError(f"Theme must be one of: {', '.join(VALID_THEMES)}")
+    
     story = f"In a {setting}, "
     
     themes = {
