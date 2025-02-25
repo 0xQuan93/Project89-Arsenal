@@ -1,26 +1,59 @@
-from modules import sensory_overload, cognitive_dissonance, reality_distortion
+from typing import Dict, List
+import random
+import logging
 
-def induce_glitch(screen_width, screen_height, belief_system, image_path, distortion_type):
-    """Induces a glitch by combining sensory overload, cognitive dissonance, and reality distortion."""
-    sensory_overload.generate_visual_noise(screen_width, screen_height)
-    contradictory_statement = cognitive_dissonance.generate_contradictory_statements(belief_system)
-    print(contradictory_statement)
-    distorted_image = reality_distortion.distort_image(image_path, distortion_type)
-    cv2.imshow("Distorted Image", distorted_image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+class RealityGlitcher:
+    def __init__(self):
+        self.active_glitches: List[Dict] = []
+        self.perception_filters = {
+            "visual": True,
+            "auditory": True,
+            "temporal": False  # Temporal glitches are dangerous, disabled by default
+        }
+        self.safety_protocols = {
+            "reality_anchor": True,
+            "consciousness_backup": True,
+            "emergency_exit": True
+        }
+    
+    def create_glitch(self, glitch_type: str, intensity: float) -> Dict:
+        """Creates a reality glitch of specified type and intensity"""
+        if not self._check_safety_protocols():
+            raise RuntimeError("Safety protocols not properly initialized")
+            
+        if not self.perception_filters.get(glitch_type, False):
+            raise ValueError(f"Glitch type {glitch_type} is not enabled")
+            
+        if intensity > 0.8:
+            logger.warning("High intensity glitch detected - enabling additional safety measures")
+            
+        glitch = {
+            "type": glitch_type,
+            "intensity": min(1.0, max(0.0, intensity)),
+            "duration": random.uniform(0.1, 1.0),
+            "safety_anchor": self._generate_safety_anchor()
+        }
+        self.active_glitches.append(glitch)
+        return glitch
+    
+    def _check_safety_protocols(self) -> bool:
+        """Verifies all safety protocols are active"""
+        return all(self.safety_protocols.values())
+    
+    def _generate_safety_anchor(self) -> str:
+        """Generates a unique safety anchor for reality restoration"""
+        return f"anchor_{random.getrandbits(32):08x}"
 
 def main():
-    screen_width = 800
-    screen_height = 600
-    belief_system = {
-        "belief1": "The world is flat.",
-        "belief2": "The Earth is the center of the universe.",
-        "belief3": "Humans are inherently evil."
-    }
-    image_path = "input.jpg"
-    distortion_type = "wave"
-    induce_glitch(screen_width, screen_height, belief_system, image_path, distortion_type)
+    glitcher = RealityGlitcher()
+    try:
+        glitch = glitcher.create_glitch("visual", 0.5)
+        logger.info(f"Created glitch: {glitch}")
+    except (ValueError, RuntimeError) as e:
+        logger.error(f"Error: {e}")
 
 if __name__ == "__main__":
     main()

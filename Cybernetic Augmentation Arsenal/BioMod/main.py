@@ -1,22 +1,48 @@
-from modules import genetic_engineering, biohacking, cybernetic_implants
+from typing import Dict, Tuple
+from .modules.biohacking import BioHacker
+from .modules.cybernetic_implants import ImplantManager
+import logging
 
-def modify_and_monitor(gene_sequence, mutation_type, sensor_data, implant_id, command):
-    """Modifies genes, monitors biometrics, and controls cybernetic implants."""
-    modified_gene = genetic_engineering.modify_gene(gene_sequence, mutation_type)
-    print(f"Modified gene: {modified_gene}")
-    biohacking.monitor_biometrics(sensor_data)
-    cybernetic_implants.control_implant(implant_id, command)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+def initialize_systems() -> Tuple[ImplantManager, BioHacker]:
+    """Initialize all BioMod systems with safety protocols"""
+    logger.info("Initializing BioMod systems...")
+    
+    implant_manager = ImplantManager()
+    biohacker = BioHacker()
+    
+    # Register core safety implants
+    safety_implants = [
+        {
+            "id": "safety_core_v1",
+            "type": "safety",
+            "compatibility_version": "1.0",
+            "safety_rating": "A+"
+        },
+        {
+            "id": "neural_firewall_v2",
+            "type": "protection",
+            "compatibility_version": "2.0",
+            "safety_rating": "A"
+        }
+    ]
+    
+    for implant in safety_implants:
+        if not implant_manager.register_implant(implant):
+            raise RuntimeError(f"Failed to register critical safety implant: {implant['id']}")
+        logger.info(f"Registered safety implant: {implant['id']}")
+    
+    return implant_manager, biohacker
 
 def main():
-    gene_sequence = "ATCGGCTAGCTAGCTAGCTAG"
-    mutation_type = "insertion"
-    sensor_data = {
-        "heart_rate": 80,
-        "body_temperature": 37.0
-    }
-    implant_id = "neural_implant_001"
-    command = "activate"
-    modify_and_monitor(gene_sequence, mutation_type, sensor_data, implant_id, command)
-
+    try:
+        implant_manager, biohacker = initialize_systems()
+        logger.info("BioMod systems initialized successfully")
+    except Exception as e:
+        logger.error(f"Critical error during initialization: {e}")
+        raise
+    
 if __name__ == "__main__":
     main()
