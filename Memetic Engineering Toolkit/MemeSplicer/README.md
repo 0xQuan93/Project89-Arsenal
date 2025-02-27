@@ -17,7 +17,7 @@ MemeSplicer is a component of the Memetic Engineering Toolkit designed to create
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone [<repository-url>](https://github.com/0xQuan93/Project89-Arsenal)
    cd Memetic\ Engineering\ Toolkit/MemeSplicer
    ```
 
