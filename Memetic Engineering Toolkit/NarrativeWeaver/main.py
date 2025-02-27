@@ -1,5 +1,9 @@
 from typing import List, Dict
 from modules import story_generation, character_development, plot_twist_generator
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
 def weave_narrative(theme: str, character_names: List[str], archetypes: List[str], setting: str) -> str:
     """Weaves a narrative with characters, plot twists, and a resolution.
@@ -27,7 +31,14 @@ def weave_narrative(theme: str, character_names: List[str], archetypes: List[str
         story = story_generation.generate_story(theme, [character["name"] for character in characters], setting)
         twist = plot_twist_generator.generate_plot_twist(story)
         return f"{story}\n{twist}"
+    except ValueError as ve:
+        logging.error(f"ValueError: {str(ve)}")
+        raise
+    except KeyError as ke:
+        logging.error(f"KeyError: {str(ke)}")
+        raise
     except Exception as e:
+        logging.error(f"Unexpected error: {str(e)}")
         raise RuntimeError(f"Failed to generate narrative: {str(e)}")
 
 def main():
