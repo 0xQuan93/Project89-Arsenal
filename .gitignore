@@ -1,0 +1,73 @@
+# Python specific
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.env
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Project specific
+journal/
+resources/sounds/*
+resources/images/*
+resources/fonts/*
+*.log
+output.jpg
+dream_journal.txt
+
+# Node/JavaScript
+node_modules/
+npm-debug.log
+yarn-error.log
+.npm
+.yarn
+
+# Jupyter notebooks
+.ipynb_checkpoints
+*.ipynb
+
+# Testing
+.coverage
+.pytest_cache/
+htmlcov/
+
+# Documentation
+_site/
+.jekyll-cache/
+.jekyll-metadata
+
+# Simulation data files
+*.npy
+*.npz
+*.csv
+*.xlsx
+*.json
+!package.json
+!package-lock.json
