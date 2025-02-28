@@ -1,4 +1,25 @@
+# Core requirements
 typing-extensions>=4.0.0
-logging>=0.5.1.2
 pytest>=7.0.0  # for testing
-mypy>=0.910    # for type checking 
+mypy>=0.910    # for type checking
+
+# Perception Hacking Suite
+pygame>=2.0.0  # For MindMirror and RealityGlitcher
+pillow>=9.0.0  # For image processing in MindMirror
+tkinter  # Usually comes with Python, for GUI components
+
+# Memetic Engineering Toolkit
+networkx>=2.5  # For network analysis in MemeSplicer
+matplotlib>=3.4.0  # For visualization
+
+# Cybernetic Augmentation Arsenal
+numpy>=1.20.0  # For neural data processing
+scipy>=1.7.0  # For scientific computing
+
+# Ontological Engineering Lab
+opensimplex>=0.3  # For terrain generation
+pymunk>=6.0.0  # For physics simulation
+
+# Optional: Machine Learning Components
+tensorflow>=2.5.0  # For brain-computer interface
+scikit-learn>=1.0.0  # For data analysis
