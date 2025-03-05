@@ -1,82 +1,79 @@
-# MindMirror
+# PROJECT89 MIND MIRROR
 
-MindMirror is a transformative tool for self-reflection, consciousness expansion, and ego dissolution. It provides a mystical interface for exploring the depths of your inner reality.
+## Overview
 
-## Features
+Mind Mirror is a sophisticated consciousness exploration tool that allows users to examine their own thought patterns, engage in guided meditations, record personal insights, and visualize neural connections. As part of PROJECT89's Perception-Hacking Suite, it integrates with other tools like Reality Glitcher for a comprehensive perception-enhancing experience.
 
-- **Self-Reflection**: Gaze into a magical mirror that reflects your true essence and helps you explore your identity beyond surface-level appearances.
-- **Consciousness Expansion**: Experience guided meditations that expand your awareness from the physical form to the cosmic level.
-- **Ego Dissolution**: Identify and challenge limiting beliefs that constrain your perception of reality.
-- **Journal System**: Record dreams, reflections, and insights to track your spiritual journey.
+## Key Features
+
+- **Immersive Cosmic Interface**: Beautiful animated star field background that creates a perfect environment for introspection
+- **Self-Reflection Tools**: Interactive prompts and journaling system
+- **Meditation Guidance**: Various guided meditation experiences with customizable duration
+- **Neural Pattern Visualization**: Three different ways to visualize thought patterns:
+  - Neural Web: Interconnected thought nodes
+  - Thought Stream: Flow-based thinking patterns
+  - Concept Cloud: Radial concept mapping
+- **Personal Growth Tracking**: Practice streak counter and session statistics
+- **Reality Glitcher Integration**: Export neural patterns for enhanced perception experiments
 
 ## Installation
 
-### Prerequisites
-- Python 3.8 or higher
-- Required Python packages (can be installed via requirements.txt)
+1. Ensure you have Python 3.8+ installed on your system.
 
-### Setup
-
-1. Install required dependencies:
+2. Install the required dependencies:
 ```bash
-pip install pygame pillow
-```
-
-2. Clone the repository:
-```bash
-git clone https://github.com/0xQuan93/Project89-Arsenal
-cd "Project89-Arsenal/Perception Hacking Suite/MindMirror"
+pip install pygame pillow numpy
 ```
 
 3. Run the application:
 ```bash
-# Run the original version
-python main.py
-
-# OR run the enhanced mystical version
-python enchanted_mindmirror.py
+python enchanted_mindmirror_fixed.py
 ```
 
-## Usage
+## Usage Guide
 
-### Original MindMirror
-The original MindMirror provides a simple console-based interface for the three core modules:
-- `self_reflection.py`: Basic GUI for reflection
-- `consciousness_expansion.py`: Console-guided meditation
-- `ego_dissolution.py`: Belief challenging system
+1. **First Launch**: Enter your name to set up your personal profile.
+2. **Dashboard**: View your practice streak and recommendations.
+3. **Self-Reflection**: Explore guided reflection prompts.
+4. **Consciousness Expansion**: Engage in guided meditations.
+5. **Ego Dissolution**: Examine and challenge limiting beliefs.
+6. **Journal**: Record your insights and experiences.
+7. **Neural Patterns**: Visualize thought connections through 3 different visualization modes.
 
-### Enchanted MindMirror
-The enhanced version includes:
-- A starry cosmic background with twinkling stars
-- Animated rippling mirror for self-reflection
-- Customizable meditation duration with progress visualization
-- Enhanced belief management system
-- Dream and reflection journal system
+## Files in this Directory
 
-## Customization
+- **enchanted_mindmirror_fixed.py**: The main application file (use this one)
+- **modules/**: Core functionality modules
+  - ego dissolution.py: Belief examination tools
+  - self reflection.py: Self-reflection interfaces
+  - consciousness expansion.py: Meditation guides
+- **resources/**: Application resources
+  - sounds/: Audio files for ambient sound
+  - images/: Visual resources
+  - fonts/: Custom fonts
+  - meditations/: Meditation scripts and guides
+  - journal/: Saved journal entries
+- **user_data/**: Stored user profiles and settings
+- **examples/**: Example usage scripts
 
-The MindMirror can be customized in several ways:
-- Add your own meditation scripts in the consciousness expansion module
-- Modify the belief questions in the ego dissolution module
-- Add custom imagery to the resources/images folder (if using enchanted version)
+## Technical Information
 
-## Integration with Project89
+The Mind Mirror application is built with:
+- Tkinter for the GUI
+- Pygame for audio capabilities
+- PIL/Pillow for image processing
+- NumPy for advanced visualizations
 
-The MindMirror is designed to be part of the Perception Hacking Suite, working in conjunction with:
-- **RealityGlitcher**: For introducing anomalies into your perception
-- **DreamWeaver**: For lucid dream induction and programming
+## Integration with Perception-Hacking Suite
 
-## Troubleshooting
+Mind Mirror connects with other PROJECT89 tools:
+- **Reality Glitcher**: Export neural patterns to create targeted perception experiments
+- **Dream Weaver**: Send insights and reflection data to influence dreamscape generation
 
-- **Tkinter Issues**: If you encounter Tkinter-related errors, ensure you have Tkinter installed with your Python distribution.
-- **Resource Folders**: The enchanted version will automatically create necessary resource folders if they don't exist.
-- **Display Issues**: For the enchanted version, a minimum display resolution of 1024x768 is recommended.
+## About Project89
 
-## Safety Guidelines
+PROJECT89 is dedicated to exploring the boundaries between perception, technology, and consciousness. The Perception-Hacking Suite represents our vision of how digital tools can enhance human understanding and experience.
 
-- Begin with short meditation sessions (5-10 minutes) before attempting longer durations
-- Always approach belief work with gentle curiosity rather than forceful dissolution
-- Take breaks between sessions to integrate insights
-- If you experience any discomfort, exit the program and ground yourself
+---
 
-Remember that the true power of the MindMirror lies not in the code, but in your willingness to truly see yourself.
+*"The mind is not a vessel to be filled, but a fire to be kindled." - Plutarch*
