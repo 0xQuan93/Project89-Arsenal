@@ -100,3 +100,35 @@
       linear-gradient(90deg, rgba(57, 255, 20, 0.1) 1px, transparent 1px);
     background-size: 20px 20px;
   }
+
+/* Dial control animations */
+@keyframes dial-glow {
+  0% {
+    filter: drop-shadow(0 0 2px rgba(57, 255, 20, 0.5));
+  }
+  50% {
+    filter: drop-shadow(0 0 5px rgba(57, 255, 20, 0.8));
+  }
+  100% {
+    filter: drop-shadow(0 0 2px rgba(57, 255, 20, 0.5));
+  }
+}
+
+.dial-indicator {
+  animation: dial-glow 2s ease-in-out infinite;
+}
+
+.dial-active {
+  animation: dial-glow 0.5s ease-in-out infinite;
+}
+
+/* Add this to improve the grabbable cursor appearance */
+.cursor-grab {
+  cursor: grab;
+}
+
+.cursor-grabbing {
+  cursor: grabbing;
+}
+
+/* Add this to support bg-opacity-* and text-opacity-* utilities */
