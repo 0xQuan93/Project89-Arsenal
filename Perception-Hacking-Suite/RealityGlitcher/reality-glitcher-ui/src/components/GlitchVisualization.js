@@ -28,22 +28,73 @@ const GlitchVisualization = ({ glitch }) => {
           size: Math.random() * 5 + 1,
           speedX: (Math.random() - 0.5) * 3 * glitch.intensity,
           speedY: (Math.random() - 0.5) * 3 * glitch.intensity,
-          color: getParticleColor(glitch.type),
-          opacity: Math.random() * 0.7 + 0.3
+          color: getParticleColor(glitch.type, glitch.isAdvanced, glitch.distortionType),
+          opacity: Math.random() * 0.7 + 0.3,
+          // Additional properties for advanced effects
+          pulse: Math.random() * 2 * Math.PI,
+          pulseSpeed: Math.random() * 0.05 + 0.02,
+          shape: glitch.isAdvanced ? getAdvancedShapeType(glitch.distortionType) : 'circle',
+          rotation: Math.random() * Math.PI * 2,
+          rotationSpeed: (Math.random() - 0.5) * 0.02
         };
         particles.push(particle);
       }
     };
     
-    const getParticleColor = (type) => {
+    const getParticleColor = (type, isAdvanced, distortionType) => {
+      // Base color based on glitch type
+      let baseColor;
       switch(type) {
-        case 'VISUAL': return `rgba(103, 232, 249, ${Math.random() * 0.5 + 0.5})`;
-        case 'AUDITORY': return `rgba(167, 139, 250, ${Math.random() * 0.5 + 0.5})`;
-        case 'TEMPORAL': return `rgba(251, 146, 60, ${Math.random() * 0.5 + 0.5})`;
-        case 'SPATIAL': return `rgba(52, 211, 153, ${Math.random() * 0.5 + 0.5})`;
-        case 'COGNITIVE': return `rgba(248, 113, 113, ${Math.random() * 0.5 + 0.5})`;
-        case 'SYNCHRONISTIC': return `rgba(232, 121, 249, ${Math.random() * 0.5 + 0.5})`;
-        default: return `rgba(147, 197, 253, ${Math.random() * 0.5 + 0.5})`;
+        case 'VISUAL': baseColor = [103, 232, 249]; break; // Cyan
+        case 'AUDITORY': baseColor = [167, 139, 250]; break; // Purple
+        case 'TEMPORAL': baseColor = [251, 146, 60]; break; // Orange
+        case 'SPATIAL': baseColor = [52, 211, 153]; break; // Teal
+        case 'COGNITIVE': baseColor = [248, 113, 113]; break; // Red
+        case 'SYNCHRONISTIC': baseColor = [232, 121, 249]; break; // Pink
+        default: baseColor = [147, 197, 253]; break; // Blue
+      }
+      
+      // Modify colors for advanced glitches
+      if (isAdvanced) {
+        switch(distortionType) {
+          case 'CONFIRMATION_BIAS':
+            baseColor = [255, 153, 102]; // Orange-red for confirmation bias
+            break;
+          case 'BLACK_WHITE_THINKING':
+            // High contrast colors for black-white thinking
+            return Math.random() > 0.5 ? 'rgba(240, 240, 240, 0.9)' : 'rgba(20, 20, 20, 0.9)';
+          case 'CATASTROPHIZING':
+            baseColor = [239, 68, 68]; // More intense red for catastrophizing
+            break;
+          case 'EMOTIONAL_REASONING':
+            baseColor = [236, 72, 153]; // Pink-red for emotional reasoning
+            break;
+          case 'FILTERING':
+            // Return a filtered version of original color
+            return `rgba(${baseColor[0]}, ${baseColor[1] * 0.7}, ${baseColor[2] * 0.7}, ${Math.random() * 0.6 + 0.4})`;
+        }
+      }
+      
+      // Add slight randomization for natural variation
+      const r = baseColor[0] + Math.random() * 30 - 15;
+      const g = baseColor[1] + Math.random() * 30 - 15;
+      const b = baseColor[2] + Math.random() * 30 - 15;
+      const a = Math.random() * 0.5 + 0.5;
+      
+      return `rgba(${r}, ${g}, ${b}, ${a})`;
+    };
+    
+    const getAdvancedShapeType = (distortionType) => {
+      if (!distortionType) return 'circle';
+      
+      // Different shapes for different cognitive distortions
+      switch(distortionType) {
+        case 'CONFIRMATION_BIAS': return 'triangle';
+        case 'BLACK_WHITE_THINKING': return 'square';
+        case 'CATASTROPHIZING': return 'star';
+        case 'EMOTIONAL_REASONING': return 'pulse';
+        case 'FILTERING': return 'line';
+        default: return 'circle';
       }
     };
     
@@ -51,56 +102,94 @@ const GlitchVisualization = ({ glitch }) => {
     const renderVisualGlitch = () => {
       ctx.clearRect(0, 0, width, height);
       
-      // Draw grid lines
-      ctx.strokeStyle = 'rgba(0, 80, 255, 0.15)';
-      ctx.lineWidth = 1;
-      
-      // Horizontal lines
-      for (let y = 0; y < height; y += 20) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(width, y);
-        ctx.stroke();
+      // Base effect for all visual glitches
+      if (visualizationMode === 'advanced') {
+        // Create scan line effect
+        for (let y = 0; y < height; y += 4) {
+          if (Math.random() > 0.97) {
+            const lineHeight = Math.random() * 2 + 1;
+            const opacity = Math.random() * 0.2 + 0.1;
+            ctx.fillStyle = `rgba(103, 232, 249, ${opacity})`;
+            ctx.fillRect(0, y, width, lineHeight);
+          }
+        }
       }
       
-      // Vertical lines
-      for (let x = 0; x < width; x += 20) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, height);
-        ctx.stroke();
-      }
-      
-      // Draw particles
+      // Draw each particle
       particles.forEach(particle => {
+        ctx.save();
         ctx.globalAlpha = particle.opacity;
         ctx.fillStyle = particle.color;
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-        ctx.fill();
         
-        // Update position
+        // For cross-modal effects (Visual + Another type)
+        if (glitch.crossModal) {
+          const timeFactor = Date.now() * 0.001;
+          // Create wave distortion effect
+          const amplitude = 10 * glitch.intensity;
+          const waveX = Math.sin(timeFactor + particle.y * 0.01) * amplitude;
+          
+          // Apply distortion to particle position
+          particle.x += waveX * 0.05;
+          
+          // Advanced visual effects
+          ctx.shadowBlur = 10 * glitch.intensity;
+          ctx.shadowColor = particle.color;
+        }
+        
+        // Draw different shapes based on visualization mode and advanced properties
+        if (visualizationMode === 'advanced' && particle.shape !== 'circle') {
+          ctx.translate(particle.x, particle.y);
+          ctx.rotate(particle.rotation);
+          
+          switch(particle.shape) {
+            case 'triangle':
+              drawTriangle(ctx, 0, 0, particle.size * 1.5);
+              break;
+            case 'square':
+              ctx.fillRect(-particle.size, -particle.size, particle.size * 2, particle.size * 2);
+              break;
+            case 'star':
+              drawStar(ctx, 0, 0, 5, particle.size * 0.5, particle.size);
+              break;
+            case 'pulse':
+              ctx.beginPath();
+              ctx.arc(0, 0, particle.size * (1 + Math.sin(particle.pulse) * 0.3), 0, Math.PI * 2);
+              ctx.fill();
+              break;
+            case 'line':
+              ctx.lineWidth = 2;
+              ctx.strokeStyle = particle.color;
+              ctx.beginPath();
+              ctx.moveTo(-particle.size * 2, 0);
+              ctx.lineTo(particle.size * 2, 0);
+              ctx.stroke();
+              break;
+            default:
+              ctx.beginPath();
+              ctx.arc(0, 0, particle.size, 0, Math.PI * 2);
+              ctx.fill();
+          }
+        } else {
+          // Default circle
+          ctx.beginPath();
+          ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        
+        ctx.restore();
+        
+        // Update particle for next frame
         particle.x += particle.speedX;
         particle.y += particle.speedY;
+        
+        // Apply pulse effect
+        particle.pulse += particle.pulseSpeed;
+        particle.rotation += particle.rotationSpeed;
         
         // Bounce off edges
         if (particle.x < 0 || particle.x > width) particle.speedX *= -1;
         if (particle.y < 0 || particle.y > height) particle.speedY *= -1;
       });
-      
-      // Add distortion effect based on glitch intensity
-      if (Math.random() < glitch.intensity * 0.3) {
-        ctx.globalAlpha = glitch.intensity * 0.2;
-        ctx.fillStyle = getParticleColor(glitch.type);
-        ctx.fillRect(
-          Math.random() * width, 
-          Math.random() * height, 
-          Math.random() * 100 + 50, 
-          Math.random() * 10 + 5
-        );
-      }
-      
-      ctx.globalAlpha = 1;
     };
     
     const renderTemporalGlitch = () => {
@@ -327,92 +416,303 @@ const GlitchVisualization = ({ glitch }) => {
     const renderCognitiveGlitch = () => {
       ctx.clearRect(0, 0, width, height);
       
-      // Neural network visualization
-      const nodeCount = 15;
-      const nodes = [];
-      const timeOffset = Date.now() * 0.001;
+      // Base gridlines to represent thought patterns
+      const gridSize = Math.max(10, 30 - glitch.intensity * 20);
       
-      // Create node positions
-      for (let i = 0; i < nodeCount; i++) {
-        const angle = (i / nodeCount) * Math.PI * 2;
-        const radius = width * 0.3;
-        const x = width/2 + Math.cos(angle) * radius;
-        const y = height/2 + Math.sin(angle) * radius;
+      // Check for advanced cognitive distortions
+      if (glitch.isAdvanced && glitch.distortionType) {
+        renderAdvancedCognitiveDistortion(gridSize);
+      } else {
+        // Basic cognitive glitch visualization
+        ctx.strokeStyle = 'rgba(248, 113, 113, 0.3)';
+        ctx.lineWidth = 1;
         
-        // Add slight animation
-        const animatedX = x + Math.sin(timeOffset + i) * 5 * glitch.intensity;
-        const animatedY = y + Math.cos(timeOffset * 1.3 + i) * 5 * glitch.intensity;
-        
-        nodes.push({
-          x: animatedX,
-          y: animatedY,
-          size: 4 + Math.random() * 4,
-          activation: Math.sin(timeOffset * 2 + i) * 0.5 + 0.5
-        });
-      }
-      
-      // Draw connections between nodes
-      for (let i = 0; i < nodeCount; i++) {
-        const nodeA = nodes[i];
-        
-        for (let j = i + 1; j < nodeCount; j++) {
-          const nodeB = nodes[j];
-          const distance = Math.sqrt(
-            Math.pow(nodeA.x - nodeB.x, 2) + 
-            Math.pow(nodeA.y - nodeB.y, 2)
-          );
-          
-          if (distance < width * 0.3) {
-            const activation = (nodeA.activation + nodeB.activation) / 2;
-            ctx.strokeStyle = `rgba(248, 113, 113, ${activation * 0.5})`;
-            ctx.lineWidth = activation * 2;
+        // Draw distorted grid
+        for (let x = 0; x < width; x += gridSize) {
+          ctx.beginPath();
+          for (let y = 0; y < height; y += 5) {
+            const offsetX = Math.sin(y * 0.05 + Date.now() * 0.001) * 5 * glitch.intensity;
             
-            ctx.beginPath();
-            ctx.moveTo(nodeA.x, nodeA.y);
-            
-            // Apply distortion to connection based on glitch intensity
-            if (glitch.intensity > 0.5 && Math.random() < glitch.intensity * 0.3) {
-              const midX = (nodeA.x + nodeB.x) / 2 + (Math.random() * 30 - 15) * glitch.intensity;
-              const midY = (nodeA.y + nodeB.y) / 2 + (Math.random() * 30 - 15) * glitch.intensity;
-              ctx.quadraticCurveTo(midX, midY, nodeB.x, nodeB.y);
+            if (y === 0) {
+              ctx.moveTo(x + offsetX, y);
             } else {
-              ctx.lineTo(nodeB.x, nodeB.y);
+              ctx.lineTo(x + offsetX, y);
             }
-            
-            ctx.stroke();
           }
+          ctx.stroke();
+        }
+        
+        for (let y = 0; y < height; y += gridSize) {
+          ctx.beginPath();
+          for (let x = 0; x < width; x += 5) {
+            const offsetY = Math.sin(x * 0.05 + Date.now() * 0.001) * 5 * glitch.intensity;
+            
+            if (x === 0) {
+              ctx.moveTo(x, y + offsetY);
+            } else {
+              ctx.lineTo(x, y + offsetY);
+            }
+          }
+          ctx.stroke();
         }
       }
       
-      // Draw nodes
-      for (const node of nodes) {
-        ctx.fillStyle = `rgba(248, 113, 113, ${0.7 + node.activation * 0.3})`;
+      // Draw particles on top
+      particles.forEach(particle => {
+        ctx.globalAlpha = particle.opacity;
+        ctx.fillStyle = particle.color;
+        
         ctx.beginPath();
-        ctx.arc(node.x, node.y, node.size * (0.8 + node.activation * 0.4), 0, Math.PI * 2);
+        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
         ctx.fill();
         
-        // Add glow effect
-        ctx.fillStyle = `rgba(248, 113, 113, ${0.1 + node.activation * 0.1})`;
-        ctx.beginPath();
-        ctx.arc(node.x, node.y, node.size * 2, 0, Math.PI * 2);
-        ctx.fill();
-      }
+        // Update particle position
+        particle.x += particle.speedX;
+        particle.y += particle.speedY;
+        
+        // Bounce off edges
+        if (particle.x < 0 || particle.x > width) particle.speedX *= -1;
+        if (particle.y < 0 || particle.y > height) particle.speedY *= -1;
+      });
+    };
+    
+    // Specialized rendering for different cognitive distortion types
+    const renderAdvancedCognitiveDistortion = (gridSize) => {
+      const time = Date.now() * 0.001;
       
-      // Occasional thought fragments
-      if (Math.random() < glitch.intensity * 0.05) {
-        const phrases = [
-          "ERROR", "MEMORY FAULT", "COGNITION ERROR", 
-          "REALITY CHECK", "PARADOX", "RECURSION"
-        ];
-        const phrase = phrases[Math.floor(Math.random() * phrases.length)];
-        
-        ctx.font = "bold 12px monospace";
-        ctx.fillStyle = "rgba(248, 113, 113, 0.8)";
-        ctx.fillText(
-          phrase, 
-          Math.random() * (width - 100) + 50, 
-          Math.random() * (height - 20) + 10
-        );
+      switch(glitch.distortionType) {
+        case 'CONFIRMATION_BIAS':
+          // Visualization for confirmation bias - shows only selective "pathways"
+          ctx.strokeStyle = 'rgba(255, 153, 102, 0.4)';
+          ctx.lineWidth = 2;
+          
+          // Draw main "chosen" pathways more prominently
+          for (let i = 0; i < 5; i++) {
+            const pathX = width * (i / 4);
+            const pathWidth = 10 + glitch.intensity * 10;
+            
+            ctx.beginPath();
+            for (let y = 0; y < height; y += 5) {
+              // Path follows a sine wave
+              const offsetX = Math.sin(y * 0.02 + time + i) * 50 * glitch.intensity;
+              
+              if (y === 0) {
+                ctx.moveTo(pathX + offsetX, y);
+              } else {
+                ctx.lineTo(pathX + offsetX, y);
+              }
+            }
+            ctx.stroke();
+            
+            // Draw path highlight
+            ctx.strokeStyle = 'rgba(255, 153, 102, 0.8)';
+            ctx.lineWidth = pathWidth * Math.sin(time * 0.5 + i) * 0.5 + pathWidth * 0.5;
+            ctx.globalAlpha = 0.3;
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+            ctx.strokeStyle = 'rgba(255, 153, 102, 0.4)';
+            ctx.lineWidth = 2;
+          }
+          break;
+          
+        case 'BLACK_WHITE_THINKING':
+          // Stark contrasts with only black and white lines
+          for (let x = 0; x < width; x += gridSize) {
+            ctx.beginPath();
+            ctx.strokeStyle = x % (gridSize * 2) === 0 ? 'rgba(240, 240, 240, 0.7)' : 'rgba(20, 20, 20, 0.7)';
+            ctx.lineWidth = 3;
+            
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, height);
+            ctx.stroke();
+          }
+          
+          for (let y = 0; y < height; y += gridSize) {
+            ctx.beginPath();
+            ctx.strokeStyle = y % (gridSize * 2) === 0 ? 'rgba(240, 240, 240, 0.7)' : 'rgba(20, 20, 20, 0.7)';
+            
+            ctx.moveTo(0, y);
+            ctx.lineTo(width, y);
+            ctx.stroke();
+          }
+          
+          // Add flashing effect for extreme thinking
+          if (Math.sin(time * 3) > 0.9) {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.fillRect(0, 0, width, height);
+          } else if (Math.sin(time * 3) < -0.9) {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.fillRect(0, 0, width, height);
+          }
+          break;
+          
+        case 'CATASTROPHIZING':
+          // Effect grows more intense/chaotic over time
+          const catastropheIntensity = (Math.sin(time * 0.5) * 0.5 + 0.5) * glitch.intensity * 2;
+          
+          // Draw expanding circular waves
+          for (let i = 0; i < 8; i++) {
+            const radius = (time * 50 + i * 50) % (Math.sqrt(width * width + height * height));
+            ctx.beginPath();
+            ctx.arc(width / 2, height / 2, radius, 0, Math.PI * 2);
+            ctx.strokeStyle = `rgba(239, 68, 68, ${0.6 - radius / (width + height)})`;
+            ctx.lineWidth = 2 + catastropheIntensity * 3;
+            ctx.stroke();
+          }
+          
+          // Add warning symbols
+          if (visualizationMode === 'advanced') {
+            for (let i = 0; i < 5; i++) {
+              const x = width * (0.3 + Math.sin(time + i) * 0.2);
+              const y = height * (0.3 + Math.cos(time + i) * 0.2);
+              const size = 15 + catastropheIntensity * 10;
+              
+              ctx.save();
+              ctx.translate(x, y);
+              ctx.rotate(Math.PI / 4);
+              
+              // Draw warning triangle
+              ctx.beginPath();
+              ctx.moveTo(0, -size);
+              ctx.lineTo(size, size);
+              ctx.lineTo(-size, size);
+              ctx.closePath();
+              
+              ctx.strokeStyle = 'rgba(239, 68, 68, 0.8)';
+              ctx.lineWidth = 2;
+              ctx.stroke();
+              
+              ctx.fillStyle = 'rgba(239, 68, 68, 0.3)';
+              ctx.fill();
+              
+              ctx.restore();
+            }
+          }
+          break;
+          
+        case 'EMOTIONAL_REASONING':
+          // Pulsing emotional waves that distort thinking
+          ctx.globalAlpha = 0.7;
+          
+          // Draw emotional "heat map"
+          const gradient = ctx.createRadialGradient(
+            width / 2, height / 2, 0,
+            width / 2, height / 2, width / 2
+          );
+          
+          const pulseIntensity = Math.sin(time * 2) * 0.5 + 0.5;
+          
+          gradient.addColorStop(0, `rgba(236, 72, 153, ${0.7 * pulseIntensity})`);
+          gradient.addColorStop(0.6, `rgba(236, 72, 153, ${0.3 * pulseIntensity})`);
+          gradient.addColorStop(1, 'rgba(236, 72, 153, 0)');
+          
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, width, height);
+          
+          // Draw emotional thought patterns
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+          ctx.lineWidth = 1;
+          
+          for (let i = 0; i < 12; i++) {
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const angle = (i / 12) * Math.PI * 2 + time * 0.2;
+            const radius = 50 + Math.sin(time * 3 + i) * 20 * glitch.intensity;
+            
+            ctx.beginPath();
+            for (let j = 0; j < Math.PI * 2; j += 0.1) {
+              const x = centerX + Math.cos(j + angle) * radius;
+              const y = centerY + Math.sin(j + angle) * radius;
+              
+              if (j === 0) {
+                ctx.moveTo(x, y);
+              } else {
+                ctx.lineTo(x, y);
+              }
+            }
+            ctx.closePath();
+            ctx.stroke();
+          }
+          break;
+          
+        case 'FILTERING':
+          // Only shows certain "filtered" information, rest is dimmed
+          
+          // Draw full grid first (dimmed)
+          ctx.strokeStyle = 'rgba(180, 180, 180, 0.1)';
+          ctx.lineWidth = 1;
+          
+          for (let x = 0; x < width; x += gridSize) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, height);
+            ctx.stroke();
+          }
+          
+          for (let y = 0; y < height; y += gridSize) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(width, y);
+            ctx.stroke();
+          }
+          
+          // Now highlight only specific regions (the "filtered" view)
+          ctx.strokeStyle = 'rgba(248, 113, 113, 0.6)';
+          ctx.lineWidth = 2;
+          
+          // Create 3-5 "filtered" regions that stand out
+          for (let i = 0; i < 4; i++) {
+            const regionX = width * 0.2 + (width * 0.6) * (i / 3);
+            const regionY = height * (0.3 + 0.4 * Math.sin(time + i));
+            const regionSize = 30 + Math.sin(time * 2 + i) * 10;
+            
+            ctx.strokeRect(
+              regionX - regionSize / 2,
+              regionY - regionSize / 2,
+              regionSize,
+              regionSize
+            );
+            
+            // Fill with subtle highlight
+            ctx.fillStyle = 'rgba(248, 113, 113, 0.1)';
+            ctx.fillRect(
+              regionX - regionSize / 2,
+              regionY - regionSize / 2,
+              regionSize,
+              regionSize
+            );
+            
+            // Connect these regions with lines to show filtering
+            if (i > 0) {
+              const prevX = width * 0.2 + (width * 0.6) * ((i - 1) / 3);
+              const prevY = height * (0.3 + 0.4 * Math.sin(time + i - 1));
+              
+              ctx.beginPath();
+              ctx.moveTo(prevX, prevY);
+              ctx.lineTo(regionX, regionY);
+              ctx.stroke();
+            }
+          }
+          break;
+          
+        default:
+          // Fallback to basic cognitive visualization
+          ctx.strokeStyle = 'rgba(248, 113, 113, 0.3)';
+          ctx.lineWidth = 1;
+          
+          for (let x = 0; x < width; x += gridSize) {
+            ctx.beginPath();
+            for (let y = 0; y < height; y += 5) {
+              const offsetX = Math.sin(y * 0.05 + time) * 5 * glitch.intensity;
+              
+              if (y === 0) {
+                ctx.moveTo(x + offsetX, y);
+              } else {
+                ctx.lineTo(x + offsetX, y);
+              }
+            }
+            ctx.stroke();
+          }
       }
     };
     
@@ -511,41 +811,130 @@ const GlitchVisualization = ({ glitch }) => {
       ctx.fill();
     };
     
-    // Initialize animation
-    initParticles();
-    
-    // Animation loop
-    const animate = () => {
-      // Select visualization based on glitch type
-      switch(glitch.type) {
-        case 'VISUAL':
-          renderVisualGlitch();
-          break;
-        case 'TEMPORAL':
-          renderTemporalGlitch();
-          break;
-        case 'SPATIAL':
-          renderSpatialGlitch();
-          break;
-        case 'AUDITORY':
-          renderAuditoryGlitch();
-          break;
-        case 'COGNITIVE':
-          renderCognitiveGlitch();
-          break;
-        case 'SYNCHRONISTIC':
-          renderSynchronisticGlitch();
-          break;
-        default:
-          renderVisualGlitch();
-      }
-      
-      // Continue animation if glitch is active
-      if (glitch.active) {
-        animationFrameId = window.requestAnimationFrame(animate);
-      }
+    // Additional utility drawing functions
+    const drawTriangle = (ctx, x, y, size) => {
+      ctx.beginPath();
+      ctx.moveTo(x, y - size);
+      ctx.lineTo(x + size * 0.866, y + size * 0.5);
+      ctx.lineTo(x - size * 0.866, y + size * 0.5);
+      ctx.closePath();
+      ctx.fill();
     };
     
+    const drawStar = (ctx, x, y, points, innerRadius, outerRadius) => {
+      ctx.beginPath();
+      for (let i = 0; i < points * 2; i++) {
+        const radius = i % 2 === 0 ? outerRadius : innerRadius;
+        const angle = (Math.PI * 2 * i) / (points * 2);
+        const pointX = x + radius * Math.sin(angle);
+        const pointY = y + radius * Math.cos(angle);
+        if (i === 0) {
+          ctx.moveTo(pointX, pointY);
+        } else {
+          ctx.lineTo(pointX, pointY);
+        }
+      }
+      ctx.closePath();
+      ctx.fill();
+    };
+    
+    // Update the animation function for cross-modal effects
+    const animate = () => {
+      // Clear the canvas
+      ctx.clearRect(0, 0, width, height);
+      
+      // Draw effects based on glitch type
+      if (glitch.type === 'VISUAL') {
+        renderVisualGlitch();
+      } else if (glitch.type === 'TEMPORAL') {
+        renderTemporalGlitch();
+      } else if (glitch.type === 'SPATIAL') {
+        renderSpatialGlitch();
+      } else if (glitch.type === 'AUDITORY') {
+        renderAuditoryGlitch();
+      } else if (glitch.type === 'COGNITIVE') {
+        renderCognitiveGlitch();
+      } else if (glitch.type === 'SYNCHRONISTIC') {
+        renderSynchronisticGlitch();
+      }
+      
+      // Handle cross-modal effects by adding additional layers
+      if (glitch.crossModal && glitch.secondaryTarget) {
+        // Add overlay effects based on secondary target
+        ctx.globalAlpha = 0.4; // Make the overlay semi-transparent
+        
+        // Determine the secondary effect to apply
+        const secondaryType = glitch.secondaryTarget.split('_')[0]; // Extract type from target
+        
+        if (secondaryType === 'VISUAL' && glitch.type !== 'VISUAL') {
+          // Add visual noise overlay
+          for (let i = 0; i < 50; i++) {
+            const x = Math.random() * width;
+            const y = Math.random() * height;
+            const size = Math.random() * 3 + 1;
+            
+            ctx.fillStyle = `rgba(103, 232, 249, ${Math.random() * 0.3 + 0.1})`;
+            ctx.fillRect(x, y, size, size);
+          }
+        } else if (secondaryType === 'AUDITORY' && glitch.type !== 'AUDITORY') {
+          // Add wave pattern overlay for auditory
+          ctx.strokeStyle = 'rgba(167, 139, 250, 0.3)';
+          ctx.lineWidth = 2;
+          
+          const amplitude = 10 * glitch.intensity;
+          const frequency = 0.02;
+          
+          ctx.beginPath();
+          for (let x = 0; x < width; x += 2) {
+            const y = height / 2 + Math.sin(x * frequency + Date.now() * 0.001) * amplitude;
+            if (x === 0) {
+              ctx.moveTo(x, y);
+            } else {
+              ctx.lineTo(x, y);
+            }
+          }
+          ctx.stroke();
+        } else if (secondaryType === 'COGNITIVE' && glitch.type !== 'COGNITIVE') {
+          // Add thought pattern overlay for cognitive
+          ctx.strokeStyle = 'rgba(248, 113, 113, 0.2)';
+          ctx.lineWidth = 1;
+          
+          for (let i = 0; i < 5; i++) {
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const radius = 30 + i * 20;
+            
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Connect with radiating lines
+            if (i > 0) {
+              for (let j = 0; j < 8; j++) {
+                const angle = (j / 8) * Math.PI * 2;
+                const innerX = centerX + Math.cos(angle) * (radius - 20);
+                const innerY = centerY + Math.sin(angle) * (radius - 20);
+                const outerX = centerX + Math.cos(angle) * radius;
+                const outerY = centerY + Math.sin(angle) * radius;
+                
+                ctx.beginPath();
+                ctx.moveTo(innerX, innerY);
+                ctx.lineTo(outerX, outerY);
+                ctx.stroke();
+              }
+            }
+          }
+        }
+        
+        ctx.globalAlpha = 1.0; // Reset alpha
+      }
+      
+      // Call next frame
+      animationFrameId = window.requestAnimationFrame(animate);
+    };
+    
+    // Initialize and start animation
+    initParticles();
     animate();
     
     // Cleanup
@@ -577,8 +966,15 @@ const GlitchVisualization = ({ glitch }) => {
     <div>
       <div className="mb-4 flex justify-between items-center">
         <div>
-          <h3 className="text-lg font-bold">{glitch.type} Glitch</h3>
-          <div className="text-sm text-blue-400">Induced fracture in perception matrix</div>
+          <h3 className="text-lg font-bold">
+            {glitch.isAdvanced ? 'Advanced ' : ''}{glitch.type} Glitch
+            {glitch.isAdvanced && glitch.distortionType && glitch.type === 'COGNITIVE' && (
+              <span className="ml-2 text-sm text-red-400">({glitch.distortionType.replace('_', ' ')})</span>
+            )}
+          </h3>
+          <div className="text-sm text-blue-400">
+            {glitch.crossModal ? 'Cross-modal sensory disruption' : 'Induced fracture in perception matrix'}
+          </div>
         </div>
         
         {/* Visualization mode toggle */}
@@ -592,7 +988,7 @@ const GlitchVisualization = ({ glitch }) => {
       </div>
       
       {/* Visualization */}
-      <div className="relative h-64 border border-blue-800 rounded bg-black/50 overflow-hidden">
+      <div className={`relative h-64 border ${glitch.isAdvanced ? 'border-purple-800' : 'border-blue-800'} rounded ${glitch.isAdvanced ? 'bg-black/60' : 'bg-black/50'} overflow-hidden`}>
         <canvas 
           ref={canvasRef} 
           className="absolute inset-0 w-full h-full"
@@ -612,24 +1008,40 @@ const GlitchVisualization = ({ glitch }) => {
       
       {/* Visualization stats */}
       <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
-        <div className="bg-blue-900/30 p-2 rounded border border-blue-800">
-          <div className="text-blue-400">Intensity</div>
+        <div className={`${glitch.isAdvanced ? 'bg-purple-900/30' : 'bg-blue-900/30'} p-2 rounded border ${glitch.isAdvanced ? 'border-purple-800' : 'border-blue-800'}`}>
+          <div className={glitch.isAdvanced ? 'text-purple-400' : 'text-blue-400'}>Intensity</div>
           <div className="text-lg">{Math.round(glitch.intensity * 100)}%</div>
         </div>
-        <div className="bg-blue-900/30 p-2 rounded border border-blue-800">
-          <div className="text-blue-400">Complexity</div>
+        <div className={`${glitch.isAdvanced ? 'bg-purple-900/30' : 'bg-blue-900/30'} p-2 rounded border ${glitch.isAdvanced ? 'border-purple-800' : 'border-blue-800'}`}>
+          <div className={glitch.isAdvanced ? 'text-purple-400' : 'text-blue-400'}>Complexity</div>
           <div className="text-lg">{Math.round(glitch.complexity * 100)}%</div>
         </div>
-        <div className="bg-blue-900/30 p-2 rounded border border-blue-800">
-          <div className="text-blue-400">Persistence</div>
+        <div className={`${glitch.isAdvanced ? 'bg-purple-900/30' : 'bg-blue-900/30'} p-2 rounded border ${glitch.isAdvanced ? 'border-purple-800' : 'border-blue-800'}`}>
+          <div className={glitch.isAdvanced ? 'text-purple-400' : 'text-blue-400'}>Persistence</div>
           <div className="text-lg">{Math.round(glitch.persistence * 100)}%</div>
         </div>
       </div>
       
       {/* Target information */}
       <div className="mt-3 text-xs">
-        <div className="text-blue-400">Target: <span className="text-blue-300">{glitch.target}</span></div>
-        <div className="text-blue-400">Source: <span className="text-blue-300">{glitch.source}</span></div>
+        <div className={glitch.isAdvanced ? 'text-purple-400' : 'text-blue-400'}>
+          Target: <span className={glitch.isAdvanced ? 'text-purple-300' : 'text-blue-300'}>{glitch.target}</span>
+        </div>
+        {glitch.crossModal && glitch.secondaryTarget && (
+          <div className={glitch.isAdvanced ? 'text-purple-400' : 'text-blue-400'}>
+            Secondary: <span className={glitch.isAdvanced ? 'text-purple-300' : 'text-blue-300'}>{glitch.secondaryTarget}</span>
+          </div>
+        )}
+        <div className={glitch.isAdvanced ? 'text-purple-400' : 'text-blue-400'}>
+          Source: <span className={glitch.isAdvanced ? 'text-purple-300' : 'text-blue-300'}>{glitch.source}</span>
+        </div>
+        {glitch.isPersistent && (
+          <div className="text-purple-400 mt-1">
+            <span className="px-2 py-0.5 bg-purple-900/50 rounded text-purple-300 text-xs">
+              Persistent Reality Overlay
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

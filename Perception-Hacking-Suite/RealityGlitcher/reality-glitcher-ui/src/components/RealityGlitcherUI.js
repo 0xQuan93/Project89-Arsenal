@@ -29,7 +29,10 @@ const RealityGlitcherUI = () => {
       persistence: 0.5, 
       active: true, 
       target: 'Visual Field',
-      source: 'Manual Creation' 
+      source: 'Manual Creation',
+      isAdvanced: false,
+      isPersistent: false,
+      crossModal: false
     },
     { 
       id: uuidv4(), 
@@ -40,7 +43,10 @@ const RealityGlitcherUI = () => {
       persistence: 0.3, 
       active: false, 
       target: 'Auditory Processing',
-      source: 'Manual Creation'
+      source: 'Manual Creation',
+      isAdvanced: false,
+      isPersistent: false,
+      crossModal: false
     }
   ]);
   
@@ -80,15 +86,16 @@ const RealityGlitcherUI = () => {
       timestamp: new Date().getTime(),
       type
     };
-    setConsoleMessages(prev => [...prev, newMessage]);
+    
+    setConsoleMessages(prev => [newMessage, ...prev]);
+    
+    // Scroll to bottom of console
+    setTimeout(() => {
+      if (consoleRef.current) {
+        consoleRef.current.scrollTop = 0;
+      }
+    }, 100);
   };
-  
-  // Scroll console to bottom when messages change
-  useEffect(() => {
-    if (consoleRef.current) {
-      consoleRef.current.scrollTop = consoleRef.current.scrollHeight;
-    }
-  }, [consoleMessages]);
   
   // Function to toggle safety protocols
   const toggleSafetyProtocols = () => {
@@ -101,16 +108,6 @@ const RealityGlitcherUI = () => {
       `Safety protocols ${realityStatus.safetyProtocols ? 'deactivated' : 'activated'}`,
       realityStatus.safetyProtocols ? 'warning' : 'success'
     );
-    
-    // If turning off safety, reduce stability
-    if (realityStatus.safetyProtocols) {
-      setRealityStatus(prev => ({
-        ...prev,
-        stability: Math.max(0.3, prev.stability - 0.2),
-        coherence: 'FLUCTUATING'
-      }));
-      addConsoleMessage('WARNING: Reality stability compromised', 'warning');
-    }
   };
   
   // Function to create a new glitch
@@ -123,7 +120,12 @@ const RealityGlitcherUI = () => {
     };
     
     setGlitches(prev => [...prev, newGlitch]);
-    addConsoleMessage(`New ${newGlitch.type} glitch created`, 'success');
+    addConsoleMessage(
+      `New ${newGlitch.isAdvanced ? 'Advanced ' : ''}${newGlitch.type} glitch created` + 
+      `${newGlitch.crossModal ? ' with cross-modal effects' : ''}` +
+      `${newGlitch.isPersistent ? ' (Persistent Reality Overlay)' : ''}`, 
+      'success'
+    );
     setModalOpen(false);
   };
   
@@ -140,7 +142,8 @@ const RealityGlitcherUI = () => {
     const glitch = glitches.find(g => g.id === id);
     if (glitch) {
       addConsoleMessage(
-        `Glitch ${glitch.id.substring(0, 8)} ${glitch.active ? 'deactivated' : 'activated'}`,
+        `${glitch.isAdvanced ? 'Advanced ' : ''}${glitch.type} glitch ${glitch.id.substring(0, 8)} ${glitch.active ? 'deactivated' : 'activated'}` +
+        `${glitch.isPersistent ? ' (Persistent Overlay)' : ''}`,
         'info'
       );
       
@@ -180,120 +183,105 @@ const RealityGlitcherUI = () => {
   // Function to update reality status based on active glitches
   const updateRealityStatus = () => {
     const activeGlitches = glitches.filter(g => g.active);
-    const totalIntensity = activeGlitches.reduce((sum, g) => sum + g.intensity, 0);
     
-    let newStability = 0.95 - (totalIntensity * 0.15);
-    let newCoherence = 'STABLE';
+    // Calculate total impact based on glitch properties
+    let totalImpact = 0;
+    let hasAdvancedGlitches = false;
+    let hasPersistentOverlay = false;
     
+    activeGlitches.forEach(glitch => {
+      // Basic glitches affect stability less than advanced ones
+      const intensityFactor = glitch.intensity * (1 + glitch.complexity * 0.5);
+      
+      // Advanced glitches have greater impact
+      if (glitch.isAdvanced) {
+        hasAdvancedGlitches = true;
+        totalImpact += intensityFactor * 1.5;
+        
+        // Cross-modal glitches have even greater impact
+        if (glitch.crossModal) {
+          totalImpact += intensityFactor * 0.5;
+        }
+        
+        // Track if we have any persistent overlays
+        if (glitch.isPersistent) {
+          hasPersistentOverlay = true;
+        }
+      } else {
+        totalImpact += intensityFactor;
+      }
+    });
+    
+    // Calculate new stability (inversely proportional to total impact)
+    // Maximum stability is 0.95, minimum is 0.1
+    let newStability = Math.max(0.1, 0.95 - (totalImpact * 0.15));
+    
+    // Safety protocols help maintain stability
     if (!realityStatus.safetyProtocols) {
       newStability -= 0.2;
     }
     
+    // Determine coherence status based on stability
+    let newCoherence = 'STABLE';
     if (newStability < 0.4) {
       newCoherence = 'UNSTABLE';
     } else if (newStability < 0.7) {
       newCoherence = 'FLUCTUATING';
     }
     
+    // Update reality status
     setRealityStatus(prev => ({
       ...prev,
-      stability: Math.max(0.1, newStability),
-      coherence: newCoherence
+      stability: newStability,
+      coherence: newCoherence,
+      hasAdvancedGlitches,
+      hasPersistentOverlay
     }));
   };
   
   // Function to integrate with Mind Mirror
   const integrateWithMindMirror = () => {
-    // If already integrated, do nothing
     if (mindMirrorIntegrated) return;
     
-    addConsoleMessage('Attempting to connect to Mind Mirror...', 'info');
+    addConsoleMessage('Initiating connection to Mind Mirror...', 'info');
     
     // Simulate connection process
-    setMindMirrorStatus({
-      connected: false,
-      nodeCount: 0,
-      connectionCount: 0,
-      lastSyncTime: null
-    });
-    
-    // Simulate async connection process
     setTimeout(() => {
-      // Random chance of connection failure (20%)
-      const connectionSuccessful = Math.random() > 0.2;
+      addConsoleMessage('Neural handshake established with Mind Mirror', 'success');
       
-      if (connectionSuccessful) {
-        // Update Mind Mirror status
-        const nodeCount = Math.floor(Math.random() * 50) + 100; // 100-150 nodes
-        const connectionCount = Math.floor(nodeCount * (Math.random() * 0.4 + 0.6)); // 60-100% of nodes
-        
-        setMindMirrorStatus({
-          connected: true,
-          nodeCount,
-          connectionCount,
-          lastSyncTime: new Date().getTime()
-        });
-        
-        setMindMirrorIntegrated(true);
-        addConsoleMessage('Mind Mirror successfully connected', 'success');
-        addConsoleMessage(`Detected ${nodeCount} neural nodes and ${connectionCount} connections`, 'info');
-        
-        // Generate glitches based on mind mirror data
-        const mindMirrorGlitchCount = Math.floor(Math.random() * 3) + 1; // 1-3 glitches
-        
-        const newGlitches = [];
-        const glitchTypes = ['VISUAL', 'AUDITORY', 'COGNITIVE', 'TEMPORAL', 'SPATIAL'];
-        const targets = [
-          'Visual Processing Center', 
-          'Auditory Cortex', 
-          'Frontal Lobe Activity',
-          'Temporal Perception',
-          'Spatial Awareness',
-          'Memory Imprints',
-          'Emotional Responses'
-        ];
-        
-        for (let i = 0; i < mindMirrorGlitchCount; i++) {
-          const type = glitchTypes[Math.floor(Math.random() * glitchTypes.length)];
-          const target = targets[Math.floor(Math.random() * targets.length)];
-          
-          newGlitches.push({
-            id: uuidv4(),
-            type,
-            intensity: Math.random() * 0.5 + 0.2, // 0.2-0.7 intensity
-            duration: Math.random() * 10 + 5, // 5-15 seconds
-            complexity: Math.random() * 0.6 + 0.2, // 0.2-0.8 complexity
-            persistence: Math.random() * 0.4 + 0.1, // 0.1-0.5 persistence
-            active: true,
-            target,
-            source: 'Mind Mirror'
-          });
-        }
-        
-        // Add new glitches to state
-        setGlitches(prev => [...prev, ...newGlitches]);
-        
-        // Update reality status to reflect mind mirror connection
-        setRealityStatus(prev => ({
-          ...prev,
-          coherence: 'FLUCTUATING',
-          stability: Math.max(0.3, prev.stability - 0.15)
-        }));
-        
-        addConsoleMessage(`Generated ${newGlitches.length} glitches from consciousness patterns`, 'success');
-      } else {
-        // Connection failed
-        addConsoleMessage('ERROR: Failed to establish neural connection with Mind Mirror', 'error');
-        setMindMirrorStatus({
-          connected: false,
-          nodeCount: 0,
-          connectionCount: 0,
-          lastSyncTime: null
-        });
-      }
+      setMindMirrorStatus({
+        connected: true,
+        nodeCount: Math.floor(Math.random() * 80) + 40, // 40-120 nodes
+        connectionCount: Math.floor(Math.random() * 200) + 100, // 100-300 connections
+        lastSyncTime: new Date().getTime()
+      });
+      
+      setMindMirrorIntegrated(true);
+      
+      // Add a new glitch from Mind Mirror data
+      const mindMirrorGlitch = {
+        id: uuidv4(),
+        type: ['COGNITIVE', 'SYNCHRONISTIC', 'TEMPORAL'][Math.floor(Math.random() * 3)],
+        intensity: 0.6 + (Math.random() * 0.3), // 0.6-0.9
+        duration: 10,
+        complexity: 0.7 + (Math.random() * 0.3), // 0.7-1.0
+        persistence: 0.5 + (Math.random() * 0.4), // 0.5-0.9
+        active: false,
+        target: 'Neural Patterns',
+        source: 'Mind Mirror',
+        isAdvanced: true,
+        isPersistent: Math.random() > 0.7, // 30% chance of persistent
+        crossModal: Math.random() > 0.5, // 50% chance of cross-modal
+        secondaryTarget: Math.random() > 0.5 ? 'VISUAL' : 'AUDITORY',
+        distortionType: ['CONFIRMATION_BIAS', 'EMOTIONAL_REASONING', 'FILTERING'][Math.floor(Math.random() * 3)]
+      };
+      
+      setGlitches(prev => [...prev, mindMirrorGlitch]);
+      
+      addConsoleMessage('Mind Mirror neural pattern imported as glitch template', 'success');
     }, 2000);
   };
-
+  
   // Function to toggle fullscreen mode
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -335,7 +323,7 @@ const RealityGlitcherUI = () => {
       document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
     };
   }, []);
-
+  
   // Function to clear console messages
   const clearConsole = () => {
     setConsoleMessages([{
@@ -361,13 +349,76 @@ const RealityGlitcherUI = () => {
     // Update reality status after deletion
     updateRealityStatus();
   };
-
+  
+  // Get persistent overlay glitches
+  const persistentOverlays = glitches.filter(g => g.active && g.isPersistent);
+  
+  // Generate classes for persistent overlay effects
+  const generatePersistentOverlayClasses = () => {
+    let classes = '';
+    
+    persistentOverlays.forEach(glitch => {
+      switch(glitch.type) {
+        case 'VISUAL':
+          classes += ' reality-overlay-visual';
+          break;
+        case 'AUDITORY':
+          classes += ' reality-overlay-auditory';
+          break;
+        case 'TEMPORAL':
+          classes += ' reality-overlay-temporal';
+          break;
+        case 'SPATIAL':
+          classes += ' reality-overlay-spatial';
+          break;
+        case 'COGNITIVE':
+          classes += ' reality-overlay-cognitive';
+          if (glitch.distortionType) {
+            classes += ` reality-overlay-${glitch.distortionType.toLowerCase()}`;
+          }
+          break;
+        case 'SYNCHRONISTIC':
+          classes += ' reality-overlay-synchronistic';
+          break;
+        default:
+          break;
+      }
+      
+      // Add intensity class
+      if (glitch.intensity > 0.7) {
+        classes += ' reality-overlay-intense';
+      } else if (glitch.intensity > 0.4) {
+        classes += ' reality-overlay-moderate';
+      } else {
+        classes += ' reality-overlay-subtle';
+      }
+      
+      // Add cross-modal class
+      if (glitch.crossModal && glitch.secondaryTarget) {
+        classes += ` reality-overlay-cross-${glitch.secondaryTarget.toLowerCase()}`;
+      }
+    });
+    
+    return classes;
+  };
+  
+  // Update effect based on reality status and persistent overlays
+  useEffect(() => {
+    // Apply persistent overlay effects
+    if (persistentOverlays.length > 0) {
+      addConsoleMessage(
+        `${persistentOverlays.length} persistent overlay${persistentOverlays.length > 1 ? 's' : ''} affecting reality perception`,
+        'warning'
+      );
+    }
+  }, [persistentOverlays.length]);
+  
   return (
     <div 
       ref={appContainerRef}
       className={`cyber-bg min-h-screen text-blue-300 p-4 md:p-6 transition-all duration-300 ${
         isFullscreen ? 'fullscreen-mode' : ''
-      }`}
+      } ${generatePersistentOverlayClasses()}`}
     >
       <div className="max-w-7xl mx-auto">
         <header className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
@@ -404,7 +455,7 @@ const RealityGlitcherUI = () => {
             </button>
           </div>
         </header>
-        
+
         {/* Main content grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left column - Controls and Status */}
@@ -433,6 +484,24 @@ const RealityGlitcherUI = () => {
                     {realityStatus.safetyProtocols ? 'ACTIVE' : 'DISABLED'}
                   </div>
                 </div>
+                
+                {/* Persistent overlay status - new! */}
+                <div className="flex justify-between items-center">
+                  <div className="text-sm">Persistent Overlays:</div>
+                  <div className={`text-sm font-bold ${persistentOverlays.length > 0 ? 'text-purple-400 animate-pulse' : 'text-gray-400'}`}>
+                    {persistentOverlays.length > 0 ? `${persistentOverlays.length} ACTIVE` : 'NONE'}
+                  </div>
+                </div>
+                
+                {/* Advanced glitches status - new! */}
+                {glitches.some(g => g.active && g.isAdvanced) && (
+                  <div className="flex justify-between items-center">
+                    <div className="text-sm">Advanced Glitches:</div>
+                    <div className="text-sm font-bold text-cyan-400">
+                      {glitches.filter(g => g.active && g.isAdvanced).length} ACTIVE
+                    </div>
+                  </div>
+                )}
                 
                 {/* Time active */}
                 <div className="flex justify-between items-center">
@@ -552,20 +621,54 @@ const RealityGlitcherUI = () => {
                 </button>
               </div>
               
-              {/* Glitches Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4 mb-4">
-                {glitches.map((glitch) => (
-                  <GlitchCard 
-                    key={glitch.id}
-                    glitch={glitch}
-                    selected={selectedGlitch?.id === glitch.id}
-                    onSelect={() => setSelectedGlitch(glitch)}
-                    onToggle={() => toggleGlitch(glitch.id)}
-                    onAdjustIntensity={(newIntensity) => adjustIntensity(glitch.id, newIntensity)}
-                    onDelete={() => deleteGlitch(glitch.id)}
-                    onAmplify={() => amplifyGlitch(glitch.id)}
-                  />
-                ))}
+              {/* Advanced Glitches Section - new! */}
+              {glitches.some(g => g.isAdvanced) && (
+                <div className="mb-4">
+                  <h3 className="text-lg text-purple-300 mb-2 flex items-center">
+                    <span className="inline-block w-2 h-2 rounded-full bg-purple-500 mr-2"></span>
+                    Advanced Glitches
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4 mb-4">
+                    {glitches.filter(g => g.isAdvanced).map((glitch) => (
+                      <GlitchCard 
+                        key={glitch.id}
+                        glitch={glitch}
+                        selected={selectedGlitch?.id === glitch.id}
+                        onSelect={() => setSelectedGlitch(glitch)}
+                        onToggle={() => toggleGlitch(glitch.id)}
+                        onAdjustIntensity={(newIntensity) => adjustIntensity(glitch.id, newIntensity)}
+                        onDelete={() => deleteGlitch(glitch.id)}
+                        onAmplify={() => amplifyGlitch(glitch.id)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Standard Glitches */}
+              <div className="mb-4">
+                {glitches.some(g => g.isAdvanced) && (
+                  <h3 className="text-lg text-blue-300 mb-2 flex items-center">
+                    <span className="inline-block w-2 h-2 rounded-full bg-blue-500 mr-2"></span>
+                    Standard Glitches
+                  </h3>
+                )}
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4 mb-4">
+                  {glitches.filter(g => !g.isAdvanced).map((glitch) => (
+                    <GlitchCard 
+                      key={glitch.id}
+                      glitch={glitch}
+                      selected={selectedGlitch?.id === glitch.id}
+                      onSelect={() => setSelectedGlitch(glitch)}
+                      onToggle={() => toggleGlitch(glitch.id)}
+                      onAdjustIntensity={(newIntensity) => adjustIntensity(glitch.id, newIntensity)}
+                      onDelete={() => deleteGlitch(glitch.id)}
+                      onAmplify={() => amplifyGlitch(glitch.id)}
+                    />
+                  ))}
+                </div>
                 
                 {glitches.length === 0 && (
                   <div className="col-span-full text-center py-6 text-blue-400">
