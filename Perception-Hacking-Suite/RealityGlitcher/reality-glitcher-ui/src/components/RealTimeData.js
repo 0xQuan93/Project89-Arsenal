@@ -19,6 +19,93 @@ const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
   const animationRef = useRef(null);
   const lastUpdateTimeRef = useRef(Date.now());
   
+  // EMERGENCY RENDERING SYSTEM
+  useEffect(() => {
+    console.log("SETTING UP EMERGENCY SYSTEM");
+    
+    // Create reliable data
+    function createReliableData() {
+      const time = Date.now() * 0.001;
+      const points = [];
+      for (let i = 0; i < 100; i++) {
+        // Simple sine wave that's guaranteed to be visible
+        points[i] = 0.5 + Math.sin(i * 0.1 + time) * 0.3;
+      }
+      return points;
+    }
+    
+    // Guaranteed emergency draw function
+    function emergencyDraw() {
+      try {
+        console.log("EMERGENCY DRAW ATTEMPT");
+        const canvas = canvasRef.current;
+        if (!canvas) {
+          console.error("Emergency: Canvas ref is null");
+          return;
+        }
+        
+        // Ensure dimensions
+        if (canvas.width === 0) canvas.width = 600;
+        if (canvas.height === 0) canvas.height = 130;
+        
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          console.error("Emergency: Context is null");
+          return;
+        }
+        
+        // EMERGENCY DATA
+        const emergencyData = createReliableData();
+        
+        // Update our data ref too
+        dataPointsRef.current = emergencyData;
+        
+        // SIMPLEST POSSIBLE RENDERING
+        ctx.fillStyle = 'rgb(0, 0, 0)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // RED EMERGENCY BORDER
+        ctx.strokeStyle = 'rgb(255, 0, 0)';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(3, 3, canvas.width-6, canvas.height-6);
+        
+        // Draw the waveform in a bright color
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgb(0, 255, 255)';
+        ctx.lineWidth = 3;
+        
+        for (let i = 0; i < emergencyData.length; i++) {
+          const x = (i / (emergencyData.length - 1)) * canvas.width;
+          const y = (1 - emergencyData[i]) * canvas.height;
+          
+          if (i === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
+        }
+        
+        ctx.stroke();
+        
+        // Emergency text
+        ctx.fillStyle = 'rgb(255, 255, 0)';
+        ctx.font = '16px monospace';
+        ctx.fillText("EMERGENCY RENDER", 10, 20);
+        
+        console.log("EMERGENCY DRAW COMPLETE");
+      } catch (error) {
+        console.error("Emergency draw failed:", error);
+      }
+    }
+    
+    // Set intervals that can't be canceled
+    const emergencyInterval = setInterval(emergencyDraw, 2000);
+    
+    return () => {
+      clearInterval(emergencyInterval);
+    };
+  }, []);
+  
   // Use callback to prevent recreation of the function on each render
   const startAnimation = useCallback(() => {
     const animate = () => {
@@ -26,91 +113,73 @@ const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
       drawCanvas();
       animationRef.current = requestAnimationFrame(animate);
     };
+    
+    // Start the animation loop
     animate();
+    
+    // Add a backup timer to ensure the canvas is always updated
+    setInterval(() => {
+      if (canvasRef.current) {
+        drawCanvas();
+      }
+    }, 1000);
   }, []);
   
-  // Dynamic data generation responsive to glitches
+  // Dynamic data generation responsive to glitches but simplified
   const updateData = () => {
-    const currentTime = Date.now();
-    const deltaTime = Math.min(0.1, (currentTime - lastUpdateTimeRef.current) / 1000);
-    lastUpdateTimeRef.current = currentTime;
-    
-    // Time value for wave calculations
-    const time = currentTime * 0.001;
-    
-    // Get active glitches
-    const activeGlitches = glitches.filter(g => g.active);
-    
-    // Base wave that's always visible
-    let newValue = 0.5 + Math.sin(time * 1.5) * 0.2;
-    
-    // Process each active glitch
-    activeGlitches.forEach(glitch => {
-      const intensity = glitch.intensity * 0.01;
-      const glitchId = glitch.id || 1;
-      const frequencyOffset = (glitchId % 10) * 0.1;
+    try {
+      const currentTime = Date.now();
+      const time = currentTime * 0.001; // Time in seconds
       
-      // Different wave patterns for each glitch type
-      switch(glitch.type) {
-        case 'VISUAL':
-          newValue += Math.sin(time * (1.7 + frequencyOffset)) * intensity * 0.15;
-          break;
-        case 'AUDITORY':
-          newValue += Math.cos(time * (2.1 + frequencyOffset)) * intensity * 0.12;
-          break;
-        case 'TEMPORAL':
-          newValue += Math.sin(time * (0.9 + frequencyOffset)) * intensity * 0.18;
-          break;
-        case 'SPATIAL':
-          newValue += Math.sin(time * (1.5 + frequencyOffset) + Math.cos(time)) * intensity * 0.14;
-          break;
-        case 'COGNITIVE':
-          newValue += Math.sin(time * (1.8 + frequencyOffset) + Math.sin(time * 0.7)) * intensity * 0.16;
-          break;
-        case 'SYNCHRONISTIC':
-          newValue += Math.sin(time * (1.2 + frequencyOffset)) * Math.cos(time * 0.8) * intensity * 0.17;
-          break;
-        default:
-          newValue += Math.sin(time * (1.4 + frequencyOffset)) * intensity * 0.1;
+      // Get active glitches for a simpler calculation
+      const activeGlitches = glitches.filter(g => g.active);
+      
+      // Base wave that's always visible - simple sine
+      let newValue = 0.5 + Math.sin(time * 1.5) * 0.25;
+      
+      // Add basic variation from active glitches - very simple
+      if (activeGlitches.length > 0) {
+        // Just add a scaled sin wave based on glitch count
+        newValue += Math.sin(time * 2.2) * 0.05 * Math.min(5, activeGlitches.length);
       }
       
-      // Advanced glitches create more complex patterns
-      if (glitch.isAdvanced) {
-        newValue += Math.sin(time * 2.5) * Math.cos(time * 1.3) * intensity * 0.2;
+      // Add basic Mind Mirror effect - simple but distinctive
+      if (mindMirrorConnected) {
+        newValue += Math.sin(time * 3.0) * 0.1;
       }
       
-      // Cross-modal glitches affect the waveform differently
-      if (glitch.crossModal) {
-        newValue += Math.sin(time * 1.9 + Math.cos(time * 0.7)) * intensity * 0.15;
+      // Add small random fluctuation
+      newValue += (Math.random() * 0.04 - 0.02);
+      
+      // Safety bounds - critical to ensure visibility
+      newValue = Math.max(0.2, Math.min(0.8, newValue));
+      
+      // Update with simplified approach
+      const newPoints = [...dataPointsRef.current];
+      newPoints.push(newValue);
+      newPoints.shift();
+      dataPointsRef.current = newPoints;
+      
+      // Update state occasionally
+      if (currentTime % 200 < 20) {
+        setDataPointsState([...newPoints]);
       }
-    });
-    
-    // Mind Mirror creates distinctive pattern
-    if (mindMirrorConnected) {
-      newValue += Math.sin(time * 2.2) * 0.12;
-      newValue += Math.sin(time * 3.7) * Math.cos(time * 0.9) * 0.08;
+      
+      // Continue with sensor and anomaly updates
+      updateSensorData(Math.min(0.1, (currentTime - lastUpdateTimeRef.current) / 1000), activeGlitches);
+      updateAnomalies(activeGlitches);
+      lastUpdateTimeRef.current = currentTime;
+    } catch (error) {
+      console.error("Error in updateData:", error);
+      
+      // Emergency recovery - create a simple sine wave if anything fails
+      const time = Date.now() * 0.001;
+      const fallbackPoints = [];
+      for (let i = 0; i < 100; i++) {
+        fallbackPoints.push(0.5 + Math.sin((i * 0.1) + time * 0.5) * 0.3);
+      }
+      dataPointsRef.current = fallbackPoints;
     }
-    
-    // Add subtle quantum randomness
-    newValue += (Math.random() * 0.04 - 0.02);
-    
-    // Safety bounds to keep waveform visible
-    newValue = Math.max(0.2, Math.min(0.8, newValue));
-    
-    // Update data points
-    const points = [...dataPointsRef.current];
-    points.push(newValue);
-    points.shift();
-    dataPointsRef.current = points;
-    
-    // Update state occasionally for components that need it
-    if (currentTime % 100 < 20) {
-      setDataPointsState([...points]);
-    }
-    
-    // Continue with sensor updates
-    updateSensorData(deltaTime, activeGlitches);
-    updateAnomalies(activeGlitches);
   };
   
   // Separated sensor update logic for clarity
@@ -236,126 +305,191 @@ const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
     }
   };
   
-  // Enhanced canvas drawing with reliable visibility
+  // Ultra-reliable canvas drawing - absolute simplicity
   const drawCanvas = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    
-    const width = canvas.width;
-    const height = canvas.height;
-    
-    // Get data to draw - guaranteed to be an array of 100 elements
-    const data = dataPointsRef.current;
-    
-    // Clear canvas
-    ctx.clearRect(0, 0, width, height);
-    
-    // Fill background
-    ctx.fillStyle = 'rgba(1, 10, 30, 0.7)';
-    ctx.fillRect(0, 0, width, height);
-    
-    // Draw grid
-    ctx.strokeStyle = 'rgba(0, 40, 100, 0.25)';
-    ctx.lineWidth = 0.5;
-    
-    for (let y = 0; y < height; y += 30) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(width, y);
-      ctx.stroke();
-    }
-    
-    for (let x = 0; x < width; x += 60) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, height);
-      ctx.stroke();
-    }
-    
-    // Create gradient for waveform
-    const gradient = ctx.createLinearGradient(0, 0, 0, height);
-    if (mindMirrorConnected) {
-      gradient.addColorStop(0, 'rgba(190, 120, 255, 0.9)');
-      gradient.addColorStop(0.5, 'rgba(168, 85, 247, 1)');
-      gradient.addColorStop(1, 'rgba(130, 60, 200, 0.9)');
-    } else {
-      gradient.addColorStop(0, 'rgba(0, 220, 255, 0.9)');
-      gradient.addColorStop(0.5, 'rgba(0, 180, 255, 1)');
-      gradient.addColorStop(1, 'rgba(0, 140, 255, 0.9)');
-    }
-    
-    // Draw line with attractive styling
-    ctx.strokeStyle = gradient;
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    
-    // Draw the main waveform
-    for (let i = 0; i < data.length; i++) {
-      const x = (i / (data.length - 1)) * width;
-      const y = height - (data[i] * height);
-      
-      if (i === 0) {
-        ctx.moveTo(x, y);
-      } else {
-        ctx.lineTo(x, y);
+    try {
+      console.log("Attempting to draw canvas...");
+      const canvas = canvasRef.current;
+      if (!canvas) {
+        console.error("Canvas ref is null");
+        return;
       }
-    }
-    
-    ctx.stroke();
-    
-    // Add glow effect
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = mindMirrorConnected ? 
-      'rgba(168, 85, 247, 0.7)' : 
-      'rgba(0, 180, 255, 0.7)';
-    ctx.stroke();
-    
-    // Draw particles on the line
-    for (let i = 0; i < data.length; i += 8) {
-      const x = (i / (data.length - 1)) * width;
-      const y = height - (data[i] * height);
       
-      const particleColor = mindMirrorConnected ? 
-        'rgba(190, 120, 255, 0.9)' : 
-        'rgba(50, 200, 255, 0.9)';
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        console.error("Could not get canvas context");
+        return;
+      }
       
-      ctx.fillStyle = particleColor;
+      // Check if canvas has size
+      if (canvas.width === 0 || canvas.height === 0) {
+        console.error("Canvas has zero dimensions", canvas.width, canvas.height);
+        canvas.width = 600;
+        canvas.height = 130;
+      }
+      
+      const width = canvas.width;
+      const height = canvas.height;
+      
+      console.log("Canvas dimensions:", width, height);
+      
+      // Get data to draw - guaranteed to be an array of 100 elements
+      const data = dataPointsRef.current;
+      if (!data || data.length === 0) {
+        console.error("No data to draw");
+        return;
+      }
+      
+      // This is the absolute simplest approach - minimal styling, just make it work
+      // Clear entire canvas with black background
+      ctx.fillStyle = 'rgb(0, 0, 0)';
+      ctx.fillRect(0, 0, width, height);
+      
+      // Draw a frame so we know the canvas is being rendered
+      ctx.strokeStyle = 'rgb(0, 50, 100)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(2, 2, width-4, height-4);
+      
+      // Add text to show the canvas is updating
+      ctx.font = '12px monospace';
+      ctx.fillStyle = mindMirrorConnected ? 'rgb(168, 85, 247)' : 'rgb(0, 150, 255)';
+      ctx.fillText("QUANTUM FLUCTUATOR", 10, 20);
+      
+      // Use a simple solid color for the line - guaranteed visibility
+      ctx.strokeStyle = mindMirrorConnected ? 'rgb(168, 85, 247)' : 'rgb(0, 150, 255)';
+      ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.arc(x, y, 2, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    
-    // Draw Mind Mirror indicator if connected
-    if (mindMirrorConnected) {
-      ctx.font = '11px monospace';
-      ctx.fillStyle = 'rgba(168, 85, 247, 1)';
-      ctx.textAlign = 'right';
-      ctx.fillText("MIND MIRROR PATTERN DETECTED", width - 10, 15);
+      
+      for (let i = 0; i < data.length; i++) {
+        const x = (i / (data.length - 1)) * width;
+        // Use a safe value and ensure it's within bounds
+        const value = typeof data[i] === 'number' ? data[i] : 0.5;
+        const y = (1 - Math.max(0.1, Math.min(0.9, value))) * height;
+        
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+      
+      // Stroke without any fancy effects
+      ctx.stroke();
+      
+      // Add some points every 10 steps for visibility
+      for (let i = 0; i < data.length; i += 10) {
+        const x = (i / (data.length - 1)) * width;
+        const value = typeof data[i] === 'number' ? data[i] : 0.5;
+        const y = (1 - Math.max(0.1, Math.min(0.9, value))) * height;
+        
+        ctx.fillStyle = mindMirrorConnected ? 'rgb(190, 100, 255)' : 'rgb(0, 200, 255)';
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      
+      console.log("Canvas drawing complete");
+    } catch (err) {
+      console.error("Canvas drawing error:", err);
     }
   };
   
-  // Initialize and start animation
+  // MANUAL CANVAS CREATION APPROACH
   useEffect(() => {
-    // Initialize with a sine wave
+    // Initialize with a simple sine wave
     const initialPoints = [];
     for (let i = 0; i < 100; i++) {
-      initialPoints.push(0.5 + Math.sin(i * 0.05) * 0.25);
+      initialPoints.push(0.5 + Math.sin(i * 0.05) * 0.3);
     }
     dataPointsRef.current = initialPoints;
-    setDataPointsState(initialPoints);
     
-    // Start animation loop
-    startAnimation();
+    // Create a canvas element directly
+    try {
+      console.log("ATTEMPTING MANUAL CANVAS CREATION");
+      
+      // Find the container where we want to place the canvas
+      const canvasContainer = document.querySelector('.quantum-canvas-container');
+      if (!canvasContainer) {
+        console.error("Could not find canvas container");
+        return;
+      }
+      
+      // Clear any existing canvas
+      canvasContainer.innerHTML = '';
+      
+      // Create a new canvas element
+      const canvas = document.createElement('canvas');
+      canvas.width = 600;
+      canvas.height = 130;
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      canvas.style.display = 'block';
+      canvas.style.backgroundColor = 'black';
+      
+      // Add it to the container
+      canvasContainer.appendChild(canvas);
+      
+      // Store in ref for later use
+      canvasRef.current = canvas;
+      
+      // Test draw on the canvas
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.fillStyle = 'rgb(0, 0, 0)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw a sine wave to verify it works
+        ctx.strokeStyle = 'rgb(0, 150, 255)';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        
+        for (let i = 0; i < 100; i++) {
+          const x = (i / 99) * canvas.width;
+          const y = (0.5 - 0.3 * Math.sin(i * 0.1)) * canvas.height;
+          
+          if (i === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
+        }
+        
+        ctx.stroke();
+        
+        // Text to show it's initialized
+        ctx.fillStyle = 'white';
+        ctx.font = '16px Arial';
+        ctx.fillText('QUANTUM FLUCTUATOR INITIALIZED', 10, 20);
+      }
+      
+      console.log("Manual canvas creation successful");
+      
+      // Start the animation loop immediately
+      let animationFrameId = null;
+      
+      const animate = () => {
+        updateData();
+        drawCanvas();
+        animationFrameId = requestAnimationFrame(animate);
+      };
+      
+      animate();
+      
+      // Store the animation frame ID
+      animationRef.current = animationFrameId;
+      
+    } catch (err) {
+      console.error("Manual canvas creation failed:", err);
+    }
     
+    // Cleanup function
     return () => {
       if (animationRef.current) {
+        console.log("Cleaning up animation");
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [startAnimation]);
+  }, []);
   
   // Function to generate a random anomaly based on active glitches
   const generateAnomaly = (activeGlitches) => {
@@ -493,7 +627,7 @@ const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
     <div className="p-4 border border-blue-800 rounded-lg bg-gradient-to-b from-blue-900/30 to-purple-900/30 cyber-border">
       <h2 className="text-xl mb-3 border-b border-blue-700 pb-1">Reality Distortion Output</h2>
       
-      {/* Waveform display */}
+      {/* Waveform display - with ultra-reliable styling */}
       <div className="mb-4">
         <div className="flex justify-between items-center mb-1">
           <div className="text-sm text-blue-400">Quantum Field Fluctuations:</div>
@@ -503,9 +637,23 @@ const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
             </div>
           )}
         </div>
-        <div className="border border-blue-800 bg-black/50 rounded p-1 h-36">
-          <canvas ref={canvasRef} width={600} height={130} className="w-full h-full" />
-        </div>
+        
+        {/* Canvas will be inserted here */}
+        <div 
+          className="quantum-canvas-container"
+          style={{
+            width: "100%",
+            height: "140px",
+            minHeight: "140px",
+            border: "1px solid #1e40af",
+            borderRadius: "4px",
+            backgroundColor: "black",
+            padding: "4px",
+            position: "relative",
+            display: "block",
+            overflow: "hidden"
+          }}
+        ></div>
       </div>
       
       {/* Sensor data */}
