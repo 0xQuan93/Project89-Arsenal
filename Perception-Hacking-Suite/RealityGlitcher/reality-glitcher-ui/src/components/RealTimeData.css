@@ -1,0 +1,135 @@
+.reality-data-container {
+  background-color: rgba(0, 20, 40, 0.8);
+  border: 1px solid #1e40af;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #1e3a8a;
+  padding-bottom: 8px;
+}
+
+.section-heading h3 {
+  color: #38bdf8;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.section-heading-secondary {
+  margin-top: 16px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #1e3a8a;
+  padding-bottom: 4px;
+}
+
+.section-heading-secondary h4 {
+  color: #60a5fa;
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+}
+
+.mind-mirror-status {
+  background-color: rgba(147, 51, 234, 0.3);
+  color: #c084fc;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #7e22ce;
+}
+
+.quantum-canvas-container {
+  width: 100%;
+  height: 130px;
+  border: 1px solid #1e40af;
+  border-radius: 4px;
+  background-color: black;
+  margin-bottom: 16px;
+  overflow: hidden;
+  position: relative;
+}
+
+.sensor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .sensor-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.sensor-item {
+  margin-bottom: 8px;
+}
+
+.sensor-label {
+  color: #60a5fa;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.sensor-value {
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.sensor-bar {
+  height: 8px;
+  width: 100%;
+  background-color: rgba(30, 64, 175, 0.3);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.sensor-bar-fill {
+  height: 100%;
+  background-color: #3b82f6;
+  border-radius: 4px;
+}
+
+.anomalies-container {
+  margin-top: 16px;
+}
+
+.anomalies-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.anomaly-item {
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid #1e3a8a;
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.anomaly-label {
+  color: #fbbf24;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.anomaly-value {
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+} 

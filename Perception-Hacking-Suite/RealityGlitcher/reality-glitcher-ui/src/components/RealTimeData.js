@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import './RealTimeData.css';
 
 const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
   // Use a ref to store data points to prevent re-renders
   const dataPointsRef = useRef(Array(100).fill(0.5));
-  // We'll use dataPointsState in our render or make it a comment explaining why it's there
-  const [dataPointsState, setDataPointsState] = useState(Array(100).fill(0.5)); // Kept for potential future use
+  const [dataPointsState, setDataPointsState] = useState(Array(100).fill(0.5));
   const [sensorData, setSensorData] = useState({
     neuralActivity: 78.4,
     perceptionShift: 12.3,
@@ -13,444 +13,83 @@ const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
     cognitiveDissonance: 15.0,
     quantumEntanglement: 45.2
   });
-  const [anomalies, setAnomalies] = useState([]);
-  const [lastAnomalyTime, setLastAnomalyTime] = useState(0);
+  const [anomalyData, setAnomalyData] = useState({});
+  
+  // Refs for canvas and animation
   const canvasRef = useRef(null);
   const animationRef = useRef(null);
-  const lastUpdateTimeRef = useRef(Date.now());
-  const backupTimerRef = useRef(null); // Store reference to interval for cleanup
-  const canvasContainerRef = useRef(null); // Reference for canvas container
+  const canvasContainerRef = useRef(null);
+  const backupTimerRef = useRef(null);
   
-  // Animation speed control - higher values = faster cycles
-  const cycleSpeedMultiplier = 3.0; // Increased from 2.0 to 3.0 for even faster cycles
+  // Debug flag - set to false for production
+  const debug = process.env.NODE_ENV === 'development';
   
-  // EMERGENCY RENDERING SYSTEM
-  useEffect(() => {
-    // Reduce console noise in production
-    const debug = process.env.NODE_ENV === 'development';
-    if (debug) console.log("Setting up emergency rendering system");
-    
-    // Create reliable data with higher frequency cycles
-    function createReliableData() {
-      const time = Date.now() * 0.001;
+  // Function to create emergency data
+  const createReliableData = () => {
+    try {
+      // Create a simple sine wave with more oscillations
       const points = [];
       for (let i = 0; i < 100; i++) {
-        // Increased frequency from 0.1 to 0.25 for more cycles
-        points[i] = 0.5 + Math.sin(i * 0.25 + time) * 0.3;
+        const value = 0.5 + 0.3 * Math.sin(i * 0.3);
+        points.push(value);
       }
       return points;
+    } catch (err) {
+      console.error("Emergency data creation failed:", err);
+      return Array(100).fill(0.5);
     }
-    
-    // Guaranteed emergency draw function
-    function emergencyDraw() {
-      try {
-        if (debug) console.log("Emergency draw attempt");
-        const canvas = canvasRef.current;
-        if (!canvas) {
-          console.error("Emergency: Canvas ref is null");
-          // Attempt to recreate canvas if missing
-          createCanvas();
-          return;
-        }
-        
-        // Ensure dimensions
-        if (canvas.width === 0) canvas.width = 600;
-        if (canvas.height === 0) canvas.height = 130;
-        
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          console.error("Emergency: Context is null");
-          return;
-        }
-        
-        // EMERGENCY DATA with higher frequency cycles
-        const emergencyData = createReliableData();
-        
-        // Update our data ref too
-        dataPointsRef.current = emergencyData;
-        
-        // SIMPLEST POSSIBLE RENDERING
-        ctx.fillStyle = 'rgb(0, 0, 0)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // RED EMERGENCY BORDER
-        ctx.strokeStyle = 'rgb(255, 0, 0)';
-        ctx.lineWidth = 3;
-        ctx.strokeRect(3, 3, canvas.width-6, canvas.height-6);
-        
-        // Draw the waveform in a bright color
-        ctx.beginPath();
-        ctx.strokeStyle = 'rgb(0, 255, 255)';
-        ctx.lineWidth = 3;
-        
-        for (let i = 0; i < emergencyData.length; i++) {
-          const x = (i / (emergencyData.length - 1)) * canvas.width;
-          const y = (1 - emergencyData[i]) * canvas.height;
-          
-          if (i === 0) {
-            ctx.moveTo(x, y);
-          } else {
-            ctx.lineTo(x, y);
-          }
-        }
-        
-        ctx.stroke();
-        
-        // Emergency text
-        ctx.fillStyle = 'rgb(255, 255, 0)';
-        ctx.font = '16px monospace';
-        ctx.fillText("EMERGENCY RENDER", 10, 20);
-        
-        if (debug) console.log("Emergency draw complete");
-      } catch (error) {
-        console.error("Emergency draw failed:", error);
+  };
+  
+  // Emergency draw function with higher frequency cycles
+  const emergencyDraw = () => {
+    try {
+      if (debug) console.log("Emergency draw triggered");
+      
+      // Find the canvas container
+      const container = canvasContainerRef.current || document.querySelector('.quantum-canvas-container');
+      if (!container) {
+        if (debug) console.log("Container not found in emergency draw");
+        return;
       }
-    }
-    
-    // Function to create canvas as fallback - convert to useCallback
-    const createCanvas = useCallback(() => {
-      try {
-        // Access debug through process.env to avoid using undefined variable
-        if (process.env.NODE_ENV === 'development') console.log("Emergency canvas creation");
-        
-        // Only proceed if we have a container reference
-        if (!canvasContainerRef.current) return;
-        
-        // Create new canvas
-        const canvas = document.createElement('canvas');
+      
+      // Check if we have a canvas, create one if not
+      let canvas = canvasRef.current;
+      if (!canvas || !container.contains(canvas)) {
+        if (debug) console.log("Canvas not found in emergency draw, creating one");
+        canvas = document.createElement('canvas');
         canvas.width = 600;
         canvas.height = 130;
         canvas.style.width = '100%';
         canvas.style.height = '100%';
-        canvas.style.display = 'block';
-        canvas.style.backgroundColor = 'black';
-        
-        // Clear container and add canvas
-        canvasContainerRef.current.innerHTML = '';
-        canvasContainerRef.current.appendChild(canvas);
-        
-        // Update ref
+        container.innerHTML = '';
+        container.appendChild(canvas);
         canvasRef.current = canvas;
-        
-        if (process.env.NODE_ENV === 'development') console.log("Emergency canvas created");
-      } catch (err) {
-        console.error("Emergency canvas creation failed:", err);
-      }
-    }, [canvasContainerRef]); // Add the ref dependency
-    
-    // Set intervals that can't be canceled
-    const emergencyInterval = setInterval(emergencyDraw, 3000);
-    
-    return () => {
-      clearInterval(emergencyInterval);
-    };
-  }, []);
-  
-  // Now properly use the startAnimation with dependencies
-  const startAnimation = useCallback(() => {
-    // Reduce console noise in production
-    if (process.env.NODE_ENV === 'development') {
-      console.log("Animation starting");
-    }
-    
-    const animate = () => {
-      updateData();
-      drawCanvas();
-      animationRef.current = requestAnimationFrame(animate);
-    };
-    
-    // Start the animation loop
-    animate();
-  }, [updateData, drawCanvas]); // Add missing dependencies
-  
-  // Make updateData a useCallback to allow it to be used in dependency arrays
-  const updateData = useCallback(() => {
-    try {
-      const currentTime = Date.now();
-      const time = currentTime * 0.001; // Time in seconds
-      
-      // Get active glitches for a simpler calculation
-      const activeGlitches = glitches.filter(g => g.active);
-      
-      // Base wave with increased frequency (from 1.5 to 3.0)
-      let newValue = 0.5 + Math.sin(time * 3.0) * 0.25;
-      
-      // Add basic variation from active glitches with higher frequency (from 2.2 to 4.0)
-      if (activeGlitches.length > 0) {
-        // Just add a scaled sin wave based on glitch count
-        newValue += Math.sin(time * 4.0) * 0.05 * Math.min(5, activeGlitches.length);
       }
       
-      // Add basic Mind Mirror effect with higher frequency (from 3.0 to 5.5)
-      if (mindMirrorConnected) {
-        newValue += Math.sin(time * 5.5) * 0.1;
+      // Generate emergency data if needed
+      if (!dataPointsRef.current || dataPointsRef.current.length === 0) {
+        dataPointsRef.current = createReliableData();
       }
       
-      // Add small random fluctuation
-      newValue += (Math.random() * 0.04 - 0.02);
-      
-      // Safety bounds - critical to ensure visibility
-      newValue = Math.max(0.2, Math.min(0.8, newValue));
-      
-      // Update with simplified approach
-      const newPoints = [...dataPointsRef.current];
-      newPoints.push(newValue);
-      newPoints.shift();
-      dataPointsRef.current = newPoints;
-      
-      // Update state occasionally
-      if (currentTime % 200 < 20) {
-        setDataPointsState([...newPoints]);
-      }
-      
-      // Continue with sensor and anomaly updates
-      updateSensorData(Math.min(0.1, (currentTime - lastUpdateTimeRef.current) / 1000), activeGlitches);
-      updateAnomalies(activeGlitches);
-      lastUpdateTimeRef.current = currentTime;
-    } catch (error) {
-      console.error("Error in updateData:", error);
-      
-      // Emergency recovery - create a simple sine wave if anything fails
-      const time = Date.now() * 0.001;
-      const fallbackPoints = [];
-      for (let i = 0; i < 100; i++) {
-        // Increased frequency from 0.1 to 0.25 for more cycles
-        fallbackPoints.push(0.5 + Math.sin((i * 0.25) + time * 1.0) * 0.3);
-      }
-      dataPointsRef.current = fallbackPoints;
-    }
-  }, [glitches, mindMirrorConnected, realityStatus]); // Add dependencies
-  
-  // Separated sensor update logic for clarity
-  const updateSensorData = (deltaTime, activeGlitches) => {
-    try {
-      // Safety check for null/undefined glitches
-      if (!activeGlitches || !Array.isArray(activeGlitches)) {
-        activeGlitches = [];
-      }
-      
-      const fluctuation = () => (Math.random() * 1.2 - 0.6) * deltaTime;
-      let neuralEffect = 0;
-      let perceptionEffect = 0;
-      let coherenceEffect = 0;
-      let temporalEffect = 0;
-      let cognitiveEffect = 0;
-      let entanglementEffect = 0;
-      
-      activeGlitches.forEach(glitch => {
-        // Safety check for null/undefined glitch
-        if (!glitch) return;
-        
-        const intensity = glitch.intensity || 5; // Default to 5 if undefined
-        const impact = intensity * 5 * deltaTime;
-        const mindMirrorMultiplier = glitch.source === 'Mind Mirror' ? 1.5 : 1.0;
-        
-        switch(glitch.type) {
-          case 'VISUAL':
-            neuralEffect += impact * 0.8 * mindMirrorMultiplier;
-            perceptionEffect += impact * 1.2 * mindMirrorMultiplier;
-            entanglementEffect += glitch.source === 'Mind Mirror' ? impact * 1.1 : 0;
-            break;
-          case 'AUDITORY':
-            neuralEffect += impact * 0.6 * mindMirrorMultiplier;
-            perceptionEffect += impact * 0.9 * mindMirrorMultiplier;
-            cognitiveEffect += impact * 0.7 * mindMirrorMultiplier;
-            entanglementEffect += glitch.source === 'Mind Mirror' ? impact * 0.7 : 0;
-            break;
-          case 'TEMPORAL':
-            temporalEffect += impact * 1.5 * mindMirrorMultiplier;
-            coherenceEffect += impact * 0.8 * mindMirrorMultiplier;
-            entanglementEffect += glitch.source === 'Mind Mirror' ? impact * 1.8 : 0;
-            break;
-          case 'SPATIAL':
-            perceptionEffect += impact * 1.1 * mindMirrorMultiplier;
-            coherenceEffect += impact * 1.0 * mindMirrorMultiplier;
-            temporalEffect += impact * 0.5 * mindMirrorMultiplier;
-            entanglementEffect += glitch.source === 'Mind Mirror' ? impact * 1.3 : 0;
-            break;
-          case 'COGNITIVE':
-            cognitiveEffect += impact * 1.4 * mindMirrorMultiplier;
-            neuralEffect += impact * 0.9 * mindMirrorMultiplier;
-            entanglementEffect += glitch.source === 'Mind Mirror' ? impact * 2.0 : 0;
-            break;
-          case 'SYNCHRONISTIC':
-            perceptionEffect += impact * 0.7 * mindMirrorMultiplier;
-            temporalEffect += impact * 0.6 * mindMirrorMultiplier;
-            entanglementEffect += impact * 1.3 * mindMirrorMultiplier;
-            coherenceEffect += impact * 0.9 * mindMirrorMultiplier;
-            break;
-          default:
-            break;
-        }
-        
-        if (glitch.isAdvanced) {
-          cognitiveEffect += impact * 0.5;
-          entanglementEffect += impact * 0.8;
-        }
-        
-        if (glitch.crossModal) {
-          perceptionEffect += impact * 0.4;
-          neuralEffect += impact * 0.3;
-        }
-      });
-      
-      // Mind Mirror global effect on quantum entanglement
-      const mindMirrorEntanglementBoost = mindMirrorConnected ? 10 * deltaTime : 0;
-      entanglementEffect += mindMirrorEntanglementBoost;
-      
-      // Safety check for realityStatus
-      const safetyFactor = realityStatus && realityStatus.safetyProtocols ? 0.6 : 1.0;
-      
-      // Update sensor data with smoother transitions
-      setSensorData(prev => {
-        // Create smoother changes by lerping between current and target values
-        const lerp = (current, target, t) => current + (target - current) * Math.min(1, t * 2);
-        
-        // Calculate target values with new effects
-        const targetNeural = Math.max(0, Math.min(100, prev.neuralActivity + (neuralEffect * safetyFactor) + fluctuation()));
-        const targetPerception = Math.max(0, Math.min(100, prev.perceptionShift + (perceptionEffect * safetyFactor) + fluctuation()));
-        const targetCoherence = Math.max(0, Math.min(100, prev.realityCoherence - (coherenceEffect * safetyFactor) + fluctuation()));
-        const targetTemporal = Math.max(0, Math.min(100, prev.temporalSync - (temporalEffect * safetyFactor) + fluctuation()));
-        const targetCognitive = Math.max(0, Math.min(100, prev.cognitiveDissonance + (cognitiveEffect * safetyFactor) + fluctuation()));
-        const targetEntanglement = Math.max(0, Math.min(100, prev.quantumEntanglement + (entanglementEffect * safetyFactor) + fluctuation()));
-        
-        // Return smoothed values
-        return {
-          neuralActivity: lerp(prev.neuralActivity, targetNeural, deltaTime),
-          perceptionShift: lerp(prev.perceptionShift, targetPerception, deltaTime),
-          realityCoherence: lerp(prev.realityCoherence, targetCoherence, deltaTime),
-          temporalSync: lerp(prev.temporalSync, targetTemporal, deltaTime),
-          cognitiveDissonance: lerp(prev.cognitiveDissonance, targetCognitive, deltaTime),
-          quantumEntanglement: lerp(prev.quantumEntanglement, targetEntanglement, deltaTime)
-        };
-      });
-    } catch (error) {
-      console.error("Error updating sensor data:", error);
-    }
-  };
-  
-  // Separated anomaly update logic
-  const updateAnomalies = (activeGlitches) => {
-    try {
-      // Safety check for null/undefined glitches
-      if (!activeGlitches || !Array.isArray(activeGlitches)) {
-        activeGlitches = [];
-      }
-      
-      const now = Date.now();
-      const timeSinceLastAnomaly = now - lastAnomalyTime;
-      const minimumInterval = 3000; // minimum 3 seconds between anomaly updates
-      
-      if (activeGlitches.length > 0 && timeSinceLastAnomaly > minimumInterval && Math.random() < 0.05) {
-        const newAnomalies = [];
-        const anomaliesToGenerate = Math.min(2, Math.ceil(Math.random() * 2));
-        
-        for (let i = 0; i < anomaliesToGenerate; i++) {
-          if (Math.random() < 0.7) {
-            const anomaly = generateAnomaly(activeGlitches);
-            if (anomaly) newAnomalies.push(anomaly);
-          }
-        }
-        
-        if (newAnomalies.length > 0) {
-          setAnomalies(prev => {
-            const updated = [...prev, ...newAnomalies].slice(-5);
-            return updated;
-          });
-          setLastAnomalyTime(now);
-        }
-      } else if (anomalies.length > 0 && Math.random() < 0.01 && timeSinceLastAnomaly > minimumInterval) {
-        setAnomalies(prev => prev.slice(0, prev.length - 1));
-        setLastAnomalyTime(now);
-      }
-    } catch (error) {
-      console.error("Error updating anomalies:", error);
-    }
-  };
-  
-  // Make drawCanvas a useCallback to allow it to be used in dependency arrays
-  const drawCanvas = useCallback(() => {
-    try {
-      // Reduce console noise in production
-      const debug = false; // Disable even in development for better performance
-      
-      const canvas = canvasRef.current;
-      if (!canvas) {
-        if (debug) console.error("Canvas ref is null");
-        return;
-      }
-      
+      // Draw on the canvas
       const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        if (debug) console.error("Could not get canvas context");
-        return;
-      }
+      if (!ctx) return;
       
-      // Check if canvas has size
-      if (canvas.width === 0 || canvas.height === 0) {
-        if (debug) console.error("Canvas has zero dimensions", canvas.width, canvas.height);
-        canvas.width = 600;
-        canvas.height = 130;
-      }
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
       
-      const width = canvas.width;
-      const height = canvas.height;
-      
-      // Get data to draw - guaranteed to be an array of 100 elements
-      const data = dataPointsRef.current;
-      if (!data || data.length === 0) {
-        if (debug) console.error("No data to draw");
-        return;
-      }
-      
-      // This is the absolute simplest approach - minimal styling, just make it work
-      // Clear entire canvas with black background
-      ctx.fillStyle = 'rgb(0, 0, 0)';
-      ctx.fillRect(0, 0, width, height);
-      
-      // Draw a frame so we know the canvas is being rendered
-      ctx.strokeStyle = 'rgb(0, 50, 100)';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(2, 2, width-4, height-4);
-      
-      // Add text to show the canvas is updating
-      ctx.font = '12px monospace';
-      ctx.fillStyle = mindMirrorConnected ? 'rgb(168, 85, 247)' : 'rgb(0, 150, 255)';
-      ctx.fillText("QUANTUM FLUCTUATOR", 10, 20);
-      
-      // Enable anti-aliasing for smoother lines
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      
-      // Draw a gradient for better visual quality
-      let gradient;
-      if (mindMirrorConnected) {
-        gradient = ctx.createLinearGradient(0, 0, 0, height);
-        gradient.addColorStop(0, 'rgba(190, 120, 255, 0.9)');
-        gradient.addColorStop(0.5, 'rgba(168, 85, 247, 1)');
-        gradient.addColorStop(1, 'rgba(140, 70, 200, 0.9)');
-      } else {
-        gradient = ctx.createLinearGradient(0, 0, 0, height);
-        gradient.addColorStop(0, 'rgba(0, 220, 255, 0.9)');
-        gradient.addColorStop(0.5, 'rgba(0, 180, 255, 1)');
-        gradient.addColorStop(1, 'rgba(0, 140, 255, 0.9)');
-      }
-      
-      // Use a simple solid color for the line - guaranteed visibility
-      ctx.strokeStyle = gradient;
-      ctx.lineWidth = 3;
+      // Draw data as a line
       ctx.beginPath();
+      ctx.strokeStyle = mindMirrorConnected ? '#a020f0' : '#00aaff';
+      ctx.lineWidth = 3;
       
-      // Apply cycle speed multiplier for faster appearance - compress X axis sampling
-      // Skip points for faster drawing with higher frequency appearance
-      const skipFactor = Math.max(1, Math.floor(5 / cycleSpeedMultiplier)); // Adjust point density
-      
-      for (let i = 0; i < data.length; i += skipFactor) {
-        const x = (i / (data.length - 1)) * width;
-        // Use a safe value and ensure it's within bounds
-        const value = typeof data[i] === 'number' ? data[i] : 0.5;
-        const y = (1 - Math.max(0.1, Math.min(0.9, value))) * height;
+      // Draw points
+      const points = dataPointsRef.current;
+      for (let i = 0; i < points.length; i++) {
+        const x = (i / (points.length - 1)) * canvas.width;
+        const y = (1 - points[i]) * canvas.height;
         
         if (i === 0) {
           ctx.moveTo(x, y);
@@ -459,333 +98,346 @@ const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
         }
       }
       
-      // Stroke without any fancy effects
       ctx.stroke();
       
-      // Add glow for better visibility
-      ctx.shadowColor = mindMirrorConnected ? 'rgba(168, 85, 247, 0.8)' : 'rgba(0, 180, 255, 0.8)';
-      ctx.shadowBlur = 8;
-      ctx.stroke();
+      // Add text
+      ctx.fillStyle = '#fff';
+      ctx.font = '14px monospace';
+      ctx.fillText('EMERGENCY QUANTUM FLUCTUATOR', 10, 20);
       
-      // Reset shadow for drawing points
-      ctx.shadowBlur = 0;
+      if (debug) console.log("Emergency draw complete");
+    } catch (err) {
+      console.error("Emergency draw failed:", err);
+    }
+  };
+  
+  // Create canvas function
+  const createCanvas = () => {
+    try {
+      if (debug) console.log("Creating canvas");
       
-      // Add some points every few steps for visibility
-      // Adjust point spacing based on cycle speed
-      const pointSpacing = Math.max(5, Math.floor(10 / cycleSpeedMultiplier));
-      
-      for (let i = 0; i < data.length; i += pointSpacing) {
-        const x = (i / (data.length - 1)) * width;
-        const value = typeof data[i] === 'number' ? data[i] : 0.5;
-        const y = (1 - Math.max(0.1, Math.min(0.9, value))) * height;
-        
-        ctx.fillStyle = mindMirrorConnected ? 'rgb(190, 100, 255)' : 'rgb(0, 200, 255)';
-        ctx.beginPath();
-        ctx.arc(x, y, 4, 0, Math.PI * 2);
-        ctx.fill();
+      // Find or create container
+      if (!canvasContainerRef.current) {
+        canvasContainerRef.current = document.querySelector('.quantum-canvas-container');
       }
       
-      if (debug) console.log("Canvas drawing complete");
+      if (!canvasContainerRef.current) {
+        console.error("Canvas container not found");
+        return;
+      }
+      
+      // Create canvas
+      const canvas = document.createElement('canvas');
+      canvas.width = 600;
+      canvas.height = 130;
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      canvas.style.backgroundColor = 'black';
+      
+      // Clear container and add canvas
+      canvasContainerRef.current.innerHTML = '';
+      canvasContainerRef.current.appendChild(canvas);
+      
+      // Store ref
+      canvasRef.current = canvas;
+      
+      if (debug) console.log("Canvas created");
     } catch (err) {
-      console.error("Canvas drawing error:", err);
+      console.error("Canvas creation failed:", err);
     }
-  }, [dataPointsRef, mindMirrorConnected, canvasContainerRef]); // Add dependencies
+  };
   
-  // Update the useEffect dependency array
+  // Animation speed multiplier - higher values = faster cycles
+  const cycleSpeedMultiplier = 3.0;
+  
+  // Update data function
+  const updateData = () => {
+    try {
+      const time = Date.now() * 0.001;
+      const newPoints = [];
+      
+      // Base frequency and amplitude
+      const baseFreq = 1.8;
+      const baseAmp = 0.3;
+      
+      // Mind Mirror effect
+      const mindMirrorEffect = mindMirrorConnected ? 0.15 : 0;
+      
+      // Get active glitches
+      let activeGlitches = [];
+      if (glitches && Array.isArray(glitches)) {
+        activeGlitches = glitches.filter(g => g && g.active);
+      }
+      
+      // Generate wave data
+      for (let i = 0; i < 100; i++) {
+        const x = i / 100;
+        
+        // Base wave
+        let y = 0.5 + Math.sin(x * baseFreq * Math.PI * 2 + time * 2) * baseAmp;
+        
+        // Add randomness
+        y += (Math.random() * 0.04 - 0.02);
+        
+        // Mind Mirror effect - strong pattern
+        if (mindMirrorConnected) {
+          const mindMirrorFreq = 5.5;
+          y += Math.sin(x * mindMirrorFreq * Math.PI + time * 3) * 0.2;
+        }
+        
+        // Apply glitch effects
+        if (activeGlitches.length > 0) {
+          activeGlitches.forEach(glitch => {
+            if (!glitch) return;
+            
+            const intensity = glitch.intensity || 0.5;
+            const type = glitch.type || 'visual';
+            
+            // Different patterns based on glitch type
+            switch(type.toLowerCase()) {
+              case 'visual':
+                y += Math.sin(x * 7.3 + time * 1.5) * 0.1 * intensity;
+                break;
+              case 'auditory':
+                y += Math.cos(x * 5.2 + time * 2.2) * 0.12 * intensity;
+                break;
+              case 'temporal':
+                y += Math.sin(x * 3.1 + time * 0.8) * 0.15 * intensity;
+                break;
+              case 'spatial':
+                y += Math.cos(x * 8.4 + time * 1.1) * 0.08 * intensity;
+                break;
+              case 'cognitive':
+                y += Math.sin(x * 4.7 + time * 2.5) * 0.14 * intensity;
+                break;
+              case 'synchronistic':
+                y += Math.cos(x * 6.6 + time * 1.7) * 0.11 * intensity;
+                break;
+              default:
+                y += Math.sin(x * 5.5 + time * 1.9) * 0.1 * intensity;
+            }
+          });
+        }
+        
+        // Ensure value is in range [0.1, 0.9]
+        y = Math.max(0.1, Math.min(0.9, y));
+        
+        newPoints.push(y);
+      }
+      
+      // Update state and ref
+      dataPointsRef.current = newPoints;
+      setDataPointsState([...newPoints]);
+    } catch (err) {
+      console.error("Data update failed:", err);
+      // Use emergency data if update fails
+      dataPointsRef.current = createReliableData();
+    }
+  };
+  
+  // Draw canvas function
+  const drawCanvas = () => {
+    try {
+      // Check if canvas exists
+      if (!canvasRef.current) {
+        createCanvas();
+        if (!canvasRef.current) return;
+      }
+      
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      
+      if (!ctx) return;
+      
+      // Ensure canvas dimensions
+      if (canvas.width === 0 || canvas.height === 0) {
+        canvas.width = 600;
+        canvas.height = 130;
+      }
+      
+      // Get data points
+      const points = dataPointsRef.current;
+      if (!points || points.length === 0) {
+        dataPointsRef.current = createReliableData();
+      }
+      
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'rgba(0, 0, 0, 1)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Set drawing properties
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      
+      // Create gradient based on Mind Mirror connection
+      const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+      if (mindMirrorConnected) {
+        gradient.addColorStop(0, '#8a2be2');
+        gradient.addColorStop(0.5, '#a020f0');
+        gradient.addColorStop(1, '#9370db');
+      } else {
+        gradient.addColorStop(0, '#00aaff');
+        gradient.addColorStop(0.5, '#0088cc');
+        gradient.addColorStop(1, '#00ccff');
+      }
+      
+      ctx.strokeStyle = gradient;
+      
+      // Add glow effect
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = mindMirrorConnected ? '#a020f0' : '#00aaff';
+      
+      // Draw waveform
+      ctx.beginPath();
+      
+      // Calculate point spacing based on cycle speed
+      const pointSpacing = Math.max(1, Math.round(cycleSpeedMultiplier / 2));
+      
+      for (let i = 0; i < points.length; i += pointSpacing) {
+        const x = (i / (points.length - 1)) * canvas.width;
+        const y = (1 - points[i]) * canvas.height;
+        
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+      
+      ctx.stroke();
+      
+      // Add mind mirror text if connected
+      if (mindMirrorConnected) {
+        ctx.font = '16px monospace';
+        ctx.fillStyle = '#a020f0';
+        ctx.fillText('MIND MIRROR PATTERN DETECTED', 10, 25);
+      }
+    } catch (err) {
+      console.error("Canvas drawing failed:", err);
+      // Try emergency draw if normal drawing fails
+      emergencyDraw();
+    }
+  };
+  
+  // Main animation function
+  const animate = () => {
+    updateData();
+    drawCanvas();
+    animationRef.current = requestAnimationFrame(animate);
+  };
+  
+  // Set up at component mount
   useEffect(() => {
+    // Create canvas first
     createCanvas();
     
-    // Start the animation loop immediately
-    let animationFrameId = null;
-    
-    const animate = () => {
-      updateData();
-      drawCanvas();
-      animationFrameId = requestAnimationFrame(animate);
-    };
-    
+    // Start animation
     animate();
     
-    // Store the animation frame ID
-    animationRef.current = animationFrameId;
+    // Set up emergency interval
+    backupTimerRef.current = setInterval(emergencyDraw, 3000);
     
-    // Cleanup function
+    // Clean up on unmount
     return () => {
       if (animationRef.current) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log("Cleaning up animation");
-        }
         cancelAnimationFrame(animationRef.current);
       }
-      // Clean up any intervals set by startAnimation
+      
       if (backupTimerRef.current) {
         clearInterval(backupTimerRef.current);
       }
     };
-  }, [updateData, drawCanvas, createCanvas]); // Add missing dependencies
+  }, [mindMirrorConnected, glitches, realityStatus]);
   
-  // Function to generate a random anomaly based on active glitches
-  const generateAnomaly = (activeGlitches) => {
-    try {
-      if (!activeGlitches || !Array.isArray(activeGlitches) || activeGlitches.length === 0) return null;
-      
-      // Select a random glitch as the source
-      const sourceGlitch = activeGlitches[Math.floor(Math.random() * activeGlitches.length)];
-      if (!sourceGlitch) return null;
-      
-      // Current time for timestamp
-      const now = new Date();
-      const timestamp = now.toTimeString().split(' ')[0];
-      
-      // Generate anomaly description based on glitch type
-      let description = '';
-      
-      if (sourceGlitch.source === 'Mind Mirror') {
-        // Mind Mirror anomalies
-        const mindMirrorAnomalies = [
-          `Neural synchronization pattern detected at ${Math.floor(Math.random() * 40 + 10)}Hz`,
-          `Consciousness harmonic resonating with quantum field - amplitude ${Math.floor(Math.random() * 90 + 10)}%`,
-          `Interhemispheric coherence matched with reality substrate`,
-          `Brainwave entrainment facilitating cross-dimensional perception`,
-          `Mind-matter interface detected in ${Math.random() > 0.5 ? 'alpha' : 'theta'} band`
-        ];
-        description = mindMirrorAnomalies[Math.floor(Math.random() * mindMirrorAnomalies.length)];
-      } else {
-        // Regular glitch anomalies
-        switch(sourceGlitch.type) {
-          case 'VISUAL':
-            const visualAnomalies = [
-              `Visual processing artifact: ${Math.random() > 0.5 ? 'chromatic aberration' : 'geometric distortion'}`,
-              `Reality overlay detected with ${Math.floor(Math.random() * 40 + 60)}% pattern match`,
-              `Color spectrum shift beyond normal perceptual range`
-            ];
-            description = visualAnomalies[Math.floor(Math.random() * visualAnomalies.length)];
-            break;
-          case 'AUDITORY':
-            const auditoryAnomalies = [
-              `Acoustic anomaly detected at ${Math.floor(Math.random() * 15 + 1)}kHz`,
-              `Temporal echo effect detected with ${Math.floor(Math.random() * 200 + 50)}ms delay`,
-              `Harmonic resonance outside normal auditory range`
-            ];
-            description = auditoryAnomalies[Math.floor(Math.random() * auditoryAnomalies.length)];
-            break;
-          case 'TEMPORAL':
-            const temporalAnomalies = [
-              `Temporal slip detected - ${Math.random() > 0.5 ? 'desynchronization' : 'recursion'} pattern`,
-              `Subjective time dilation factor: ${(Math.random() * 2 + 0.5).toFixed(2)}x`,
-              `Causality violation potential: ${Math.floor(Math.random() * 30 + 5)}%`
-            ];
-            description = temporalAnomalies[Math.floor(Math.random() * temporalAnomalies.length)];
-            break;
-          case 'SPATIAL':
-            const spatialAnomalies = [
-              `Non-Euclidean geometry detected in local space`,
-              `Spatial fold with ${Math.floor(Math.random() * 20 + 5)}% compression ratio`,
-              `Dimensional boundary thinning in proximity to glitch source`
-            ];
-            description = spatialAnomalies[Math.floor(Math.random() * spatialAnomalies.length)];
-            break;
-          case 'COGNITIVE':
-            const cognitiveAnomalies = [
-              `Cognitive dissonance spike of ${Math.floor(Math.random() * 40 + 20)} units`,
-              `Reality acceptance threshold compromised by ${Math.floor(Math.random() * 30 + 10)}%`,
-              `Memory integration anomaly in hippocampal region`
-            ];
-            description = cognitiveAnomalies[Math.floor(Math.random() * cognitiveAnomalies.length)];
-            break;
-          case 'SYNCHRONISTIC':
-            const synchronisticAnomalies = [
-              `Acausal connection pattern with ${Math.floor(Math.random() * 50 + 50)}% certainty`,
-              `Jung-Pauli synchronicity factor: ${(Math.random() * 7 + 3).toFixed(1)}`,
-              `Reality consensus breakdown in local information field`
-            ];
-            description = synchronisticAnomalies[Math.floor(Math.random() * synchronisticAnomalies.length)];
-            break;
-          default:
-            description = `Unknown anomaly type detected: code ${Math.floor(Math.random() * 1000)}`;
-        }
-      }
-      
-      // Add modifiers for advanced or cross-modal glitches
-      if (sourceGlitch.isAdvanced) {
-        const advancedModifiers = [
-          "with quantum signature",
-          "at critical threshold",
-          "exhibiting novel pattern formation"
-        ];
-        description += " " + advancedModifiers[Math.floor(Math.random() * advancedModifiers.length)];
-      }
-      
-      if (sourceGlitch.crossModal) {
-        const crossModalSuffixes = [
-          "causing cross-sensory integration",
-          "with synaesthetic properties",
-          "affecting multiple perception channels"
-        ];
-        description += " " + crossModalSuffixes[Math.floor(Math.random() * crossModalSuffixes.length)];
-      }
-      
-      return {
-        id: Date.now() + Math.random(),
-        timestamp,
-        description,
-        text: description // for backward compatibility
-      };
-    } catch (error) {
-      console.error("Error generating anomaly:", error);
-      return null;
-    }
-  };
-  
-  // Helper functions for styling
-  const getValueClass = (value, isHighGood = true) => {
-    if (value > 80) {
-      return isHighGood ? 'text-green-400' : 'text-red-400';
-    } else if (value > 50) {
-      return isHighGood ? 'text-blue-400' : 'text-yellow-400';
-    } else if (value > 20) {
-      return isHighGood ? 'text-yellow-400' : 'text-blue-400';
-    } else {
-      return isHighGood ? 'text-red-400' : 'text-green-400';
-    }
-  };
-  
-  const getBarClass = (value, isHighGood = true) => {
-    if (value > 80) {
-      return isHighGood ? 'bg-green-800' : 'bg-red-800';
-    } else if (value > 50) {
-      return isHighGood ? 'bg-blue-800' : 'bg-yellow-800';
-    } else if (value > 20) {
-      return isHighGood ? 'bg-yellow-800' : 'bg-blue-800';
-    } else {
-      return isHighGood ? 'bg-red-800' : 'bg-green-800';
-    }
-  };
-  
+  // Render the component
   return (
-    <div className="p-4 border border-blue-800 rounded-lg bg-gradient-to-b from-blue-900/30 to-purple-900/30 cyber-border">
-      <h2 className="text-xl mb-3 border-b border-blue-700 pb-1">Reality Distortion Output</h2>
+    <div className="reality-data-container">
+      <div className="section-heading">
+        <h3>QUANTUM FLUCTUATOR</h3>
+        <div className="status-indicator">
+          {mindMirrorConnected && 
+            <span className="mind-mirror-status">MIND MIRROR ONLINE</span>
+          }
+        </div>
+      </div>
       
-      {/* Waveform display - with ultra-reliable styling */}
-      <div className="mb-4">
-        <div className="flex justify-between items-center mb-1">
-          <div className="text-sm text-blue-400">Quantum Field Fluctuations:</div>
-          {mindMirrorConnected && (
-            <div className="bg-purple-900/50 px-2 py-0.5 rounded text-xs text-purple-300 border border-purple-700">
-              MIND MIRROR PATTERN DETECTED
+      <div className="quantum-canvas-container" ref={canvasContainerRef}>
+        {/* Canvas created in effect */}
+      </div>
+      
+      <div className="sensor-data-container">
+        <div className="section-heading-secondary">
+          <h4>REALITY SENSORS</h4>
+        </div>
+        
+        <div className="sensor-grid">
+          <div className="sensor-item">
+            <div className="sensor-label">Neural Activity</div>
+            <div className="sensor-value">{sensorData.neuralActivity.toFixed(1)}%</div>
+            <div className="sensor-bar">
+              <div className="sensor-bar-fill" style={{width: `${sensorData.neuralActivity}%`}}></div>
             </div>
-          )}
-        </div>
-        
-        {/* Canvas will be inserted here - now with ref */}
-        <div 
-          ref={canvasContainerRef}
-          className="quantum-canvas-container"
-          style={{
-            width: "100%",
-            height: "140px",
-            minHeight: "140px",
-            border: "1px solid #1e40af",
-            borderRadius: "4px",
-            backgroundColor: "black",
-            padding: "4px",
-            position: "relative",
-            display: "block",
-            overflow: "hidden"
-          }}
-        ></div>
-      </div>
-      
-      {/* Sensor data */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {/* Neural Activity */}
-        <div>
-          <div className="text-sm text-blue-400 mb-1">Neural Activity:</div>
-          <div className="text-xl mb-1">{sensorData.neuralActivity.toFixed(1)}%</div>
-          <div className={`h-2 w-full rounded ${getBarClass(sensorData.neuralActivity, false)}`}>
-            <div 
-              className={`h-full rounded ${getValueClass(sensorData.neuralActivity, false)}`} 
-              style={{width: `${sensorData.neuralActivity}%`}}
-            ></div>
           </div>
-        </div>
-        
-        {/* Perception Shift */}
-        <div>
-          <div className="text-sm text-blue-400 mb-1">Perception Shift:</div>
-          <div className="text-xl mb-1">{sensorData.perceptionShift.toFixed(1)}%</div>
-          <div className={`h-2 w-full rounded ${getBarClass(sensorData.perceptionShift, false)}`}>
-            <div 
-              className={`h-full rounded ${getValueClass(sensorData.perceptionShift, false)}`} 
-              style={{width: `${sensorData.perceptionShift}%`}}
-            ></div>
+          
+          <div className="sensor-item">
+            <div className="sensor-label">Perception Shift</div>
+            <div className="sensor-value">{sensorData.perceptionShift.toFixed(1)}%</div>
+            <div className="sensor-bar">
+              <div className="sensor-bar-fill" style={{width: `${sensorData.perceptionShift}%`}}></div>
+            </div>
           </div>
-        </div>
-        
-        {/* Reality Coherence */}
-        <div>
-          <div className="text-sm text-blue-400 mb-1">Reality Coherence:</div>
-          <div className="text-xl mb-1">{sensorData.realityCoherence.toFixed(1)}%</div>
-          <div className={`h-2 w-full rounded ${getBarClass(sensorData.realityCoherence)}`}>
-            <div 
-              className={`h-full rounded ${getValueClass(sensorData.realityCoherence)}`} 
-              style={{width: `${sensorData.realityCoherence}%`}}
-            ></div>
+          
+          <div className="sensor-item">
+            <div className="sensor-label">Reality Coherence</div>
+            <div className="sensor-value">{sensorData.realityCoherence.toFixed(1)}%</div>
+            <div className="sensor-bar">
+              <div className="sensor-bar-fill" style={{width: `${sensorData.realityCoherence}%`}}></div>
+            </div>
           </div>
-        </div>
-        
-        {/* Temporal Sync */}
-        <div>
-          <div className="text-sm text-blue-400 mb-1">Temporal Sync:</div>
-          <div className="text-xl mb-1">{sensorData.temporalSync.toFixed(1)}%</div>
-          <div className={`h-2 w-full rounded ${getBarClass(sensorData.temporalSync)}`}>
-            <div 
-              className={`h-full rounded ${getValueClass(sensorData.temporalSync)}`} 
-              style={{width: `${sensorData.temporalSync}%`}}
-            ></div>
+          
+          <div className="sensor-item">
+            <div className="sensor-label">Temporal Sync</div>
+            <div className="sensor-value">{sensorData.temporalSync.toFixed(1)}%</div>
+            <div className="sensor-bar">
+              <div className="sensor-bar-fill" style={{width: `${sensorData.temporalSync}%`}}></div>
+            </div>
           </div>
-        </div>
-        
-        {/* Cognitive Dissonance */}
-        <div>
-          <div className="text-sm text-blue-400 mb-1">Cognitive Dissonance:</div>
-          <div className="text-xl mb-1">{sensorData.cognitiveDissonance.toFixed(1)}%</div>
-          <div className={`h-2 w-full rounded ${getBarClass(sensorData.cognitiveDissonance, false)}`}>
-            <div 
-              className={`h-full rounded ${getValueClass(sensorData.cognitiveDissonance, false)}`} 
-              style={{width: `${sensorData.cognitiveDissonance}%`}}
-            ></div>
+          
+          <div className="sensor-item">
+            <div className="sensor-label">Cognitive Dissonance</div>
+            <div className="sensor-value">{sensorData.cognitiveDissonance.toFixed(1)}%</div>
+            <div className="sensor-bar">
+              <div className="sensor-bar-fill" style={{width: `${sensorData.cognitiveDissonance}%`}}></div>
+            </div>
           </div>
-        </div>
-        
-        {/* Quantum Entanglement */}
-        <div>
-          <div className="text-sm text-blue-400 mb-1">Quantum Entanglement:</div>
-          <div className="text-xl mb-1">{sensorData.quantumEntanglement.toFixed(1)}%</div>
-          <div className={`h-2 w-full rounded ${getBarClass(sensorData.quantumEntanglement, mindMirrorConnected)}`}>
-            <div 
-              className={`h-full rounded ${getValueClass(sensorData.quantumEntanglement, mindMirrorConnected)}`} 
-              style={{width: `${sensorData.quantumEntanglement}%`}}
-            ></div>
+          
+          <div className="sensor-item">
+            <div className="sensor-label">Quantum Entanglement</div>
+            <div className="sensor-value">{sensorData.quantumEntanglement.toFixed(1)}%</div>
+            <div className="sensor-bar">
+              <div className="sensor-bar-fill" style={{width: `${sensorData.quantumEntanglement}%`}}></div>
+            </div>
           </div>
         </div>
       </div>
       
-      {/* Anomaly Detection */}
-      <div className="mt-4">
-        <div className="text-sm text-blue-400 mb-2">Detected Anomalies:</div>
-        <div className="min-h-[100px] max-h-[120px] overflow-y-auto scrollbar p-2 border border-blue-800 rounded bg-black/30">
-          {anomalies.length > 0 ? (
-            anomalies.map((anomaly, index) => (
-              <div key={index} className="py-1 text-sm border-b border-blue-900/50 last:border-0">
-                <span className="text-yellow-400">[{anomaly.timestamp}]</span> {anomaly.description}
+      {Object.keys(anomalyData).length > 0 && (
+        <div className="anomalies-container">
+          <div className="section-heading-secondary">
+            <h4>Anomalies Detected</h4>
+          </div>
+          <div className="anomalies-grid">
+            {Object.entries(anomalyData).map(([key, value]) => (
+              <div key={key} className="anomaly-item">
+                <div className="anomaly-label">{key}</div>
+                <div className="anomaly-value">{value.toFixed(2)}</div>
               </div>
-            ))
-          ) : (
-            <div className="opacity-70 py-1">No anomalies detected in current reality matrix</div>
-          )}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
