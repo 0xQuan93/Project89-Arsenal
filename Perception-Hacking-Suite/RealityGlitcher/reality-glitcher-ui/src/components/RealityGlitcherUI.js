@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import '../RealityGlitcher.css';
-import IntensitySlider from './ScrollWheel';
 import RealTimeData from './RealTimeData';
 import GlitchCard from './GlitchCard';
 import CreateGlitchModal from './CreateGlitchModal';
+import GlitchVisualization from './GlitchVisualization';
 
 // Set a fixed maximum height constant for the control panel
 const MAX_CONTROL_PANEL_HEIGHT = 1116;
@@ -63,22 +63,15 @@ const RealityGlitcherUI = () => {
     connected: false,
     nodeCount: 0,
     connectionCount: 0,
-    lastSyncTime: null
+    lastSyncTime: new Date().getTime() - 3600000 // 1 hour ago
   });
-
-  // Refs for containers
-  const glitchListRef = useRef(null);
-  const controlPanelRef = useRef(null);
-  const resizeObserverRef = useRef(null);
   
-  // State to track if glitch list is scrollable
-  const [isGlitchListScrollable, setIsGlitchListScrollable] = useState(false);
-  
-  // State to store the control panel's height
-  const [controlPanelHeight, setControlPanelHeight] = useState(MAX_CONTROL_PANEL_HEIGHT);
-
   // Refs
   const consoleRef = useRef(null);
+  
+  // Fullscreen mode state
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const appContainerRef = useRef(null);
   
   // Function to add console message
   const addConsoleMessage = (text, type = 'info') => {
@@ -301,298 +294,304 @@ const RealityGlitcherUI = () => {
     }, 2000);
   };
 
-  // Function to check if the glitch list container has overflow compared to control panel
-  const checkGlitchListOverflow = () => {
-    if (glitchListRef.current) {
-      // Get the content height of the glitch list
-      const { scrollHeight } = glitchListRef.current;
-      
-      // Check if list content is taller than the max control panel height
-      setIsGlitchListScrollable(scrollHeight > MAX_CONTROL_PANEL_HEIGHT);
+  // Function to toggle fullscreen mode
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      if (appContainerRef.current.requestFullscreen) {
+        appContainerRef.current.requestFullscreen();
+      } else if (appContainerRef.current.webkitRequestFullscreen) { /* Safari */
+        appContainerRef.current.webkitRequestFullscreen();
+      } else if (appContainerRef.current.msRequestFullscreen) { /* IE11 */
+        appContainerRef.current.msRequestFullscreen();
+      }
+      setIsFullscreen(true);
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) { /* Safari */
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) { /* IE11 */
+        document.msExitFullscreen();
+      }
+      setIsFullscreen(false);
     }
   };
-
-  // Effect to simulate reality fluctuations
+  
+  // Listen for fullscreen change events
   useEffect(() => {
-    const timer = setInterval(() => {
-      // Calculate new stability based on active glitches
-      const activeGlitches = glitches.filter(g => g.active);
-      let newStability = 0.95 - (activeGlitches.length * 0.05);
-      
-      // Add some randomness
-      newStability += (Math.random() * 0.1) - 0.05;
-      newStability = Math.max(0.1, Math.min(0.95, newStability));
-      
-      setRealityStatus(prev => ({
-        ...prev,
-        stability: newStability,
-        coherence: newStability > 0.7 ? 'STABLE' : 
-                 newStability > 0.4 ? 'UNSTABLE' : 'CRITICAL'
-      }));
-    }, 3000);
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
     
-    return () => clearInterval(timer);
-  }, [glitches]);
-
-  // Effect to check overflow whenever glitches change
-  useEffect(() => {
-    // Small delay to ensure DOM is updated first
-    const timer = setTimeout(checkGlitchListOverflow, 50);
-    return () => clearTimeout(timer);
-  }, [glitches]);
-
-  // Initial check after mount
-  useEffect(() => {
-    checkGlitchListOverflow();
-    // Add resize listener to adjust scrollability on window resize
-    window.addEventListener('resize', checkGlitchListOverflow);
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+    
     return () => {
-      window.removeEventListener('resize', checkGlitchListOverflow);
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
     };
   }, []);
 
+  // Function to clear console messages
+  const clearConsole = () => {
+    setConsoleMessages([{
+      text: 'Console cleared',
+      timestamp: new Date().getTime(),
+      type: 'info'
+    }]);
+  };
+  
+  // Function to delete a glitch
+  const deleteGlitch = (id) => {
+    // Remove the glitch with the specified ID
+    setGlitches(prev => prev.filter(glitch => glitch.id !== id));
+    
+    // If the deleted glitch was selected, clear the selection
+    if (selectedGlitch && selectedGlitch.id === id) {
+      setSelectedGlitch(null);
+    }
+    
+    // Add a console message
+    addConsoleMessage(`Glitch ${id.substring(0, 8)} deleted from reality matrix`, 'info');
+    
+    // Update reality status after deletion
+    updateRealityStatus();
+  };
+
   return (
-    <div className="bg-black text-blue-300 p-6 font-mono cyber-bg" style={{minHeight: '100%', paddingBottom: '60px'}}>
-      {/* Header with glitch effect */}
-      <header className="text-center mb-8">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 via-blue-500 to-purple-400 bg-clip-text text-transparent cyber-text-glow visual-glitch" data-text="PROJECT89 REALITY GLITCHER">
-          PROJECT89 REALITY GLITCHER
-        </h1>
-        <div className="mt-2 text-sm text-blue-400">Perception Manipulation Interface v3.9.1</div>
-      </header>
-      
-      {/* Reality Status Dashboard */}
-      <div className="mb-8 p-4 border border-blue-800 rounded-lg bg-gradient-to-b from-blue-900/30 to-purple-900/30 cyber-border">
-        <h2 className="text-xl mb-3 border-b border-blue-700 pb-1">Reality Status</h2>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <div className="text-sm text-blue-400">Coherence Status:</div>
-            <div className={`text-lg font-bold ${
-              realityStatus.coherence === 'STABLE' ? 'text-green-400' : 
-              realityStatus.coherence === 'FLUCTUATING' ? 'text-yellow-400' : 
-              'text-red-400 animate-pulse'
-            }`}>
-              {realityStatus.coherence}
-            </div>
+    <div 
+      ref={appContainerRef}
+      className={`cyber-bg min-h-screen text-blue-300 p-4 md:p-6 transition-all duration-300 ${
+        isFullscreen ? 'fullscreen-mode' : ''
+      }`}
+    >
+      <div className="max-w-7xl mx-auto">
+        <header className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+          <div className="text-center md:text-left">
+            <h1 className="text-3xl md:text-4xl font-bold text-blue-400 cyber-text-glow">REALITY GLITCHER</h1>
+            <p className="text-sm text-blue-500">Perception Manipulation System v0.9.2</p>
           </div>
-          <div>
-            <div className="text-sm text-blue-400">Stability Index:</div>
-            <div className="text-lg font-bold">{(realityStatus.stability * 100).toFixed(1)}%</div>
-          </div>
-          <div>
-            <div className="text-sm text-blue-400">Safety Protocols:</div>
-            <div 
-              className={`text-lg font-bold ${realityStatus.safetyProtocols ? 'text-green-400' : 'text-red-400'} cursor-pointer`}
-              onClick={toggleSafetyProtocols}
+          
+          <div className="flex gap-3">
+            {/* Fullscreen button */}
+            <button 
+              onClick={toggleFullscreen}
+              className="cyber-button flex items-center"
+              aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
             >
-              {realityStatus.safetyProtocols ? 'ACTIVE' : 'DISABLED'}
-            </div>
-          </div>
-          <div>
-            <div className="text-sm text-blue-400">Session Active Since:</div>
-            <div className="text-lg font-bold">{new Date(realityStatus.activeSince).toLocaleTimeString()}</div>
-          </div>
-        </div>
-        
-        {/* Stability Bar */}
-        <div className="mt-4">
-          <div className="h-2 w-full bg-gray-800 rounded overflow-hidden">
-            <div 
-              className={`h-full transition-all duration-1000 ${
-                realityStatus.stability > 0.7 ? 'bg-green-500' : 
-                realityStatus.stability > 0.4 ? 'bg-yellow-500' : 
-                'bg-red-500'
-              }`}
-              style={{width: `${realityStatus.stability * 100}%`}}
-            />
-          </div>
-        </div>
-        
-        {/* Mind Mirror Integration Status */}
-        <div className="mt-5 border-t border-blue-800 pt-3">
-          <div className="flex justify-between items-center mb-2">
-            <div className="text-sm text-blue-400">Mind Mirror Integration:</div>
-            <div className={`text-sm font-bold ${mindMirrorStatus.connected ? 'text-purple-400' : 'text-gray-500'}`}>
-              {mindMirrorStatus.connected ? 'CONNECTED' : 'DISCONNECTED'}
-            </div>
-          </div>
-          
-          {mindMirrorStatus.connected && (
-            <div className="grid grid-cols-2 gap-3 text-xs mt-2">
-              <div>
-                <span className="text-purple-400">Neural Nodes:</span> {mindMirrorStatus.nodeCount}
-              </div>
-              <div>
-                <span className="text-purple-400">Connections:</span> {mindMirrorStatus.connectionCount}
-              </div>
-              <div className="col-span-2">
-                <span className="text-purple-400">Last Sync:</span> {new Date(mindMirrorStatus.lastSyncTime).toLocaleTimeString()}
-              </div>
-            </div>
-          )}
-          
-          <button 
-            className={`mt-2 w-full py-2 rounded text-center ${
-              mindMirrorIntegrated 
-                ? 'bg-purple-800/50 border border-purple-600 text-purple-200' 
-                : 'bg-blue-800/50 border border-blue-600 hover:bg-blue-700/50'
-            }`}
-            onClick={integrateWithMindMirror}
-            disabled={mindMirrorIntegrated}
-          >
-            {mindMirrorIntegrated ? 'NEURAL LINK ACTIVE' : 'CONNECT TO MIND MIRROR'}
-          </button>
-        </div>
-      </div>
-      
-      {/* Real-time Data Visualization */}
-      <div className="mb-8 p-4 border border-blue-800 rounded-lg bg-gradient-to-b from-blue-900/30 to-purple-900/30 cyber-border">
-        <h2 className="text-xl mb-3 border-b border-blue-700 pb-1">Quantum Fluctuation Analysis</h2>
-        <RealTimeData 
-          glitches={glitches} 
-          realityStatus={realityStatus} 
-          mindMirrorConnected={mindMirrorStatus.connected}
-        />
-      </div>
-      
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Glitch List Panel */}
-        <div className="col-span-1">
-          <div className="bg-blue-900/20 p-4 rounded-lg border border-blue-800 cyber-border h-full">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold text-blue-200">Active Glitches</h2>
-              <button 
-                className="cyber-button cyber-button-primary px-3 py-1 rounded text-xs"
-                onClick={() => setModalOpen(true)}
-              >
-                NEW GLITCH
-              </button>
-            </div>
-            
-            <div className="space-y-3 max-h-[400px] overflow-y-auto scrollbar pr-2">
-              {glitches.map(glitch => (
-                <GlitchCard
-                  key={glitch.id}
-                  glitch={glitch}
-                  isSelected={selectedGlitch?.id === glitch.id}
-                  onSelect={() => setSelectedGlitch(glitch)}
-                  onToggle={() => toggleGlitch(glitch.id)}
-                />
-              ))}
-              
-              {glitches.length === 0 && (
-                <div className="text-center text-blue-500 italic py-4">
-                  No active glitches. Create one to begin.
-                </div>
+              {isFullscreen ? (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M22 3H2v18h20V3zM16 17H8" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 17H8V5H6zM16 17h2V5h-2" />
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
+                </svg>
               )}
-            </div>
-          </div>
-        </div>
-
-        {/* Middle Panel: Controls and Visualization */}
-        <div className="col-span-1">
-          <div className="bg-blue-900/20 p-4 rounded-lg border border-blue-800 cyber-border h-full">
-            <h2 className="text-lg font-semibold text-blue-200 mb-4">Reality Manipulation</h2>
+              <span className="ml-2 hidden sm:inline">{isFullscreen ? "Exit Fullscreen" : "Fullscreen"}</span>
+            </button>
             
-            {selectedGlitch ? (
-              <>
-                <div className="mb-4">
-                  <h3 className="text-sm text-blue-400 mb-1">Selected Glitch:</h3>
-                  <div className="font-bold text-lg">{selectedGlitch.type} #{selectedGlitch.id.substring(0, 8)}</div>
-                  <div className="text-xs text-blue-400 mt-1">
-                    {selectedGlitch.source === 'Mind Mirror' ? 'Source: Mind Mirror' : 'Source: Manual Creation'}
-                  </div>
-                </div>
-                
-                <div className="mb-6">
-                  <label className="text-sm text-blue-400 block mb-1">Intensity Control</label>
-                  <input
-                    type="range"
-                    min="1"
-                    max="100"
-                    value={selectedGlitch.intensity * 100}
-                    onChange={(e) => adjustIntensity(selectedGlitch.id, e.target.value / 100)}
-                    className="w-full accent-blue-500 cyber-slider"
-                  />
-                  <div className="flex justify-between text-xs mt-1">
-                    <span>Subtle</span>
-                    <span>Intense</span>
-                  </div>
-                </div>
-                
-                <div className="flex space-x-2 mb-4">
-                  <button
-                    className={`flex-1 py-2 rounded text-sm ${selectedGlitch.active ? 'bg-green-800/50 text-green-300' : 'bg-blue-800/50 hover:bg-blue-700/50'}`}
-                    onClick={() => toggleGlitch(selectedGlitch.id)}
-                  >
-                    {selectedGlitch.active ? 'DEACTIVATE' : 'ACTIVATE'}
-                  </button>
-                  <button
-                    className="flex-1 py-2 rounded text-sm bg-purple-800/50 hover:bg-purple-700/50"
-                    onClick={() => amplifyGlitch(selectedGlitch.id)}
-                  >
-                    AMPLIFY
-                  </button>
-                </div>
-                
-                {/* Visualization */}
-                <div className="h-40 flex items-center justify-center">
-                  <div 
-                    className={`rounded-full transition-all duration-1000 flex items-center justify-center ${
-                      selectedGlitch.type === 'VISUAL' ? 'bg-purple-600/50' :
-                      selectedGlitch.type === 'AUDITORY' ? 'bg-green-600/50' :
-                      selectedGlitch.type === 'TEMPORAL' ? 'bg-yellow-600/50' :
-                      selectedGlitch.type === 'SPATIAL' ? 'bg-blue-600/50' :
-                      selectedGlitch.type === 'COGNITIVE' ? 'bg-red-600/50' :
-                      'bg-indigo-600/50'
-                    }`}
-                    style={{
-                      width: `${Math.max(40, selectedGlitch.intensity * 150)}px`,
-                      height: `${Math.max(40, selectedGlitch.intensity * 150)}px`,
-                      filter: `blur(${selectedGlitch.intensity * 5}px) brightness(1.2)`,
-                      opacity: selectedGlitch.active ? 1 : 0.3
-                    }}
-                  >
-                    <div className="text-xs">{selectedGlitch.active ? 'ACTIVE' : 'INACTIVE'}</div>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="text-center text-blue-500 italic h-64 flex items-center justify-center">
-                Select a glitch to view controls
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Right Panel: Console Output */}
-        <div className="col-span-1">
-          <div className="bg-blue-900/20 p-4 rounded-lg border border-blue-800 cyber-border h-full">
-            <h2 className="text-lg font-semibold text-blue-200 mb-2">System Console</h2>
-            
-            <div 
-              ref={consoleRef}
-              className="font-mono text-xs h-[400px] overflow-y-auto bg-black/50 p-3 rounded terminal-bg scrollbar"
+            <button 
+              onClick={toggleSafetyProtocols}
+              className={`cyber-button ${!realityStatus.safetyProtocols ? 'bg-red-900/50 border-red-700' : ''}`}
             >
-              {consoleMessages.map((msg, i) => (
-                <div 
-                  key={i} 
-                  className={`mb-1 ${
-                    msg.type === 'error' ? 'text-red-400' : 
-                    msg.type === 'warning' ? 'text-yellow-400' : 
-                    msg.type === 'success' ? 'text-green-400' : 
-                    'text-blue-300'
-                  }`}
-                >
-                  [{new Date(msg.timestamp).toLocaleTimeString()}] {msg.text}
+              {realityStatus.safetyProtocols ? 'Disable' : 'Enable'} <span className="hidden sm:inline">Safety</span>
+            </button>
+          </div>
+        </header>
+        
+        {/* Main content grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left column - Controls and Status */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Reality status panel */}
+            <div className="p-4 border border-blue-800 rounded-lg bg-gradient-to-b from-blue-900/30 to-purple-900/30 cyber-border">
+              <h2 className="text-xl mb-3 border-b border-blue-700 pb-1">Reality Status</h2>
+              
+              <div className="space-y-4">
+                {/* Status indicators */}
+                <div className="flex justify-between items-center">
+                  <div className="text-sm">Coherence:</div>
+                  <div className={`text-sm font-bold ${
+                    realityStatus.coherence === 'UNSTABLE' ? 'text-red-400' : 
+                    realityStatus.coherence === 'FLUCTUATING' ? 'text-yellow-400' : 
+                    'text-green-400'
+                  }`}>
+                    {realityStatus.coherence}
+                  </div>
                 </div>
-              ))}
+                
+                {/* Safety status */}
+                <div className="flex justify-between items-center">
+                  <div className="text-sm">Safety Protocols:</div>
+                  <div className={`text-sm font-bold ${realityStatus.safetyProtocols ? 'text-green-400' : 'text-red-400'}`}>
+                    {realityStatus.safetyProtocols ? 'ACTIVE' : 'DISABLED'}
+                  </div>
+                </div>
+                
+                {/* Time active */}
+                <div className="flex justify-between items-center">
+                  <div className="text-sm">Active Since:</div>
+                  <div className="text-sm">
+                    {new Date(realityStatus.activeSince).toLocaleTimeString()}
+                  </div>
+                </div>
+                
+                {/* Stability bar */}
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <div className="text-sm">Reality Stability:</div>
+                    <div className="text-sm">{(realityStatus.stability * 100).toFixed(1)}%</div>
+                  </div>
+                  <div className="h-2 w-full bg-blue-900/50 rounded overflow-hidden">
+                    <div 
+                      className={`h-full transition-all duration-1000 ${
+                        realityStatus.stability > 0.7 ? 'bg-green-500' : 
+                        realityStatus.stability > 0.4 ? 'bg-yellow-500' : 
+                        'bg-red-500'
+                      }`}
+                      style={{width: `${realityStatus.stability * 100}%`}}
+                    />
+                  </div>
+                </div>
+                
+                {/* Mind Mirror Integration Status */}
+                <div className="mt-5 border-t border-blue-800 pt-3">
+                  <div className="flex justify-between items-center mb-2">
+                    <div className="text-sm text-blue-400">Mind Mirror Integration:</div>
+                    <div className={`text-sm font-bold ${mindMirrorStatus.connected ? 'text-purple-400' : 'text-gray-500'}`}>
+                      {mindMirrorStatus.connected ? 'CONNECTED' : 'DISCONNECTED'}
+                    </div>
+                  </div>
+                  
+                  {mindMirrorStatus.connected && (
+                    <div className="grid grid-cols-2 gap-3 text-xs mt-2">
+                      <div>
+                        <span className="text-purple-400">Neural Nodes:</span> {mindMirrorStatus.nodeCount}
+                      </div>
+                      <div>
+                        <span className="text-purple-400">Connections:</span> {mindMirrorStatus.connectionCount}
+                      </div>
+                      <div className="col-span-2">
+                        <span className="text-purple-400">Last Sync:</span> {new Date(mindMirrorStatus.lastSyncTime).toLocaleTimeString()}
+                      </div>
+                    </div>
+                  )}
+                  
+                  <button 
+                    className={`mt-2 w-full py-2 rounded text-center ${
+                      mindMirrorIntegrated 
+                        ? 'bg-purple-800/50 border border-purple-600 text-purple-200' 
+                        : 'bg-blue-800/50 border border-blue-600 hover:bg-blue-700/50'
+                    }`}
+                    onClick={integrateWithMindMirror}
+                    disabled={mindMirrorIntegrated}
+                  >
+                    {mindMirrorIntegrated ? 'NEURAL LINK ACTIVE' : 'CONNECT TO MIND MIRROR'}
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            {/* Console */}
+            <div className="p-4 border border-blue-800 rounded-lg bg-gradient-to-b from-blue-900/30 to-purple-900/30 cyber-border">
+              <div className="flex justify-between items-center mb-3 border-b border-blue-700 pb-1">
+                <h2 className="text-xl">System Console</h2>
+                <button 
+                  onClick={clearConsole}
+                  className="text-xs text-blue-400 hover:text-blue-300"
+                >
+                  Clear
+                </button>
+              </div>
+              
+              <div 
+                className="h-36 md:h-48 overflow-y-auto scrollbar terminal-bg p-2 font-mono text-xs"
+                ref={consoleRef}
+              >
+                {consoleMessages.map((msg, i) => (
+                  <div key={i} className={`mb-1 ${
+                    msg.type === 'error' ? 'text-red-400' : 
+                    msg.type === 'success' ? 'text-green-400' : 
+                    msg.type === 'warning' ? 'text-yellow-400' : 
+                    'text-blue-300'
+                  }`}>
+                    &gt; [{new Date(msg.timestamp).toLocaleTimeString()}] {msg.text}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          {/* Middle and Right columns - Visualization and Glitches */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Real-time Data Visualization */}
+            <div className="p-4 border border-blue-800 rounded-lg bg-gradient-to-b from-blue-900/30 to-purple-900/30 cyber-border">
+              <h2 className="text-xl mb-3 border-b border-blue-700 pb-1">Quantum Fluctuation Analysis</h2>
+              <RealTimeData 
+                glitches={glitches} 
+                realityStatus={realityStatus}
+                mindMirrorConnected={mindMirrorStatus.connected}
+              />
+            </div>
+            
+            {/* Glitch Management */}
+            <div className="p-4 border border-blue-800 rounded-lg bg-gradient-to-b from-blue-900/30 to-purple-900/30 cyber-border">
+              <div className="flex justify-between items-center mb-3 border-b border-blue-700 pb-1">
+                <h2 className="text-xl">Reality Manipulations</h2>
+                <button 
+                  onClick={() => setModalOpen(true)}
+                  className="cyber-button-primary text-sm"
+                >
+                  Create New
+                </button>
+              </div>
+              
+              {/* Glitches Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4 mb-4">
+                {glitches.map((glitch) => (
+                  <GlitchCard 
+                    key={glitch.id}
+                    glitch={glitch}
+                    selected={selectedGlitch?.id === glitch.id}
+                    onSelect={() => setSelectedGlitch(glitch)}
+                    onToggle={() => toggleGlitch(glitch.id)}
+                    onAdjustIntensity={(newIntensity) => adjustIntensity(glitch.id, newIntensity)}
+                    onDelete={() => deleteGlitch(glitch.id)}
+                    onAmplify={() => amplifyGlitch(glitch.id)}
+                  />
+                ))}
+                
+                {glitches.length === 0 && (
+                  <div className="col-span-full text-center py-6 text-blue-400">
+                    No active glitches. Create one to begin manipulating reality.
+                  </div>
+                )}
+              </div>
+              
+              {/* Selected Glitch Visualization */}
+              <div className="border-t border-blue-800 pt-4">
+                <h3 className="text-lg mb-2">Glitch Visualization</h3>
+                <div className="glitch-visualization">
+                  <GlitchVisualization glitch={selectedGlitch} />
+                </div>
+              </div>
             </div>
           </div>
         </div>
+        
+        {/* Footer */}
+        <footer className="mt-8 text-center text-xs text-blue-500 border-t border-blue-900 pt-4">
+          <p>PROJECT89 REALITY GLITCHER v0.9.2 | Perception Manipulation System | Neural Link Protocol Active</p>
+          <p className="mt-1">Warning: Unauthorized reality manipulation may lead to cognitive dissonance</p>
+        </footer>
       </div>
-
+      
       {/* Create Glitch Modal */}
       {modalOpen && (
         <CreateGlitchModal 

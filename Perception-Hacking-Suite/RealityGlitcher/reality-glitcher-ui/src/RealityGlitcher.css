@@ -466,3 +466,39 @@ body {
 .anomaly-highlight {
   color: #a742e0;
 }
+
+/* Fullscreen mode styles */
+.fullscreen-mode {
+  width: 100vw !important;
+  height: 100vh !important;
+  overflow: auto;
+}
+
+.fullscreen-mode .cyber-text-glow {
+  text-shadow: 
+    0 0 8px rgba(101, 210, 255, 0.7),
+    0 0 15px rgba(101, 210, 255, 0.5);
+  transition: text-shadow 0.3s ease;
+}
+
+.fullscreen-mode .cyber-border {
+  box-shadow: 
+    0 0 15px rgba(0, 70, 200, 0.5),
+    inset 0 0 15px rgba(0, 70, 200, 0.3);
+  transition: box-shadow 0.3s ease;
+}
+
+.fullscreen-mode .visual-glitch {
+  animation-duration: 1.5s;
+}
+
+/* Responsive design for fullscreen */
+@media (max-width: 768px) {
+  .fullscreen-mode {
+    padding: 0.5rem !important;
+  }
+  
+  .fullscreen-mode h1 {
+    font-size: 1.75rem !important;
+  }
+}
