@@ -7,11 +7,21 @@ const CreateGlitchModal = ({ isOpen, onClose, onCreateGlitch }) => {
     complexity: 0.5,
     duration: 1.0,
     persistence: 0.2,
-    target: 'consensus_reality'
+    target: 'Visual Field'
   });
 
   const glitchTypes = [
     'VISUAL', 'AUDITORY', 'TEMPORAL', 'SPATIAL', 'COGNITIVE', 'SYNCHRONISTIC'
+  ];
+  
+  const targetOptions = [
+    'Visual Field',
+    'Auditory Processing',
+    'Temporal Perception',
+    'Spatial Awareness',
+    'Memory Imprints',
+    'Emotional Responses',
+    'Cognitive Functions'
   ];
 
   const handleChange = (e) => {
@@ -38,12 +48,12 @@ const CreateGlitchModal = ({ isOpen, onClose, onCreateGlitch }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-      <div className="w-full max-w-md p-6 border border-blue-700 bg-blue-900/20 rounded-lg shadow-lg backdrop-blur-sm">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-blue-300">Create New Reality Glitch</h2>
+      <div className="w-full max-w-md p-6 cyber-border rounded-lg shadow-lg backdrop-blur-sm">
+        <div className="flex justify-between items-center mb-4 border-b border-blue-700 pb-2">
+          <h2 className="text-xl font-bold text-blue-300 cyber-text-glow">Create New Reality Glitch</h2>
           <button 
             onClick={onClose}
-            className="text-blue-400 hover:text-blue-200"
+            className="text-blue-400 hover:text-blue-200 w-8 h-8 flex items-center justify-center rounded-full hover:bg-blue-900/50"
           >
             ✕
           </button>
@@ -56,7 +66,7 @@ const CreateGlitchModal = ({ isOpen, onClose, onCreateGlitch }) => {
               name="type"
               value={formData.type}
               onChange={handleChange}
-              className="w-full p-2 rounded bg-blue-950 border border-blue-700 text-blue-200"
+              className="w-full p-2 rounded bg-blue-950/80 border border-blue-700 text-blue-200"
             >
               {glitchTypes.map(type => (
                 <option key={type} value={type}>{type}</option>
@@ -74,7 +84,7 @@ const CreateGlitchModal = ({ isOpen, onClose, onCreateGlitch }) => {
               step="0.01" 
               value={formData.intensity}
               onChange={handleChange}
-              className="w-full"
+              className="w-full cyber-slider"
             />
           </div>
           
@@ -88,7 +98,7 @@ const CreateGlitchModal = ({ isOpen, onClose, onCreateGlitch }) => {
               step="0.01" 
               value={formData.complexity}
               onChange={handleChange}
-              className="w-full"
+              className="w-full cyber-slider"
             />
           </div>
           
@@ -102,7 +112,7 @@ const CreateGlitchModal = ({ isOpen, onClose, onCreateGlitch }) => {
               step="0.1" 
               value={formData.duration}
               onChange={handleChange}
-              className="w-full"
+              className="w-full cyber-slider"
             />
           </div>
           
@@ -116,32 +126,35 @@ const CreateGlitchModal = ({ isOpen, onClose, onCreateGlitch }) => {
               step="0.01" 
               value={formData.persistence}
               onChange={handleChange}
-              className="w-full"
+              className="w-full cyber-slider"
             />
           </div>
           
           <div className="mb-6">
             <label className="block text-blue-400 mb-1">Target</label>
-            <input 
-              type="text" 
+            <select 
               name="target"
               value={formData.target}
               onChange={handleChange}
-              className="w-full p-2 rounded bg-blue-950 border border-blue-700 text-blue-200"
-            />
+              className="w-full p-2 rounded bg-blue-950/80 border border-blue-700 text-blue-200"
+            >
+              {targetOptions.map(target => (
+                <option key={target} value={target}>{target}</option>
+              ))}
+            </select>
           </div>
           
           <div className="flex justify-end">
             <button 
               type="button" 
               onClick={onClose}
-              className="mr-2 px-4 py-2 border border-blue-700 rounded-md text-blue-300 hover:bg-blue-800/30"
+              className="mr-2 px-4 py-2 cyber-button"
             >
               Cancel
             </button>
             <button 
               type="submit"
-              className="px-4 py-2 bg-blue-600/50 border border-blue-500 rounded-md text-blue-100 hover:bg-blue-700/50"
+              className="px-4 py-2 cyber-button cyber-button-primary"
             >
               Create Glitch
             </button>

@@ -36,6 +36,8 @@ The puzzles focused heavily on data security, cryptography, and steganography.
 
 It is unclear who is behind Cicada 3301, but there has been much speculation. Some believe that it is a government intelligence agency, while others believe that it is a secret society or a group of hackers.
 
+**Telepathy Tapes**
+
 **Analysis**
 
 These case studies illustrate the diverse nature of reality hacking, ranging from alleged government conspiracies to Internet memes and urban legends.

@@ -116,4 +116,42 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Disclaimer
 
-Reality Glitcher is a creative fictional project. Any resemblance to actual reality manipulation technology is purely coincidental. The developers assume no responsibility for any perceived alterations to your reality. 
+Reality Glitcher is a creative fictional project. Any resemblance to actual reality manipulation technology is purely coincidental. The developers assume no responsibility for any perceived alterations to your reality.
+
+## Integration with Mind Mirror
+
+RealityGlitcher can integrate with the Mind Mirror application to create reality glitches based on your neural patterns and consciousness data.
+
+### How Integration Works
+
+1. **Data Export**: Mind Mirror exports your consciousness data to the `imports/mind_mirror_data.json` file within the RealityGlitcher directory.
+
+2. **Neural Pattern Analysis**: RealityGlitcher analyzes the neural patterns, nodes, and connections in the exported data.
+
+3. **Glitch Generation**: Based on your consciousness data, RealityGlitcher generates personalized glitches that reflect your neural patterns, with glitch types matching the concepts in your mind.
+
+4. **Reality Alteration**: These glitches then affect reality in ways that resonate with your consciousness patterns, creating a feedback loop between your mind and perceived reality.
+
+### Running the Integration Demo
+
+To experience the integration between Mind Mirror and RealityGlitcher:
+
+1. Run Mind Mirror and use the integration feature to export your data
+2. Launch the integration demo:
+   ```
+   cd examples
+   python integration_demo.py
+   ```
+3. Observe how your consciousness patterns influence the reality glitches
+
+### Technical Details
+
+The integration follows these steps:
+
+- Mind Mirror serializes neural pattern data to JSON format
+- RealityGlitcher reads this data from the `imports` directory
+- Strong neural nodes become the basis for new glitches
+- Connection patterns determine glitch complexity and relationships
+- Mind Mirror's metadata sets parameters like intensity and persistence
+
+This bidirectional relationship creates a unique feedback loop between your consciousness and reality distortion effects. 
