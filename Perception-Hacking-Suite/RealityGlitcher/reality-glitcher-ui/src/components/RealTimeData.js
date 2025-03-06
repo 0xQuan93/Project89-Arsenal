@@ -19,17 +19,20 @@ const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
   const animationRef = useRef(null);
   const lastUpdateTimeRef = useRef(Date.now());
   
+  // Animation speed control - higher values = faster cycles
+  const cycleSpeedMultiplier = 3.0; // Increased from 2.0 to 3.0 for even faster cycles
+  
   // EMERGENCY RENDERING SYSTEM
   useEffect(() => {
     console.log("SETTING UP EMERGENCY SYSTEM");
     
-    // Create reliable data
+    // Create reliable data with higher frequency cycles
     function createReliableData() {
       const time = Date.now() * 0.001;
       const points = [];
       for (let i = 0; i < 100; i++) {
-        // Simple sine wave that's guaranteed to be visible
-        points[i] = 0.5 + Math.sin(i * 0.1 + time) * 0.3;
+        // Increased frequency from 0.1 to 0.25 for more cycles
+        points[i] = 0.5 + Math.sin(i * 0.25 + time) * 0.3;
       }
       return points;
     }
@@ -54,7 +57,7 @@ const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
           return;
         }
         
-        // EMERGENCY DATA
+        // EMERGENCY DATA with higher frequency cycles
         const emergencyData = createReliableData();
         
         // Update our data ref too
@@ -125,7 +128,7 @@ const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
     }, 1000);
   }, []);
   
-  // Dynamic data generation responsive to glitches but simplified
+  // Dynamic data generation with higher frequency cycles
   const updateData = () => {
     try {
       const currentTime = Date.now();
@@ -134,18 +137,18 @@ const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
       // Get active glitches for a simpler calculation
       const activeGlitches = glitches.filter(g => g.active);
       
-      // Base wave that's always visible - simple sine
-      let newValue = 0.5 + Math.sin(time * 1.5) * 0.25;
+      // Base wave with increased frequency (from 1.5 to 3.0)
+      let newValue = 0.5 + Math.sin(time * 3.0) * 0.25;
       
-      // Add basic variation from active glitches - very simple
+      // Add basic variation from active glitches with higher frequency (from 2.2 to 4.0)
       if (activeGlitches.length > 0) {
         // Just add a scaled sin wave based on glitch count
-        newValue += Math.sin(time * 2.2) * 0.05 * Math.min(5, activeGlitches.length);
+        newValue += Math.sin(time * 4.0) * 0.05 * Math.min(5, activeGlitches.length);
       }
       
-      // Add basic Mind Mirror effect - simple but distinctive
+      // Add basic Mind Mirror effect with higher frequency (from 3.0 to 5.5)
       if (mindMirrorConnected) {
-        newValue += Math.sin(time * 3.0) * 0.1;
+        newValue += Math.sin(time * 5.5) * 0.1;
       }
       
       // Add small random fluctuation
@@ -176,7 +179,8 @@ const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
       const time = Date.now() * 0.001;
       const fallbackPoints = [];
       for (let i = 0; i < 100; i++) {
-        fallbackPoints.push(0.5 + Math.sin((i * 0.1) + time * 0.5) * 0.3);
+        // Increased frequency from 0.1 to 0.25 for more cycles
+        fallbackPoints.push(0.5 + Math.sin((i * 0.25) + time * 1.0) * 0.3);
       }
       dataPointsRef.current = fallbackPoints;
     }
@@ -360,7 +364,11 @@ const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
       ctx.lineWidth = 3;
       ctx.beginPath();
       
-      for (let i = 0; i < data.length; i++) {
+      // Apply cycle speed multiplier for faster appearance - compress X axis sampling
+      // Skip points for faster drawing with higher frequency appearance
+      const skipFactor = Math.max(1, Math.floor(5 / cycleSpeedMultiplier)); // Adjust point density
+      
+      for (let i = 0; i < data.length; i += skipFactor) {
         const x = (i / (data.length - 1)) * width;
         // Use a safe value and ensure it's within bounds
         const value = typeof data[i] === 'number' ? data[i] : 0.5;
@@ -376,8 +384,11 @@ const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
       // Stroke without any fancy effects
       ctx.stroke();
       
-      // Add some points every 10 steps for visibility
-      for (let i = 0; i < data.length; i += 10) {
+      // Add some points every few steps for visibility
+      // Adjust point spacing based on cycle speed
+      const pointSpacing = Math.max(5, Math.floor(10 / cycleSpeedMultiplier));
+      
+      for (let i = 0; i < data.length; i += pointSpacing) {
         const x = (i / (data.length - 1)) * width;
         const value = typeof data[i] === 'number' ? data[i] : 0.5;
         const y = (1 - Math.max(0.1, Math.min(0.9, value))) * height;
@@ -396,10 +407,11 @@ const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
   
   // MANUAL CANVAS CREATION APPROACH
   useEffect(() => {
-    // Initialize with a simple sine wave
+    // Initialize with a simple sine wave with more frequent cycles
     const initialPoints = [];
     for (let i = 0; i < 100; i++) {
-      initialPoints.push(0.5 + Math.sin(i * 0.05) * 0.3);
+      // Increased frequency from 0.05 to 0.15 for more cycles
+      initialPoints.push(0.5 + Math.sin(i * 0.15) * 0.3);
     }
     dataPointsRef.current = initialPoints;
     
@@ -445,7 +457,8 @@ const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
         
         for (let i = 0; i < 100; i++) {
           const x = (i / 99) * canvas.width;
-          const y = (0.5 - 0.3 * Math.sin(i * 0.1)) * canvas.height;
+          // Increased frequency from 0.1 to 0.25 for more cycles
+          const y = (0.5 - 0.3 * Math.sin(i * 0.25)) * canvas.height;
           
           if (i === 0) {
             ctx.moveTo(x, y);
