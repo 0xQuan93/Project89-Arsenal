@@ -154,137 +154,289 @@ class RealityGlitcher:
         Returns:
             Dictionary containing Mind Mirror data or None if file not found or invalid
         """
-        # Construct the path to the Mind Mirror data file
-        import_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imports", "mind_mirror_data.json")
-        logger.info(f"Attempting to load Mind Mirror data from {import_path}")
+        # Get the imports directory
+        imports_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imports")
+        logger.info(f"Searching for Mind Mirror data in {imports_dir}")
         
+        # Ensure imports directory exists
+        os.makedirs(imports_dir, exist_ok=True)
+        
+        # Check for notification file first
+        notification_path = os.path.join(imports_dir, ".new_import")
+        latest_data_file = None
+        
+        if os.path.exists(notification_path):
+            try:
+                # Read the timestamp from notification file
+                with open(notification_path, "r") as f:
+                    timestamp = f.read().strip()
+                    
+                # Look for the corresponding data file
+                data_file = f"mind_mirror_data_{timestamp}.json"
+                data_path = os.path.join(imports_dir, data_file)
+                
+                if os.path.exists(data_path):
+                    latest_data_file = data_path
+                    logger.info(f"Found new import notification for {data_file}")
+                    
+                    # Remove the notification file after processing
+                    os.remove(notification_path)
+            except Exception as e:
+                logger.error(f"Error processing notification file: {str(e)}")
+        
+        # If no notification file or it didn't point to valid data,
+        # search for the most recent data file
+        if not latest_data_file:
+            try:
+                # Find all mind mirror data files
+                data_files = [f for f in os.listdir(imports_dir) 
+                             if f.startswith("mind_mirror_data_") and f.endswith(".json")]
+                
+                if data_files:
+                    # Sort by modification time, newest first
+                    data_files.sort(key=lambda x: os.path.getmtime(os.path.join(imports_dir, x)), reverse=True)
+                    latest_data_file = os.path.join(imports_dir, data_files[0])
+                    logger.info(f"Using most recent Mind Mirror data file: {data_files[0]}")
+                else:
+                    # Fall back to the generic filename
+                    fallback_path = os.path.join(imports_dir, "mind_mirror_data.json")
+                    if os.path.exists(fallback_path):
+                        latest_data_file = fallback_path
+                        logger.info("Using generic Mind Mirror data file")
+            except Exception as e:
+                logger.error(f"Error finding Mind Mirror data files: {str(e)}")
+        
+        # No data file found
+        if not latest_data_file:
+            logger.warning(f"No Mind Mirror data found in {imports_dir}. Integration inactive.")
+            return None
+        
+        # Load and validate the data file
         try:
-            with open(import_path, "r") as f:
+            with open(latest_data_file, "r") as f:
                 data = json.load(f)
                 
+            # Check for metadata file
+            meta_file = os.path.basename(latest_data_file).replace("mind_mirror_data_", "meta_")
+            meta_path = os.path.join(imports_dir, meta_file)
+            metadata = {}
+            
+            if os.path.exists(meta_path):
+                try:
+                    with open(meta_path, "r") as f:
+                        metadata = json.load(f)
+                    logger.info(f"Loaded metadata: export from {metadata.get('source', 'unknown')}, user: {metadata.get('user', 'unknown')}")
+                except:
+                    logger.warning(f"Could not load metadata file {meta_file}")
+            
             # Validate the data structure
             if not all(key in data for key in ["source", "neural_patterns", "metadata"]):
                 logger.error("Invalid Mind Mirror data format")
                 return None
-                
+            
+            # Log information about the loaded data
             logger.info(f"Successfully loaded Mind Mirror data from user: {data.get('user', 'Unknown')}")
+            logger.info(f"Version: {data.get('version', 'unknown')} {data.get('version_name', '')}")
             logger.info(f"Pattern type: {data.get('metadata', {}).get('pattern_type', 'unknown')}")
             logger.info(f"Nodes: {len(data.get('neural_patterns', {}).get('nodes', []))}")
             logger.info(f"Connections: {len(data.get('neural_patterns', {}).get('connections', []))}")
             
+            # If metrics are included, log them
+            metrics = data.get('neural_patterns', {}).get('metrics', {})
+            if metrics:
+                logger.info(f"Neural metrics: coherence={metrics.get('coherence', 0):.2f}, complexity={metrics.get('complexity', 0):.2f}")
+            
             return data
         except FileNotFoundError:
-            logger.warning(f"No Mind Mirror data found at {import_path}. Integration inactive.")
+            logger.warning(f"Mind Mirror data file not found at {latest_data_file}. Integration inactive.")
             return None
         except json.JSONDecodeError:
-            logger.error("Mind Mirror data file is corrupted or invalid JSON")
+            logger.error(f"Mind Mirror data file {latest_data_file} is corrupted or invalid JSON")
             return None
         except Exception as e:
             logger.error(f"Error loading Mind Mirror data: {str(e)}")
             return None
             
-    def generate_glitches_from_mind_mirror(self) -> List[Glitch]:
+    def generate_glitches_from_mind_mirror(self, mind_mirror_data: Dict) -> List[Dict]:
         """
-        Generate glitches based on neural patterns from Mind Mirror
+        Generate glitches based on neural patterns imported from Mind Mirror
         
+        Args:
+            mind_mirror_data: Dictionary containing neural pattern data from Mind Mirror
+            
         Returns:
-            List of generated glitches
+            List of generated glitch configurations
         """
-        mind_data = self.load_mind_mirror_data()
-        if not mind_data:
+        if not mind_mirror_data:
+            logger.warning("Cannot generate glitches: No Mind Mirror data provided")
             return []
-            
-        generated_glitches = []
         
-        try:
-            # Extract neural patterns
-            nodes = mind_data.get("neural_patterns", {}).get("nodes", [])
-            connections = mind_data.get("neural_patterns", {}).get("connections", [])
-            
-            # Generate glitches based on strongest nodes
-            strong_nodes = sorted(nodes, key=lambda x: x.get("strength", 0), reverse=True)[:3]
-            
-            for node in strong_nodes:
-                # Map node concepts to glitch types
-                concept_map = {
-                    "Perception": GlitchType.VISUAL,
-                    "Consciousness": GlitchType.COGNITIVE,
-                    "Reality": GlitchType.SYNCHRONISTIC, 
-                    "Mind": GlitchType.COGNITIVE,
-                    "Time": GlitchType.TEMPORAL,
-                    "Space": GlitchType.SPATIAL,
-                    "Self": GlitchType.COGNITIVE,
-                    "Awareness": GlitchType.VISUAL,
-                    "Memory": GlitchType.TEMPORAL,
-                    "Identity": GlitchType.COGNITIVE,
-                    "Dream": GlitchType.VISUAL
-                }
-                
-                node_label = node.get("label", "")
-                glitch_type = concept_map.get(node_label, random.choice(list(GlitchType)))
-                
-                # Create parameters based on the node strength
-                params = GlitchParameters(
-                    intensity=node.get("strength", 0.5),
-                    duration=random.uniform(5.0, 15.0),
-                    complexity=mind_data.get("metadata", {}).get("consciousness_level", 0.5),
-                    persistence=0.7
-                )
-                
-                # Create and add the glitch
-                glitch = Glitch(
-                    glitch_type=glitch_type,
-                    parameters=params,
-                    target=f"neural_pattern_{node_label.lower()}"
-                )
-                
-                generated_glitches.append(glitch)
-                logger.info(f"Generated {glitch_type.name} glitch from neural pattern '{node_label}'")
-            
-            # Generate one glitch from the strongest connection if available
-            if connections:
-                strongest_connection = max(connections, key=lambda x: x.get("strength", 0))
-                source_id = strongest_connection.get("source", 0)
-                target_id = strongest_connection.get("target", 0)
-                
-                # Find the connected nodes
-                source_node = next((n for n in nodes if n.get("id") == source_id), {})
-                target_node = next((n for n in nodes if n.get("id") == target_id), {})
-                
-                connection_type = strongest_connection.get("type", "association")
-                
-                # Map connection types to glitch types
-                connection_map = {
-                    "association": GlitchType.COGNITIVE,
-                    "causation": GlitchType.TEMPORAL,
-                    "similarity": GlitchType.VISUAL
-                }
-                
-                glitch_type = connection_map.get(connection_type, GlitchType.SYNCHRONISTIC)
-                
-                # Create parameters based on the connection strength
-                params = GlitchParameters(
-                    intensity=strongest_connection.get("strength", 0.5),
-                    duration=random.uniform(10.0, 30.0),
-                    complexity=0.8,
-                    persistence=0.5
-                )
-                
-                # Create and add the glitch
-                connection_label = f"{source_node.get('label', 'Node')}_{target_node.get('label', 'Node')}"
-                glitch = Glitch(
-                    glitch_type=glitch_type,
-                    parameters=params,
-                    target=f"connection_{connection_label.lower()}"
-                )
-                
-                generated_glitches.append(glitch)
-                logger.info(f"Generated {glitch_type.name} glitch from connection between '{source_node.get('label', 'Node')}' and '{target_node.get('label', 'Node')}'")
+        neural_patterns = mind_mirror_data.get("neural_patterns", {})
+        nodes = neural_patterns.get("nodes", [])
+        connections = neural_patterns.get("connections", [])
+        metrics = neural_patterns.get("metrics", {})
         
-        except Exception as e:
-            logger.error(f"Error generating glitches from Mind Mirror data: {str(e)}")
+        if not nodes or not connections:
+            logger.warning("Cannot generate glitches: Mind Mirror data missing nodes or connections")
+            return []
         
-        return generated_glitches
+        logger.info(f"Generating glitches from {len(nodes)} nodes and {len(connections)} connections")
+        
+        # Get metadata for contextualization
+        metadata = mind_mirror_data.get("metadata", {})
+        pattern_type = metadata.get("pattern_type", "unknown")
+        source_activity = metadata.get("source_activity", "reflection")
+        intensity = metadata.get("intensity", 0.5)
+        
+        # Get neural metrics if available, or calculate basic versions
+        coherence = metrics.get("coherence", 0.5)
+        complexity = metrics.get("complexity", 0.5)
+        stability = metrics.get("stability", 0.5)
+        
+        # Generate base glitches
+        glitches = []
+        
+        # Group nodes by type for pattern analysis
+        node_types = {}
+        for node in nodes:
+            node_type = node.get("type", "unknown")
+            if node_type not in node_types:
+                node_types[node_type] = []
+            node_types[node_type].append(node)
+        
+        # Use dominant node types to influence glitch characteristics
+        dominant_types = sorted(node_types.keys(), key=lambda k: len(node_types[k]), reverse=True)
+        
+        # Create pattern-based glitches
+        if pattern_type == "meditation":
+            # Meditation patterns create subtle, harmonious glitches
+            glitches.append({
+                "type": "visual_echo",
+                "intensity": 0.3 + (coherence * 0.4),
+                "persistence": 0.2 + (stability * 0.6),
+                "source": "mind_mirror_meditation",
+                "color_shift": {"h": 240, "s": 0.2, "v": 0.9}  # Blue/purple hues
+            })
+            
+            glitches.append({
+                "type": "field_distortion",
+                "intensity": 0.2 + (coherence * 0.3),
+                "wave_pattern": "sine",
+                "frequency": 0.05 + (1 - complexity) * 0.15,  # Lower complexity = smoother waves
+                "source": "mind_mirror_meditation",
+            })
+            
+        elif pattern_type == "creative":
+            # Creative patterns create colorful, dynamic glitches
+            glitches.append({
+                "type": "reality_fragment",
+                "intensity": 0.4 + (complexity * 0.5),
+                "fragmentation": 0.3 + (complexity * 0.6),
+                "rotation": 0.2 + (stability * 0.3),
+                "source": "mind_mirror_creative",
+                "color_shift": {"h": 120, "s": 0.7, "v": 0.9}  # Green/yellow hues
+            })
+            
+            glitches.append({
+                "type": "time_slip",
+                "intensity": 0.3 + (complexity * 0.6),
+                "duration": 0.4 + (stability * 0.4),
+                "echo_count": int(2 + complexity * 5),
+                "source": "mind_mirror_creative",
+            })
+            
+        elif pattern_type == "analytical":
+            # Analytical patterns create structured, geometric glitches
+            glitches.append({
+                "type": "digital_corruption",
+                "intensity": 0.5 + (complexity * 0.4),
+                "pattern": "grid",
+                "density": 0.3 + (coherence * 0.6),
+                "source": "mind_mirror_analytical",
+                "color_shift": {"h": 200, "s": 0.5, "v": 0.8}  # Blue/cyan hues
+            })
+            
+            glitches.append({
+                "type": "perspective_warp",
+                "intensity": 0.4 + (coherence * 0.4),
+                "warp_type": "fractal",
+                "iterations": int(3 + complexity * 4),
+                "source": "mind_mirror_analytical",
+            })
+            
+        elif pattern_type == "emotional":
+            # Emotional patterns create fluid, intense glitches
+            color_hue = 0  # Red for intense emotions
+            if "calm" in dominant_types or "peace" in dominant_types:
+                color_hue = 240  # Blue for calm emotions
+            elif "joy" in dominant_types or "happiness" in dominant_types:
+                color_hue = 60  # Yellow for happy emotions
+            
+            glitches.append({
+                "type": "reality_wave",
+                "intensity": 0.5 + (intensity * 0.5),
+                "wave_height": 0.3 + (coherence * 0.6),
+                "turbulence": 0.4 + (complexity * 0.5),
+                "source": "mind_mirror_emotional",
+                "color_shift": {"h": color_hue, "s": 0.8, "v": 0.9}
+            })
+            
+            glitches.append({
+                "type": "dissolve_effect",
+                "intensity": 0.4 + (intensity * 0.5),
+                "persistence": 0.3 + (stability * 0.6),
+                "particle_size": 0.1 + (complexity * 0.3),
+                "source": "mind_mirror_emotional",
+            })
+        
+        # Default case - generate generic glitches
+        else:
+            # Extract node strengths to influence glitch intensity
+            node_strengths = [node.get("strength", 0.5) for node in nodes]
+            avg_strength = sum(node_strengths) / len(node_strengths) if node_strengths else 0.5
+            
+            # Extract connection weights to influence glitch complexity
+            connection_weights = [conn.get("weight", 0.5) for conn in connections]
+            avg_weight = sum(connection_weights) / len(connection_weights) if connection_weights else 0.5
+            
+            # Generate generic glitches
+            glitches.append({
+                "type": "visual_static",
+                "intensity": 0.3 + (avg_strength * 0.6),
+                "grain_size": 0.1 + (complexity * 0.2),
+                "persistence": 0.3 + (stability * 0.6),
+                "source": "mind_mirror_generic",
+            })
+            
+            glitches.append({
+                "type": "reality_bend",
+                "intensity": 0.2 + (avg_weight * 0.7),
+                "bend_amount": 0.2 + (coherence * 0.5),
+                "elasticity": 0.3 + (complexity * 0.5),
+                "source": "mind_mirror_generic",
+            })
+        
+        # Add universal entanglement effect based on overall neural pattern
+        entanglement_effect = {
+            "type": "quantum_entanglement",
+            "intensity": 0.3 + (coherence * 0.6),
+            "connection_strength": 0.4 + (stability * 0.5),
+            "connection_count": int(3 + complexity * 10),
+            "source": "mind_mirror_integration",
+        }
+        glitches.append(entanglement_effect)
+        
+        # Normalize intensities to user preference if available
+        global_intensity = self.config.get("glitch_intensity", 0.7)
+        for glitch in glitches:
+            glitch["intensity"] *= global_intensity
+        
+        # Log the generated glitches
+        logger.info(f"Generated {len(glitches)} glitches from Mind Mirror data")
+        for i, glitch in enumerate(glitches):
+            logger.debug(f"Glitch {i+1}: {glitch['type']} (intensity: {glitch['intensity']:.2f})")
+        
+        return glitches
     
     def create_glitch(self, 
                      glitch_type: GlitchType, 
@@ -433,31 +585,72 @@ class RealityGlitcher:
             "timestamp": time.time()
         }
     
-    def integrate_with_mind_mirror(self) -> bool:
+    def integrate_with_mind_mirror(self):
         """
-        Integrates with Mind Mirror by loading exported neural pattern data
-        and generating corresponding glitches.
+        Integrate with Mind Mirror by loading neural pattern data and creating glitches
+        """
+        logger.info("Beginning Mind Mirror integration...")
         
-        Returns:
-            True if integration was successful, False otherwise
-        """
-        logger.info("Beginning integration with Mind Mirror...")
+        # Load Mind Mirror data
+        mind_mirror_data = self.load_mind_mirror_data()
         
         # Get generated glitches from Mind Mirror data
-        generated_glitches = self.generate_glitches_from_mind_mirror()
-        
-        if not generated_glitches:
-            logger.warning("No glitches could be generated from Mind Mirror data")
-            return False
+        if mind_mirror_data:
+            generated_glitches = self.generate_glitches_from_mind_mirror(mind_mirror_data)
             
-        # Add the glitches to active glitches
-        for glitch in generated_glitches:
-            self.active_glitches.append(glitch)
-            glitch.activate()
-            logger.info(f"Activated Mind Mirror glitch: {glitch.type.name}")
+            if not generated_glitches:
+                logger.warning("No glitches generated from Mind Mirror data")
+                return
             
-        logger.info(f"Mind Mirror integration complete. {len(generated_glitches)} glitches created.")
-        return True
+            logger.info(f"Successfully generated {len(generated_glitches)} glitches from Mind Mirror neural patterns")
+            
+            # Clear any previous Mind Mirror glitches
+            self.active_glitches = [g for g in self.active_glitches if not g.target.startswith("neural_pattern_")]
+            
+            # Add the glitches to active glitches
+            for glitch_config in generated_glitches:
+                # Map the glitch type string to enum
+                glitch_type_map = {
+                    "visual_echo": GlitchType.VISUAL,
+                    "field_distortion": GlitchType.SPATIAL,
+                    "reality_fragment": GlitchType.VISUAL,
+                    "time_slip": GlitchType.TEMPORAL,
+                    "digital_corruption": GlitchType.COGNITIVE,
+                    "perspective_warp": GlitchType.SPATIAL,
+                    "reality_wave": GlitchType.SYNCHRONISTIC,
+                    "dissolve_effect": GlitchType.VISUAL,
+                    "visual_static": GlitchType.VISUAL,
+                    "reality_bend": GlitchType.SPATIAL,
+                    "quantum_entanglement": GlitchType.SYNCHRONISTIC
+                }
+                
+                glitch_type = glitch_type_map.get(
+                    glitch_config["type"], 
+                    random.choice(list(GlitchType))
+                )
+                
+                # Create parameters from the glitch config
+                params = GlitchParameters(
+                    intensity=glitch_config.get("intensity", 0.5),
+                    duration=glitch_config.get("duration", random.uniform(10.0, 30.0)),
+                    complexity=glitch_config.get("complexity", 0.6),
+                    persistence=glitch_config.get("persistence", 0.5)
+                )
+                
+                # Create the glitch object
+                glitch = Glitch(
+                    glitch_type=glitch_type,
+                    parameters=params,
+                    target=f"neural_pattern_{glitch_config['type']}"
+                )
+                
+                self.active_glitches.append(glitch)
+                glitch.activate()
+                logger.info(f"Activated Mind Mirror glitch: {glitch_config['type']}")
+            
+            logger.info(f"Mind Mirror integration complete. {len(generated_glitches)} glitches created.")
+        else:
+            logger.warning("Mind Mirror integration failed. No data available.")
         
     def _calculate_current_stability(self) -> float:
         """Calculates the current stability of reality based on active glitches"""

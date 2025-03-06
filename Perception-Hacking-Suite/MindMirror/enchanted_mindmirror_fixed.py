@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 import pygame
 from PIL import Image, ImageTk, ImageFilter
 import numpy as np
+import threading
 
 # Constants
 VERSION = "1.0"
@@ -30,50 +31,96 @@ COSMIC_GOLD = "#FFD700"
 MIND_GREEN = "#218380"
 
 def ensure_default_meditations():
-    """Create default meditation files if they don't exist"""
+    """Create default meditation files if none exist"""
     meditation_dir = "resources/meditations"
-    os.makedirs(meditation_dir, exist_ok=True)
+    
+    if not os.path.exists(meditation_dir):
+        os.makedirs(meditation_dir, exist_ok=True)
     
     default_meditations = {
-        "cosmic_awareness.txt": """
-Settle into a comfortable position and close your eyes.
-Take three deep breaths, feeling your body relax with each exhale.
-Imagine your consciousness expanding beyond the boundaries of your body.
-Feel yourself becoming one with the cosmos, a conscious node in the universal network.
-Observe thoughts as cosmic events, arising and passing like stars being born and dying.
-Experience the vastness of your awareness, limitless and eternal.
-Rest in this expanded state of being, neither attaching to nor rejecting any experience.
-When you're ready, slowly return to your body, carrying this cosmic perspective with you.
-        """,
-        
-        "inner_light.txt": """
-Close your eyes and bring your attention to the center of your chest.
-Imagine a small point of light glowing there, pulsing with your heartbeat.
-With each breath, this light grows brighter and expands outward.
-Let it fill your entire body, illuminating you from within.
-Feel the warmth and clarity this light brings to every cell.
-Now imagine this light extending beyond your body, connecting with all beings.
-Rest in this radiance, knowing this light is your true nature.
-Whenever you're ready, slowly open your eyes, maintaining awareness of this inner illumination.
-        """,
-        
-        "quantum_self.txt": """
-Take a comfortable seat and allow your body to settle.
-Bring awareness to the sensation of your body existing in multiple states simultaneously.
-Just as a quantum particle exists as a probability wave until observed,
-Experience yourself as pure potential, not fixed in any single identity.
-Notice how your sense of self shifts and changes moment to moment.
-Allow any fixed idea of who you are to dissolve into a field of possibilities.
-Rest in this quantum state of being - fluid, undefined, and full of potential.
-When you're ready to return, bring with you this understanding of your quantum nature.
-        """
+        "cosmic_consciousness.txt": """Cosmic Consciousness Meditation
+
+Find a comfortable position and close your eyes. Begin by taking deep breaths, in through your nose and out through your mouth.
+
+With each breath, feel yourself becoming more relaxed, more at ease. Feel the weight of your body against the surface below you.
+
+Now, visualize a point of light at the center of your being. With each breath, this light grows brighter and expands outward.
+
+As the light expands, it begins to dissolve the boundaries of your physical body. Your consciousness starts to extend beyond your physical form.
+
+Imagine your awareness extending outward, first filling the room around you, then the building, then the surrounding area.
+
+Continue to expand your consciousness outward, encompassing your city, your country, the entire planet.
+
+Feel your consciousness expanding further, out into space, embracing the planets, the solar system, the galaxy.
+
+Your consciousness now extends throughout the universe, connecting with all forms of existence, all patterns of energy and matter.
+
+You are one with the cosmic consciousness, the universal mind that permeates all of existence.
+
+Remain in this state of expanded awareness, feeling the interconnectedness of all things.
+
+When you are ready, slowly begin to bring your awareness back to your physical form, while maintaining a sense of connection with the greater cosmos.
+
+Take a deep breath, and when you're ready, open your eyes, bringing this expanded awareness back into your daily life.""",
+
+        "neural_pattern_exploration.txt": """Neural Pattern Exploration
+
+Sit comfortably and close your eyes. Take several deep breaths, allowing your body to relax and your mind to become calm.
+
+Now, bring your attention to your thoughts. Simply observe them as they arise, without judgment or attachment.
+
+Visualize your thoughts as neural patterns, networks of light forming and dissolving within your mind.
+
+As you observe these patterns, notice how they connect and interact with each other, forming complex networks of association and meaning.
+
+Some patterns may appear bright and well-defined, representing clear and established thought patterns. Others may appear fainter, representing emerging or fading thoughts.
+
+Without trying to change anything, simply observe the natural flow of these neural patterns. Notice how some thoughts trigger others, creating chains of association.
+
+Now, imagine you can zoom out, seeing the entire landscape of your neural patterns from a distance. Observe the overall structure and organization of your thought patterns.
+
+From this perspective, notice any areas of particular activity or density. These may represent areas of focus or concern in your life.
+
+Now, bring your attention to the spaces between the neural patterns - the gaps of silence between thoughts. Allow yourself to rest in these spaces of pure awareness.
+
+As you prepare to end this meditation, know that you can return to this perspective anytime, observing your thoughts as neural patterns from a place of calm awareness.
+
+Take a deep breath, and when you're ready, gently open your eyes, carrying this awareness with you.""",
+
+        "reality_perception.txt": """Reality Perception Meditation
+
+Find a comfortable seated position and close your eyes. Take a few deep breaths, allowing your body to relax and your mind to settle.
+
+Begin by bringing awareness to your immediate sensory experience - the sounds around you, the sensations in your body, the rhythm of your breath.
+
+Now, consider that what you perceive as reality is actually your brain's interpretation of sensory input. Your perception is not reality itself, but your mind's construction of reality.
+
+Imagine your consciousness as a field of awareness, receiving and interpreting signals from your environment.
+
+Consider how your beliefs, expectations, and past experiences shape how you interpret these signals, creating your unique perception of reality.
+
+Now, imagine temporarily letting go of your filters and interpretations. Imagine experiencing reality more directly, with fewer preconceptions.
+
+As you sit in this space of open awareness, notice how reality might appear different when approached with fewer filters and judgments.
+
+Recognize that everyone experiences their own constructed version of reality, shaped by their unique perspectives and experiences.
+
+As you prepare to end this meditation, consider how you might carry this awareness of constructed perception into your daily life, approaching your experiences with more openness and flexibility.
+
+Take a deep breath, and when you're ready, gently open your eyes, carrying this understanding with you."""
     }
     
+    # Write default meditation files
     for filename, content in default_meditations.items():
         file_path = os.path.join(meditation_dir, filename)
         if not os.path.exists(file_path):
-            with open(file_path, "w") as f:
-                f.write(content.strip())
+            try:
+                with open(file_path, "w") as f:
+                    f.write(content)
+                print(f"Created default meditation: {filename}")
+            except Exception as e:
+                print(f"Error creating default meditation {filename}: {e}")
 
 class EnchantedMindMirror:
     def __init__(self):
@@ -121,13 +168,21 @@ class EnchantedMindMirror:
         }
         self.load_user_data()
         
-        # Create the main container
-        self.main_container = tk.Frame(self.master, bg=COSMIC_BLUE)
-        self.main_container.pack(fill=tk.BOTH, expand=True)
+        # Use grid layout for better control of positioning (replaces the main_container frame)
+        self.master.grid_rowconfigure(0, weight=1)
+        self.master.grid_columnconfigure(0, weight=1)
         
-        # Create cosmic background with stars
+        # Create main UI frame directly in the window
+        self.main_container = tk.Frame(self.master, bg=COSMIC_BLUE)
+        self.main_container.grid(row=0, column=0, sticky="nsew")  # Position at top
+        
+        # Configure main container for grid layout
+        self.main_container.grid_rowconfigure(0, weight=1)
+        self.main_container.grid_columnconfigure(0, weight=1)
+        
+        # Create stars for background directly in the main container
         self.background_canvas = tk.Canvas(self.main_container, bg=COSMIC_BLUE, highlightthickness=0)
-        self.background_canvas.pack(fill=tk.BOTH, expand=True)
+        self.background_canvas.grid(row=0, column=0, sticky="nsew")  # Fill the space completely
         
         # Create stars for the background
         self.star_objects = []
@@ -295,40 +350,70 @@ class EnchantedMindMirror:
     
     def create_ui(self):
         """Create the main user interface with tabs"""
-        # Configure style for ttk widgets
+        # Create a menu bar
+        menu_bar = tk.Menu(self.master)
+        self.master.config(menu=menu_bar)
+        
+        # File menu
+        file_menu = tk.Menu(menu_bar, tearoff=0)
+        menu_bar.add_cascade(label="File", menu=file_menu)
+        file_menu.add_command(label="Exit", command=self.master.quit)
+        
+        # Export menu
+        export_menu = tk.Menu(menu_bar, tearoff=0)
+        menu_bar.add_cascade(label="Export", menu=export_menu)
+        export_menu.add_command(label="Export to Reality Glitcher", command=self.integrate_with_reality_glitcher)
+        export_menu.add_command(label="Export to File", command=self.export_to_custom_location)
+        export_menu.add_separator()
+        export_menu.add_command(label="View Export History", command=self.show_export_history)
+        
+        # Integration menu
+        integration_menu = tk.Menu(menu_bar, tearoff=0)
+        menu_bar.add_cascade(label="Integration", menu=integration_menu)
+        integration_menu.add_command(label="Connect with Project89 Tools", command=self.show_integration_options)
+        
+        # Help menu
+        help_menu = tk.Menu(menu_bar, tearoff=0)
+        menu_bar.add_cascade(label="Help", menu=help_menu)
+        help_menu.add_command(label="About", command=self.show_about)
+        help_menu.add_command(label="Version Info", command=lambda: messagebox.showinfo("Version", f"Mind Mirror {VERSION} ({VERSION_NAME})"))
+        
+        # Use grid layout for placing UI elements
+        # Configure main_container for placing UI elements
+        self.main_container.grid_rowconfigure(0, weight=1)  # Row for tab control
+        self.main_container.grid_rowconfigure(1, weight=0)  # Row for status bar (smaller)
+        self.main_container.grid_columnconfigure(0, weight=1)
+        
+        # Main tab control - placed at the top with no padding
+        self.tab_control = ttk.Notebook(self.main_container)
+        self.tab_control.grid(row=0, column=0, sticky="nsew", padx=0, pady=0)
+        
+        # Apply custom styling to tabs - simpler style with minimal padding
         style = ttk.Style()
-        style.configure("TNotebook", background=COSMIC_BLUE, borderwidth=0)
-        style.configure("TNotebook.Tab", background=COSMIC_BLUE, foreground=PEARL_WHITE, padding=[20, 10])
+        style.configure("TNotebook", background=COSMIC_BLUE)
+        style.configure("TNotebook.Tab", 
+                       background=DEEP_THOUGHT, 
+                       foreground=PEARL_WHITE, 
+                       padding=[10, 2],  # Very minimal vertical padding
+                       font=('Helvetica', 10))
         style.map("TNotebook.Tab", 
-                 background=[("selected", MYSTICAL_PURPLE)],
-                 foreground=[("selected", PEARL_WHITE)])
-        
-        # Create main content frame over the background
-        self.main_frame = tk.Frame(self.background_canvas, bg=COSMIC_BLUE)
-        self.main_frame.place(relx=0.5, rely=0.5, anchor="center", relwidth=0.95, relheight=0.9)
-        
-        # Create notebook (tabbed interface)
-        self.notebook = ttk.Notebook(self.main_frame)
-        self.notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-        
-        # Create tab frames with contrasting background colors
-        self.dashboard_tab = tk.Frame(self.notebook, bg=COSMIC_BLUE)
-        self.reflection_tab = tk.Frame(self.notebook, bg=COSMIC_BLUE)
-        self.meditation_tab = tk.Frame(self.notebook, bg=COSMIC_BLUE)
-        self.beliefs_tab = tk.Frame(self.notebook, bg=COSMIC_BLUE)
-        self.journal_tab = tk.Frame(self.notebook, bg=COSMIC_BLUE)
-        self.neural_tab = tk.Frame(self.notebook, bg=COSMIC_BLUE)
+                 background=[("selected", MYSTICAL_PURPLE)], 
+                 foreground=[("selected", MIND_GOLD)])
+
+        # Create tab frames using a consistent frame with a content container
+        self.dashboard_tab = self.create_tab_container("Dashboard") 
+        self.neural_patterns_tab = self.create_tab_container("Neural Patterns")
+        self.consciousness_tab = self.create_tab_container("Consciousness Explorer")
+        self.mind_tools_tab = self.create_tab_container("Mind Tools")
         
         # Add tabs to notebook
-        self.notebook.add(self.dashboard_tab, text="Dashboard")
-        self.notebook.add(self.reflection_tab, text="Self-Reflection")
-        self.notebook.add(self.meditation_tab, text="Consciousness Expansion")
-        self.notebook.add(self.beliefs_tab, text="Ego Dissolution")
-        self.notebook.add(self.journal_tab, text="Journal")
-        self.notebook.add(self.neural_tab, text="Neural Patterns")
+        self.tab_control.add(self.dashboard_tab, text="Dashboard")
+        self.tab_control.add(self.neural_patterns_tab, text="Neural Patterns")
+        self.tab_control.add(self.consciousness_tab, text="Consciousness Explorer")
+        self.tab_control.add(self.mind_tools_tab, text="Mind Tools")
         
-        # Set up event binding for tab selection to ensure proper drawing
-        self.notebook.bind("<<NotebookTabChanged>>", self.on_tab_change)
+        # Add a callback for tab changes
+        self.tab_control.bind("<<NotebookTabChanged>>", self.on_tab_change)
         
         # Create content for dashboard tab
         self.create_dashboard_tab()
@@ -336,17 +421,35 @@ class EnchantedMindMirror:
         # Create content for neural patterns tab
         self.create_neural_patterns_tab()
         
-        # Add placeholder content for other tabs
+        # Add content for other tabs
         self.create_placeholder_tabs()
         
         # Create status bar
         self.create_status_bar()
     
+    def create_tab_container(self, title):
+        """Creates a consistent container frame for each tab with proper spacing"""
+        tab = tk.Frame(self.tab_control, bg=COSMIC_BLUE)
+        
+        # Configure the tab's grid
+        tab.grid_columnconfigure(0, weight=1)
+        tab.grid_rowconfigure(1, weight=1)
+        
+        # Return the tab frame
+        return tab
+    
     def create_dashboard_tab(self):
         """Create the dashboard tab content"""
-        # Welcome header
+        # Clear any existing content
+        for widget in self.dashboard_tab.winfo_children():
+            widget.destroy()
+        
+        # Configure grid
+        self.dashboard_tab.grid_columnconfigure(0, weight=1)
+        
+        # Welcome header - place at the very top with zero padding
         header_frame = tk.Frame(self.dashboard_tab, bg=COSMIC_BLUE)
-        header_frame.pack(fill="x", pady=(20, 30))
+        header_frame.grid(row=0, column=0, sticky="ew", pady=(0, 5))
         
         welcome_text = f"Welcome back, {self.user_data['name']}"
         welcome_label = tk.Label(
@@ -356,7 +459,7 @@ class EnchantedMindMirror:
             fg=PEARL_WHITE,
             bg=COSMIC_BLUE
         )
-        welcome_label.pack()
+        welcome_label.pack(pady=(0, 0))  # No padding
         
         subtitle = "Your consciousness exploration dashboard"
         subtitle_label = tk.Label(
@@ -366,19 +469,21 @@ class EnchantedMindMirror:
             fg=AMBIENT_TEAL,
             bg=COSMIC_BLUE
         )
-        subtitle_label.pack(pady=(5, 0))
+        subtitle_label.pack(pady=(2, 0))  # Minimal padding
         
         # Main dashboard content
         content_frame = tk.Frame(self.dashboard_tab, bg=COSMIC_BLUE)
-        content_frame.pack(fill="both", expand=True, padx=40)
+        content_frame.grid(row=1, column=0, sticky="nsew", padx=20, pady=5)
+        self.dashboard_tab.grid_rowconfigure(1, weight=1)  # Make content expandable
         
         # Left side - Stats and streak
-        left_frame = tk.Frame(content_frame, bg=COSMIC_BLUE)
+        left_frame = tk.Frame(content_frame, bg=COSMIC_BLUE, width=300)  # Set fixed width
         left_frame.pack(side=tk.LEFT, fill="both", expand=True, padx=(0, 20))
+        left_frame.pack_propagate(False)  # Prevent shrinking
         
         # Practice streak
         streak_frame = tk.Frame(left_frame, bg=DEEP_THOUGHT, bd=1, relief=tk.RAISED)
-        streak_frame.pack(fill="x", pady=10, ipady=10)
+        streak_frame.pack(fill="x", pady=10, ipady=20)  # Increased internal padding
         
         streak_label = tk.Label(
             streak_frame,
@@ -387,12 +492,12 @@ class EnchantedMindMirror:
             fg=PEARL_WHITE,
             bg=DEEP_THOUGHT
         )
-        streak_label.pack(pady=(10, 5))
+        streak_label.pack(pady=(20, 10))  # Increased padding
         
         streak_count = tk.Label(
             streak_frame,
             text=str(self.user_data["meditation_stats"]["practice_streak"]),
-            font=("Helvetica", 40, "bold"),
+            font=("Helvetica", 60, "bold"),  # Increased font size
             fg=MIND_GOLD,
             bg=DEEP_THOUGHT
         )
@@ -405,7 +510,7 @@ class EnchantedMindMirror:
             fg=PEARL_WHITE,
             bg=DEEP_THOUGHT
         )
-        streak_text.pack(pady=(0, 10))
+        streak_text.pack(pady=(5, 20))  # Increased padding
         
         # Right side - Recommendations
         right_frame = tk.Frame(content_frame, bg=COSMIC_BLUE)
@@ -418,7 +523,7 @@ class EnchantedMindMirror:
             fg=AMBIENT_TEAL,
             bg=COSMIC_BLUE
         )
-        recommendations_label.pack(anchor="w", pady=(0, 15))
+        recommendations_label.pack(anchor="w", pady=(0, 20))  # Increased bottom padding
         
         # Define recommendations with associated actions
         recommendations = [
@@ -426,25 +531,25 @@ class EnchantedMindMirror:
                 "title": "Begin Your Meditation Practice",
                 "description": "Regular meditation enhances self-awareness. Start with short sessions to build your practice.",
                 "button_text": "Start Meditation",
-                "command": lambda: self.notebook.select(self.meditation_tab)
+                "command": lambda: self.tab_control.select(self.consciousness_tab)
             },
             {
                 "title": "Record Your Insights",
                 "description": "Journaling enhances reflection and consolidates insights. Document your inner journey.",
                 "button_text": "Open Journal",
-                "command": lambda: self.notebook.select(self.journal_tab)
+                "command": lambda: self.tab_control.select(self.mind_tools_tab)
             },
             {
                 "title": "Explore Neural Patterns",
                 "description": "Visualize how your thoughts connect to reveal deeper cognitive patterns.",
                 "button_text": "View Patterns",
-                "command": lambda: self.notebook.select(self.neural_tab)
+                "command": lambda: self.tab_control.select(self.neural_patterns_tab)
             }
         ]
         
         for rec in recommendations:
             rec_frame = tk.Frame(right_frame, bg=MYSTICAL_PURPLE, bd=1, relief=tk.RAISED)
-            rec_frame.pack(fill="x", pady=5, ipady=5)
+            rec_frame.pack(fill="x", pady=10, ipady=10)  # Increased padding
             
             title = tk.Label(
                 rec_frame,
@@ -454,7 +559,7 @@ class EnchantedMindMirror:
                 bg=MYSTICAL_PURPLE,
                 anchor="w"
             )
-            title.pack(fill="x", padx=10, pady=(5, 3))
+            title.pack(fill="x", padx=15, pady=(10, 5))  # Increased padding
             
             desc = tk.Label(
                 rec_frame,
@@ -466,24 +571,32 @@ class EnchantedMindMirror:
                 justify="left",
                 wraplength=380
             )
-            desc.pack(fill="x", padx=10, pady=(0, 5))
+            desc.pack(fill="x", padx=15, pady=(0, 10))  # Increased padding
+            
+            button_frame = tk.Frame(rec_frame, bg=MYSTICAL_PURPLE)  # New frame for button alignment
+            button_frame.pack(fill="x", padx=15, pady=(0, 10))
             
             button = tk.Button(
-                rec_frame,
+                button_frame,
                 text=rec["button_text"],
                 font=self.small_font,
                 bg=COSMIC_BLUE,
                 fg=PEARL_WHITE,
                 bd=0,
-                command=rec["command"]
+                padx=10,  # Added padding to button
+                pady=5,   # Added padding to button
+                command=rec["command"],
+                activebackground=AMBIENT_TEAL,  # Highlighted color when clicked
+                activeforeground=PEARL_WHITE,  # Text color when clicked
+                cursor="hand2"  # Hand cursor when hovering
             )
-            button.pack(anchor="e", padx=10, pady=5)
+            button.pack(side=tk.RIGHT)  # Aligned to right
     
     def create_neural_patterns_tab(self):
         """Create the neural patterns visualization tab"""
         # Header frame
-        header = tk.Frame(self.neural_tab, bg=COSMIC_BLUE)
-        header.pack(fill="x", pady=(20, 10))
+        header = tk.Frame(self.neural_patterns_tab, bg=COSMIC_BLUE)
+        header.pack(fill="x", pady=(5, 5))  # Minimal top padding
         
         title = tk.Label(
             header,
@@ -501,11 +614,11 @@ class EnchantedMindMirror:
             fg=PEARL_WHITE,
             bg=COSMIC_BLUE
         )
-        description.pack(pady=(5, 20))
+        description.pack(pady=(5, 5))  # Minimal padding
         
         # Main content frame
-        pattern_frame = tk.Frame(self.neural_tab, bg=COSMIC_INDIGO)
-        pattern_frame.pack(fill="both", expand=True, padx=30, pady=10)
+        pattern_frame = tk.Frame(self.neural_patterns_tab, bg=COSMIC_INDIGO)
+        pattern_frame.pack(fill="both", expand=True, padx=20, pady=(5, 10))  # Reduced padding
         
         # Visualization canvas
         self.pattern_canvas = tk.Canvas(
@@ -518,7 +631,7 @@ class EnchantedMindMirror:
         self.pattern_canvas.pack(pady=20, fill="both", expand=True)
         
         # Controls frame
-        controls = tk.Frame(self.neural_tab, bg=COSMIC_BLUE)
+        controls = tk.Frame(self.neural_patterns_tab, bg=COSMIC_BLUE)
         controls.pack(fill="x", padx=30, pady=20)
         
         # Pattern type selector
@@ -588,42 +701,28 @@ class EnchantedMindMirror:
     
     def create_status_bar(self):
         """Create status bar at the bottom of the application"""
-        status_bar = tk.Frame(self.master, bg=DEEP_THOUGHT, height=30)
-        status_bar.pack(side=tk.BOTTOM, fill=tk.X)
+        status_bar = tk.Frame(self.main_container, bg=DEEP_THOUGHT, height=25)
+        status_bar.grid(row=1, column=0, sticky="ew")
         
         # Version info
         version_label = tk.Label(
             status_bar,
-            text=f"Mind Mirror v{VERSION} | {VERSION_NAME}",
+            text=f"Mind Mirror {VERSION} | {VERSION_NAME}",
             font=("Helvetica", 8),
             fg=PEARL_WHITE,
             bg=DEEP_THOUGHT
         )
         version_label.pack(side=tk.LEFT, padx=10)
         
-        # Sound toggle button
-        self.sound_button = tk.Button(
+        # Connection status
+        self.connection_status = tk.Label(
             status_bar,
-            text="Sound: Off",
+            text="Ready",
             font=("Helvetica", 8),
-            bg=DEEP_THOUGHT,
-            fg=PEARL_WHITE,
-            bd=0,
-            command=self.toggle_ambient_sound
+            fg=NEURAL_GREEN,
+            bg=DEEP_THOUGHT
         )
-        self.sound_button.pack(side=tk.RIGHT, padx=10)
-        
-        # Integration button
-        integration_button = tk.Button(
-            status_bar,
-            text="Reality Glitcher Integration",
-            font=("Helvetica", 8),
-            bg=DEEP_THOUGHT,
-            fg=ENERGY_CYAN,
-            bd=0,
-            command=self.show_integration_options
-        )
-        integration_button.pack(side=tk.RIGHT, padx=10)
+        self.connection_status.pack(side=tk.RIGHT, padx=10)
     
     def show_integration_options(self):
         """Show integration options with other Project89 tools"""
@@ -718,18 +817,39 @@ class EnchantedMindMirror:
         # Create a progress window
         progress_window = tk.Toplevel(self.master)
         progress_window.title("Connecting to Reality Glitcher")
-        progress_window.geometry("400x250")
+        progress_window.geometry("450x350")
         progress_window.configure(bg=COSMIC_BLUE)
+        progress_window.resizable(False, False)
+        progress_window.grab_set()  # Make the window modal
+        
+        # Center the window
+        self._center_window(progress_window)
         
         # Progress content
         header = tk.Label(
             progress_window,
-            text="Exporting Neural Patterns",
+            text="Neural Pattern Export",
             font=self.title_font,
             fg=ENERGY_CYAN,
             bg=COSMIC_BLUE
         )
         header.pack(pady=(20, 10))
+        
+        # Status icon - will be updated based on success/failure
+        status_frame = tk.Frame(progress_window, bg=COSMIC_BLUE)
+        status_frame.pack(pady=10)
+        
+        status_canvas = tk.Canvas(
+            status_frame, 
+            width=60, 
+            height=60, 
+            bg=COSMIC_BLUE,
+            highlightthickness=0
+        )
+        status_canvas.pack()
+        
+        # Initial blue circle as status indicator
+        status_indicator = status_canvas.create_oval(5, 5, 55, 55, fill=AMBIENT_TEAL, outline="")
         
         # Generate neural pattern data for export
         neural_data = self.generate_export_data()
@@ -737,10 +857,11 @@ class EnchantedMindMirror:
         # Show progress information
         status_label = tk.Label(
             progress_window,
-            text="Preparing neural pattern data...",
+            text="Initializing...",
             font=self.normal_font,
             fg=PEARL_WHITE,
-            bg=COSMIC_BLUE
+            bg=COSMIC_BLUE,
+            wraplength=400
         )
         status_label.pack(pady=10)
         
@@ -756,114 +877,450 @@ class EnchantedMindMirror:
         )
         progress.pack()
         
-        # Start progress simulation
-        progress["value"] = 0
-        progress_window.update()
+        # Details text area
+        details_text = tk.Text(
+            progress_window,
+            height=5,
+            width=50,
+            bg=COSMIC_INDIGO,
+            fg=PEARL_WHITE,
+            font=self.small_font,
+            wrap=tk.WORD
+        )
+        details_text.pack(pady=10, padx=20, fill=tk.X)
         
-        # Simulate progress steps
-        steps = ["Generating pattern data", "Formatting for transfer", "Connecting to Reality Glitcher", "Transferring data"]
-        for i, step in enumerate(steps):
-            progress["value"] = (i + 1) * 25
-            status_label.config(text=step)
-            progress_window.update()
-            time.sleep(0.7)  # Simulate processing time
+        # Insert initial status message
+        details_text.insert(tk.END, "Beginning integration with Reality Glitcher...\n")
         
-        # Try to actually write the data to Reality Glitcher directory
-        export_path = os.path.join(reality_glitcher_path, "imports")
-        os.makedirs(export_path, exist_ok=True)
-        
-        try:
-            with open(os.path.join(export_path, "mind_mirror_data.json"), "w") as f:
-                json.dump(neural_data, f, indent=2)
-            export_success = True
-        except Exception as e:
-            export_success = False
-            error_message = str(e)
-        
-        # Show completion message
-        if export_success:
-            status_label.config(text="Neural patterns successfully exported to Reality Glitcher!")
-            messagebox.showinfo(
-                "Export Complete",
-                "Neural patterns have been successfully exported to Reality Glitcher!\n\n"
-                "You can now use these patterns in your Reality Glitcher experiments."
-            )
-        else:
-            status_label.config(text=f"Error exporting data: {error_message}")
-            messagebox.showerror(
-                "Export Error",
-                f"Could not export neural patterns: {error_message}\n\n"
-                "Make sure Reality Glitcher is properly installed and accessible."
-            )
-            
-        # Add close button
+        # Add close button (initially disabled)
         close_button = tk.Button(
             progress_window,
             text="Close",
             font=self.normal_font,
             bg=DEEP_THOUGHT,
             fg=PEARL_WHITE,
-            command=progress_window.destroy
+            command=progress_window.destroy,
+            state=tk.DISABLED
         )
         close_button.pack(pady=20)
         
+        # Run integration in the background
+        def perform_integration():
+            # Setup export paths
+            imports_path = os.path.join(reality_glitcher_path, "imports")
+            os.makedirs(imports_path, exist_ok=True)
+            
+            export_path = os.path.join(imports_path, "mind_mirror_data.json")
+            
+            # Mark with timestamp to avoid conflicts
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            export_path = os.path.join(imports_path, f"mind_mirror_data_{timestamp}.json")
+            
+            # Export metadata info
+            export_info = {
+                "exported_at": datetime.now().isoformat(),
+                "source": "Mind Mirror",
+                "version": VERSION,
+                "nodes": len(neural_data["neural_patterns"]["nodes"]),
+                "connections": len(neural_data["neural_patterns"]["connections"]),
+                "user": self.user_data["name"]
+            }
+            
+            # Update UI for each step
+            steps = [
+                "Generating neural pattern data",
+                "Processing consciousness data",
+                "Formatting for Reality Glitcher",
+                "Establishing connection",
+                "Transferring neural patterns"
+            ]
+            
+            # Simulate steps with actual work between them
+            for i, step in enumerate(steps):
+                # Update progress
+                progress["value"] = (i + 1) * 20
+                status_label.config(text=step)
+                
+                # Do actual work for each step
+                if i == 0:
+                    # Generate data already done before this loop
+                    details_text.insert(tk.END, f"✓ Neural pattern data generated: {len(neural_data['neural_patterns']['nodes'])} nodes\n")
+                    progress_window.update()
+                    time.sleep(0.5)
+                elif i == 1:
+                    # Add consciousness level info
+                    details_text.insert(tk.END, f"✓ Consciousness level: {neural_data['metadata']['consciousness_level']:.2f}\n")
+                    progress_window.update()
+                    time.sleep(0.7)
+                elif i == 2:
+                    # Nothing to do, data already formatted
+                    details_text.insert(tk.END, "✓ Data formatted for Reality Glitcher\n")
+                    progress_window.update()
+                    time.sleep(0.5)
+                elif i == 3:
+                    # Create directories if needed
+                    try:
+                        os.makedirs(imports_path, exist_ok=True)
+                        details_text.insert(tk.END, f"✓ Connection established with Reality Glitcher\n")
+                    except Exception as e:
+                        details_text.insert(tk.END, f"✗ Error creating directories: {str(e)}\n")
+                    progress_window.update()
+                    time.sleep(0.8)
+                elif i == 4:
+                    # Actually export the data
+                    try:
+                        success, message = self.export_data_to_file(
+                            neural_data, 
+                            export_path, 
+                            "Neural pattern data"
+                        )
+                        if success:
+                            details_text.insert(tk.END, f"✓ Transfer complete! Data saved to Reality Glitcher.\n")
+                            
+                            # Also create a metadata file for RG to know what was imported
+                            meta_path = os.path.join(imports_path, f"meta_{timestamp}.json")
+                            with open(meta_path, "w") as f:
+                                json.dump(export_info, f, indent=2)
+                                
+                            # Create a notification file for Reality Glitcher
+                            notification_path = os.path.join(imports_path, ".new_import")
+                            with open(notification_path, "w") as f:
+                                f.write(timestamp)
+                        else:
+                            details_text.insert(tk.END, f"✗ Error: {message}\n")
+                    except Exception as e:
+                        details_text.insert(tk.END, f"✗ Error exporting data: {str(e)}\n")
+                    progress_window.update()
+            
+            # Determine final status
+            try:
+                if os.path.exists(export_path):
+                    # Success
+                    status_canvas.itemconfig(status_indicator, fill=NEURAL_GREEN)
+                    status_label.config(text="Integration Complete!", fg=NEURAL_GREEN)
+                    
+                    # Record this export in user data
+                    if "exports" not in self.user_data:
+                        self.user_data["exports"] = []
+                        
+                    self.user_data["exports"].append({
+                        "timestamp": datetime.now().isoformat(),
+                        "target": "Reality Glitcher",
+                        "file": os.path.basename(export_path),
+                        "nodes": len(neural_data["neural_patterns"]["nodes"]),
+                        "connections": len(neural_data["neural_patterns"]["connections"])
+                    })
+                    self.save_user_data()
+                    
+                    # Show success message
+                    messagebox.showinfo(
+                        "Export Complete",
+                        "Neural patterns have been successfully exported to Reality Glitcher!\n\n"
+                        "You can now use these patterns in your Reality Glitcher experiments."
+                    )
+                else:
+                    # Failure
+                    status_canvas.itemconfig(status_indicator, fill=ATTENTION_RED)
+                    status_label.config(text="Integration Failed", fg=ATTENTION_RED)
+            except Exception as e:
+                # Failure
+                status_canvas.itemconfig(status_indicator, fill=ATTENTION_RED)
+                status_label.config(text=f"Error: {str(e)}", fg=ATTENTION_RED)
+                
+            # Enable close button
+            close_button.config(state=tk.NORMAL)
+        
+        # Start integration process in a separate thread to keep UI responsive
+        threading.Thread(target=perform_integration, daemon=True).start()
+
+    def _center_window(self, window):
+        """Center a window on the screen"""
+        window.update_idletasks()
+        width = window.winfo_width()
+        height = window.winfo_height()
+        x = (window.winfo_screenwidth() // 2) - (width // 2)
+        y = (window.winfo_screenheight() // 2) - (height // 2)
+        window.geometry(f"{width}x{height}+{x}+{y}")
+    
     def generate_export_data(self):
         """Generate neural pattern data for export to Reality Glitcher"""
         # Create sample data structure that Reality Glitcher would understand
         export_data = {
             "source": "Mind Mirror",
             "version": VERSION,
+            "version_name": VERSION_NAME,
             "timestamp": datetime.now().isoformat(),
             "user": self.user_data["name"],
             "neural_patterns": {
                 "nodes": [],
-                "connections": []
+                "connections": [],
+                "metrics": self._generate_neural_metrics()
             },
             "metadata": {
                 "pattern_type": "thought_web",
-                "consciousness_level": 0.8,
+                "consciousness_level": random.uniform(0.7, 0.9),
                 "color_scheme": "cosmic",
-                "energy_signature": "alpha_theta_blend"
+                "energy_signature": "alpha_theta_blend",
+                "export_id": f"mm_export_{int(time.time())}",
+                "session_duration": self._calculate_session_duration()
             }
         }
         
-        # Generate some sample nodes based on any available user data
-        thought_seeds = ["Perception", "Consciousness", "Reality", "Mind", "Time", "Space", 
-                        "Self", "Awareness", "Memory", "Identity", "Dream", "Existence"]
+        # Generate nodes from user data - more comprehensive approach
+        node_sources = []
         
-        # Add any insights from user data
+        # Add beliefs if available
+        if "beliefs" in self.user_data and self.user_data["beliefs"]:
+            for belief in self.user_data["beliefs"]:
+                node_sources.append({
+                    "label": belief["belief"][:30], 
+                    "type": "belief",
+                    "strength": random.uniform(0.7, 1.0)
+                })
+        
+        # Add journal insights if available
+        if "journal_entries" in self.user_data and self.user_data["journal_entries"]:
+            for entry in self.user_data["journal_entries"][:5]:  # Limit to 5 entries
+                keywords = self._extract_keywords(entry.get("content", ""))
+                for keyword in keywords[:2]:  # Take top 2 keywords
+                    node_sources.append({
+                        "label": keyword,
+                        "type": "insight",
+                        "strength": random.uniform(0.6, 0.9)
+                    })
+        
+        # Add any specific insights recorded
         for insight in self.user_data.get("insights", []):
-            thought_seeds.append(insight)
+            node_sources.append({
+                "label": insight,
+                "type": "direct_insight",
+                "strength": random.uniform(0.8, 1.0)
+            })
         
-        # Generate nodes
-        for i, thought in enumerate(thought_seeds[:10]):  # Limit to 10 nodes
-            node = {
-                "id": i,
-                "label": thought,
+        # Add base consciousness concepts
+        consciousness_concepts = [
+            "Perception", "Consciousness", "Reality", "Mind", "Time", "Space", 
+            "Self", "Awareness", "Memory", "Identity", "Dream", "Existence"
+        ]
+        
+        for concept in consciousness_concepts:
+            node_sources.append({
+                "label": concept,
                 "type": "concept",
-                "strength": random.uniform(0.5, 1.0),
-                "position": {
-                    "x": random.uniform(-100, 100),
-                    "y": random.uniform(-100, 100)
-                }
-            }
-            export_data["neural_patterns"]["nodes"].append(node)
+                "strength": random.uniform(0.5, 0.8)
+            })
         
-        # Generate some connections between nodes
-        num_connections = min(15, len(export_data["neural_patterns"]["nodes"]) * 2)
-        for _ in range(num_connections):
-            source = random.randint(0, len(export_data["neural_patterns"]["nodes"]) - 1)
-            target = random.randint(0, len(export_data["neural_patterns"]["nodes"]) - 1)
-            if source != target:
-                connection = {
-                    "source": source,
-                    "target": target,
-                    "strength": random.uniform(0.1, 0.9),
-                    "type": random.choice(["association", "causation", "similarity"])
-                }
-                export_data["neural_patterns"]["connections"].append(connection)
+        # Ensure we don't have duplicate labels
+        unique_nodes = {}
+        for source in node_sources:
+            if source["label"] not in unique_nodes:
+                unique_nodes[source["label"]] = source
+        
+        # Generate nodes with positions in a network layout
+        nodes = list(unique_nodes.values())
+        random.shuffle(nodes)  # Randomize order
+        nodes = nodes[:15]  # Limit to 15 nodes for visualization clarity
+        
+        # Generate positions using a simple force-directed layout simulation
+        positions = self._generate_network_positions(len(nodes))
+        
+        # Create the final node objects
+        for i, (node, position) in enumerate(zip(nodes, positions)):
+            node_obj = {
+                "id": i,
+                "label": node["label"],
+                "type": node["type"],
+                "strength": node["strength"],
+                "position": position
+            }
+            export_data["neural_patterns"]["nodes"].append(node_obj)
+        
+        # Generate connections between nodes - more nuanced connections
+        num_nodes = len(export_data["neural_patterns"]["nodes"])
+        if num_nodes > 1:
+            # Create a more realistic network - not all nodes are connected
+            # Each node should connect to 2-4 other nodes
+            for i, node in enumerate(export_data["neural_patterns"]["nodes"]):
+                # Determine number of connections for this node
+                num_connections = random.randint(1, min(4, num_nodes-1))
+                
+                # Find potential targets (exclude self)
+                potential_targets = [j for j in range(num_nodes) if j != i]
+                random.shuffle(potential_targets)
+                targets = potential_targets[:num_connections]
+                
+                for target in targets:
+                    # Skip if this connection already exists in reverse
+                    if any(c["source"] == target and c["target"] == i 
+                           for c in export_data["neural_patterns"]["connections"]):
+                        continue
+                    
+                    # Create connection with meaningful strength based on node types
+                    source_node = export_data["neural_patterns"]["nodes"][i]
+                    target_node = export_data["neural_patterns"]["nodes"][target]
+                    
+                    # Calculate connection strength based on node types
+                    base_strength = random.uniform(0.3, 0.9)
+                    if source_node["type"] == target_node["type"]:
+                        # Same type nodes have stronger connections
+                        strength = base_strength * 1.2
+                    elif (source_node["type"] == "belief" and target_node["type"] == "concept") or \
+                         (source_node["type"] == "concept" and target_node["type"] == "belief"):
+                        # Beliefs and concepts have strong connections
+                        strength = base_strength * 1.1
+                    else:
+                        strength = base_strength
+                    
+                    # Ensure it's within bounds
+                    strength = min(1.0, max(0.1, strength))
+                    
+                    connection = {
+                        "source": i,
+                        "target": target,
+                        "strength": strength,
+                        "type": self._determine_connection_type(source_node["type"], target_node["type"])
+                    }
+                    export_data["neural_patterns"]["connections"].append(connection)
         
         return export_data
+
+    def _generate_neural_metrics(self):
+        """Generate neural metrics based on user data"""
+        # Calculate how much user has engaged with the system
+        journal_count = len(self.user_data.get("journal_entries", []))
+        belief_count = len(self.user_data.get("beliefs", []))
+        meditation_minutes = self.user_data.get("meditation_stats", {}).get("total_minutes", 0)
+        
+        # Generate metrics
+        metrics = {
+            "coherence": min(1.0, max(0.3, 0.5 + (journal_count * 0.02) + (belief_count * 0.03))),
+            "complexity": min(1.0, max(0.2, 0.4 + (belief_count * 0.04))),
+            "resonance": min(1.0, max(0.3, 0.4 + (meditation_minutes * 0.001))),
+            "energy": random.uniform(0.5, 0.9),
+            "integration": min(1.0, max(0.2, 0.3 + (journal_count * 0.01) + (belief_count * 0.02) + (meditation_minutes * 0.0005)))
+        }
+        
+        return metrics
+
+    def _calculate_session_duration(self):
+        """Calculate approximate session duration in minutes"""
+        # This is just an estimate since we don't track actual session start time
+        return random.randint(5, 30)
+
+    def _extract_keywords(self, text):
+        """Extract potential keywords from text content"""
+        if not text:
+            return []
+            
+        # Very simple keyword extraction - split and filter words
+        common_words = {"and", "the", "is", "in", "of", "to", "a", "an", "that", "this", 
+                       "it", "with", "for", "as", "on", "at", "by", "from", "was", "were"}
+        
+        words = text.lower().split()
+        # Filter words: remove common words and short words, keep only alphabetic words
+        filtered = [word for word in words if word not in common_words and len(word) > 4 and word.isalpha()]
+        
+        # Count frequency
+        word_count = {}
+        for word in filtered:
+            if word in word_count:
+                word_count[word] += 1
+            else:
+                word_count[word] = 1
+        
+        # Sort by frequency
+        sorted_words = sorted(word_count.items(), key=lambda x: x[1], reverse=True)
+        
+        # Take only the words, capitalize them
+        return [word.capitalize() for word, count in sorted_words[:5]]
+
+    def _generate_network_positions(self, num_nodes):
+        """Generate positions for nodes in a network visualization"""
+        positions = []
+        
+        if num_nodes <= 1:
+            positions.append({"x": 0, "y": 0})
+            return positions
+        
+        # Create positions in a circle first
+        radius = 70
+        for i in range(num_nodes):
+            angle = (i / num_nodes) * 2 * math.pi
+            x = radius * math.cos(angle)
+            y = radius * math.sin(angle)
+            positions.append({"x": x, "y": y})
+        
+        # Add a little randomness to make it look more natural
+        for pos in positions:
+            pos["x"] += random.uniform(-15, 15)
+            pos["y"] += random.uniform(-15, 15)
+        
+        return positions
+
+    def _determine_connection_type(self, source_type, target_type):
+        """Determine the type of connection based on the types of connected nodes"""
+        if source_type == target_type:
+            return "reinforcing"
+        elif (source_type == "belief" and target_type == "concept") or \
+             (source_type == "concept" and target_type == "belief"):
+            return "conceptual"
+        elif (source_type == "insight" or target_type == "insight"):
+            return "revelatory"
+        else:
+            connection_types = ["associative", "causal", "temporal", "symbolic"]
+            return random.choice(connection_types)
+
+    def export_data_to_file(self, data, file_path, description="data"):
+        """Export data to a file with error handling
+        
+        Args:
+            data: The data to export (should be JSON serializable)
+            file_path: The full path to save the file to
+            description: Description of the data for error messages
+        
+        Returns:
+            (success, message): Tuple with success boolean and message
+        """
+        try:
+            # Ensure directory exists
+            directory = os.path.dirname(file_path)
+            os.makedirs(directory, exist_ok=True)
+            
+            # Write the data
+            with open(file_path, "w") as f:
+                json.dump(data, f, indent=2)
+                
+            return True, f"{description} exported successfully to {file_path}"
+        except Exception as e:
+            error_msg = f"Error exporting {description}: {str(e)}"
+            print(error_msg)
+            return False, error_msg
+
+    def export_to_custom_location(self):
+        """Export Mind Mirror data to a custom location"""
+        # Create a file dialog
+        from tkinter import filedialog
+        
+        # Generate the data
+        export_data = self.generate_export_data()
+        
+        # Ask user for save location
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".json",
+            filetypes=[("JSON Files", "*.json"), ("All Files", "*.*")],
+            title="Export Mind Mirror Data"
+        )
+        
+        if not file_path:
+            return  # User cancelled
+            
+        # Export the data
+        success, message = self.export_data_to_file(export_data, file_path, "Mind Mirror neural pattern data")
+        
+        if success:
+            messagebox.showinfo("Export Successful", message)
+        else:
+            messagebox.showerror("Export Failed", message)
     
     def generate_neural_pattern(self):
         """Generate a neural pattern visualization based on selected type"""
@@ -1064,41 +1521,819 @@ class EnchantedMindMirror:
     def load_user_data(self):
         """Load user data from JSON file"""
         try:
-            with open("user_data/user_profile.json", "r") as f:
-                self.user_data = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError):
-            # User data doesn't exist or is invalid, use defaults
-            pass
-    
-    def save_user_data(self):
-        """Save user data to JSON file"""
-        with open("user_data/user_profile.json", "w") as f:
-            json.dump(self.user_data, f, indent=2)
+            # Ensure user_data directory exists
+            os.makedirs("user_data", exist_ok=True)
+            
+            user_data_path = "user_data/user_profile.json"
+            if os.path.exists(user_data_path):
+                with open(user_data_path, "r") as f:
+                    loaded_data = json.load(f)
+                    # Update user_data with loaded values, keeping defaults for missing values
+                    for key, value in loaded_data.items():
+                        self.user_data[key] = value
+                print(f"User data loaded successfully from {user_data_path}")
+            else:
+                print(f"No existing user data found at {user_data_path}, using default values")
+        except json.JSONDecodeError as e:
+            # Handle corrupted JSON file
+            self._handle_corrupted_data("user_data/user_profile.json", e)
+        except Exception as e:
+            print(f"Error loading user data: {str(e)}")
+            print("Using default values")
 
+    def save_user_data(self):
+        """Save user data to JSON file with backup"""
+        try:
+            # Ensure user_data directory exists
+            os.makedirs("user_data", exist_ok=True)
+            
+            # Create a backup of the current file if it exists
+            user_data_path = "user_data/user_profile.json"
+            if os.path.exists(user_data_path):
+                backup_path = f"user_data/user_profile_backup_{int(time.time())}.json"
+                try:
+                    with open(user_data_path, "r") as src:
+                        with open(backup_path, "w") as dst:
+                            dst.write(src.read())
+                except Exception as e:
+                    print(f"Warning: Could not create backup file: {str(e)}")
+            
+            # Save the current data
+            with open(user_data_path, "w") as f:
+                json.dump(self.user_data, f, indent=2)
+            
+            # Maintain max 5 backup files
+            self._cleanup_backup_files()
+            
+        except Exception as e:
+            print(f"Error saving user data: {str(e)}")
+            messagebox.showerror(
+                "Data Save Error",
+                f"Could not save your data: {str(e)}\nYour changes in this session may be lost."
+            )
+
+    def _handle_corrupted_data(self, file_path, error):
+        """Handle corrupted data files by creating a backup and using defaults"""
+        print(f"Error loading data from {file_path}: {str(error)}")
+        try:
+            # Rename the corrupted file instead of deleting it
+            backup_path = f"{file_path}.corrupted_{int(time.time())}"
+            os.rename(file_path, backup_path)
+            print(f"Corrupted file backed up to {backup_path}")
+            messagebox.showwarning(
+                "Data Load Error",
+                f"Your data file appears to be corrupted and could not be loaded. "
+                f"A backup has been created at {backup_path}. "
+                f"Default values will be used instead."
+            )
+        except Exception as e:
+            print(f"Error handling corrupted data file: {str(e)}")
+
+    def _cleanup_backup_files(self):
+        """Keep only the 5 most recent backup files"""
+        try:
+            # List all backup files
+            backup_files = []
+            for filename in os.listdir("user_data"):
+                if filename.startswith("user_profile_backup_") and filename.endswith(".json"):
+                    backup_files.append(os.path.join("user_data", filename))
+            
+            # Sort by modification time, oldest first
+            backup_files.sort(key=lambda x: os.path.getmtime(x))
+            
+            # Remove oldest files if we have more than 5 backups
+            while len(backup_files) > 5:
+                oldest = backup_files.pop(0)
+                os.remove(oldest)
+                
+        except Exception as e:
+            print(f"Warning: Could not clean up backup files: {str(e)}")
+    
     def on_tab_change(self, event):
         """Handle tab change events to ensure proper rendering"""
         # Get the currently selected tab
-        tab_id = self.notebook.select()
-        tab_name = self.notebook.tab(tab_id, "text")
+        tab_id = self.tab_control.select()
+        tab_name = self.tab_control.tab(tab_id, "text")
         print(f"Switched to {tab_name} tab")
         
         # Ensure proper redraw of the tab contents
-        selected_tab = self.notebook.nametowidget(tab_id)
+        selected_tab = self.tab_control.nametowidget(tab_id)
         selected_tab.update()
     
     def create_placeholder_tabs(self):
-        """Create content for all tabs"""
-        # Self-Reflection tab
-        self.create_self_reflection_tab()
+        """Create content for tabs that aren't fully implemented yet"""
+        # Create content for the Consciousness Explorer tab
+        self.create_consciousness_explorer_tab()
+        
+        # Create content for the Mind Tools tab
+        self.create_mind_tools_tab()
+
+    def create_consciousness_explorer_tab(self):
+        """Create the Consciousness Explorer tab with meditation and self-reflection tools"""
+        # Main container
+        main_frame = tk.Frame(self.consciousness_tab, bg=COSMIC_BLUE)
+        main_frame.pack(fill="both", expand=True, padx=20, pady=5)  # Minimal padding
+        
+        # Header
+        header_label = tk.Label(
+            main_frame,
+            text="Consciousness Explorer",
+            font=self.title_font,
+            fg=MYSTICAL_PURPLE,
+            bg=COSMIC_BLUE
+        )
+        header_label.pack(pady=(0, 10))  # Reduced padding
+        
+        # Create a notebook for sub-tabs
+        sub_tabs = ttk.Notebook(main_frame)
+        
+        # Apply custom styling to sub-tabs
+        style = ttk.Style()
+        style.configure("TNotebook.Tab", 
+                       padding=[10, 5],  # Slightly smaller padding for sub-tabs
+                       font=('Helvetica', 10))  # Slightly smaller font for sub-tabs
+        
+        # Create frames for sub-tabs
+        meditation_frame = tk.Frame(sub_tabs, bg=COSMIC_BLUE)
+        reflection_frame = tk.Frame(sub_tabs, bg=COSMIC_BLUE)
+        
+        # Add sub-tabs to notebook
+        sub_tabs.add(meditation_frame, text="Meditation")
+        sub_tabs.add(reflection_frame, text="Self-Reflection")
+        
+        # Pack the sub-tabs
+        sub_tabs.pack(fill="both", expand=True, pady=10)  # Added vertical padding
+        
+        # Create meditation content
+        self.create_meditation_content(meditation_frame)
+        
+        # Create self-reflection content
+        self.create_self_reflection_content(reflection_frame)
+
+    def create_meditation_content(self, parent_frame):
+        """Create content for the meditation section"""
+        # Main frame for meditation content
+        meditation_main_frame = ttk.Frame(parent_frame)
+        meditation_main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=10)
+        
+        # Header
+        header_label = ttk.Label(
+            meditation_main_frame, 
+            text="Meditation Practice", 
+            font=("Helvetica", 16, "bold"),
+            foreground=MYSTICAL_PURPLE
+        )
+        header_label.pack(pady=(0, 20), anchor=tk.W)
+        
+        # Description
+        description = (
+            "Select a meditation practice to begin your journey inward. "
+            "Each meditation focuses on different aspects of consciousness exploration."
+        )
+        desc_label = ttk.Label(
+            meditation_main_frame, 
+            text=description,
+            wraplength=600,
+            font=("Helvetica", 11)
+        )
+        desc_label.pack(pady=(0, 20), anchor=tk.W)
+        
+        # Create two frames for content organization
+        left_frame = ttk.Frame(meditation_main_frame)
+        left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 10))
+        
+        right_frame = ttk.Frame(meditation_main_frame)
+        right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=(10, 0))
+        
+        # Meditation list (left)
+        list_frame = ttk.LabelFrame(left_frame, text="Available Meditations")
+        list_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
+        
+        # Get available meditations using get_available_meditations() instead of load_meditations()
+        self.meditation_listbox = tk.Listbox(
+            list_frame,
+            height=10,
+            selectbackground=MYSTICAL_PURPLE,
+            activestyle='none',
+            exportselection=False
+        )
+        self.meditation_listbox.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        # Add scrollbar
+        meditation_scrollbar = ttk.Scrollbar(self.meditation_listbox, orient="vertical")
+        meditation_scrollbar.config(command=self.meditation_listbox.yview)
+        meditation_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.meditation_listbox.config(yscrollcommand=meditation_scrollbar.set)
+        
+        # Populate the meditation list
+        meditations = self.get_available_meditations()
+        for meditation in meditations:
+            self.meditation_listbox.insert(tk.END, meditation['title'])
+        
+        if self.meditation_listbox.size() > 0:
+            self.meditation_listbox.selection_set(0)
+        
+        self.meditation_listbox.bind('<<ListboxSelect>>', self.on_meditation_select)
+        
+        # Meditation details (right)
+        details_frame = ttk.LabelFrame(right_frame, text="Meditation Details")
+        details_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Details content
+        details_content = ttk.Frame(details_frame)
+        details_content.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
+        
+        # Title
+        self.meditation_title_var = tk.StringVar()
+        title_label = ttk.Label(
+            details_content,
+            textvariable=self.meditation_title_var,
+            font=("Helvetica", 12, "bold"),
+            foreground=MYSTICAL_PURPLE
+        )
+        title_label.pack(anchor=tk.W, pady=(0, 10))
+        
+        # Duration
+        duration_frame = ttk.Frame(details_content)
+        duration_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        duration_label = ttk.Label(
+            duration_frame,
+            text="Duration:",
+            font=("Helvetica", 11),
+            width=10
+        )
+        duration_label.pack(side=tk.LEFT)
+        
+        self.meditation_duration_var = tk.StringVar()
+        duration_value = ttk.Label(
+            duration_frame,
+            textvariable=self.meditation_duration_var,
+            font=("Helvetica", 11)
+        )
+        duration_value.pack(side=tk.LEFT)
+        
+        # Type
+        type_frame = ttk.Frame(details_content)
+        type_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        type_label = ttk.Label(
+            type_frame,
+            text="Type:",
+            font=("Helvetica", 11),
+            width=10
+        )
+        type_label.pack(side=tk.LEFT)
+        
+        self.meditation_type_var = tk.StringVar()
+        type_value = ttk.Label(
+            type_frame,
+            textvariable=self.meditation_type_var,
+            font=("Helvetica", 11)
+        )
+        type_value.pack(side=tk.LEFT)
+        
+        # Description
+        desc_frame = ttk.Frame(details_content)
+        desc_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
+        
+        desc_label = ttk.Label(
+            desc_frame,
+            text="Description:",
+            font=("Helvetica", 11),
+            width=10
+        )
+        desc_label.pack(anchor=tk.NW)
+        
+        self.meditation_desc_var = tk.StringVar()
+        self.meditation_desc_text = tk.Text(
+            desc_frame,
+            wrap=tk.WORD,
+            height=6,
+            width=40,
+            font=("Helvetica", 11),
+            background="#F0F0F0",
+            relief=tk.FLAT,
+            state=tk.DISABLED
+        )
+        self.meditation_desc_text.pack(fill=tk.BOTH, expand=True, pady=(5, 0))
+        
+        # Start button
+        start_button = ttk.Button(
+            details_content,
+            text="Begin Meditation",
+            command=self.start_meditation,
+            style="Accent.TButton"
+        )
+        start_button.pack(pady=(10, 0))
+        
+        # Select the first meditation by default
+        if self.meditation_listbox.size() > 0:
+            self.on_meditation_select(None)
+    
+    def create_self_reflection_content(self, parent_frame):
+        """Create self-reflection content in the given frame"""
+        # Header
+        header = tk.Label(
+            parent_frame,
+            text="Self-Reflection Practice",
+            font=self.subtitle_font,
+            fg=ENERGY_CYAN,
+            bg=COSMIC_BLUE
+        )
+        header.pack(pady=(20, 10))
+        
+        # Description
+        description = tk.Label(
+            parent_frame,
+            text="Deepen your self-understanding through guided reflection prompts.",
+            font=self.normal_font,
+            fg=PEARL_WHITE,
+            bg=COSMIC_BLUE,
+            wraplength=600
+        )
+        description.pack(pady=(0, 20))
+        
+        # Main content frame
+        content_frame = tk.Frame(parent_frame, bg=COSMIC_BLUE)
+        content_frame.pack(fill="both", expand=True, padx=20)
+        
+        # Prompt frame
+        prompt_frame = tk.Frame(content_frame, bg=MYSTICAL_PURPLE, bd=1, relief=tk.RAISED)
+        prompt_frame.pack(fill="x", pady=10)
+        
+        prompt_label = tk.Label(
+            prompt_frame,
+            text="REFLECTION PROMPT",
+            font=self.normal_font,
+            fg=ENERGY_CYAN,
+            bg=MYSTICAL_PURPLE
+        )
+        prompt_label.pack(pady=(10, 5))
+        
+        # Initialize reflection prompts
+        self.reflection_prompts = [
+            "What patterns of thought do you notice recurring in your daily life?",
+            "How do your beliefs about reality shape what you perceive as possible?",
+            "In what ways does your sense of self shift throughout the day?",
+            "What aspects of your consciousness seem most fundamental to who you are?",
+            "How would your experience change if you could perceive beyond your current sensory limits?",
+            "What beliefs do you hold that might be limiting your perception?",
+            "How do your emotions influence your perception of reality?",
+            "What would it mean to truly understand consciousness?",
+            "How do you know what is real versus what is illusion?",
+            "In what ways are you more than your thoughts and feelings?"
+        ]
+        self.current_prompt = random.choice(self.reflection_prompts)
+        
+        # Display the prompt
+        self.prompt_display = tk.Label(
+            prompt_frame,
+            text=f'"{self.current_prompt}"',
+            font=("Georgia", 12, "italic"),
+            fg=PEARL_WHITE,
+            bg=MYSTICAL_PURPLE,
+            wraplength=600,
+            justify=tk.CENTER
+        )
+        self.prompt_display.pack(pady=(0, 10), padx=20)
+        
+        # New prompt button
+        new_prompt_btn = tk.Button(
+            prompt_frame,
+            text="New Prompt",
+            font=self.small_font,
+            bg=COSMIC_INDIGO,
+            fg=PEARL_WHITE,
+            command=self.new_reflection_prompt
+        )
+        new_prompt_btn.pack(pady=(0, 10))
+        
+        # Reflection input frame
+        reflection_input_frame = tk.Frame(content_frame, bg=COSMIC_BLUE)
+        reflection_input_frame.pack(fill="both", expand=True, pady=10)
+        
+        # Text area for reflection
+        self.reflection_text = tk.Text(
+            reflection_input_frame,
+            font=("Helvetica", 12),
+            bg=COSMIC_INDIGO,
+            fg=PEARL_WHITE,
+            wrap=tk.WORD,
+            height=10,
+            width=80,
+            padx=10,
+            pady=10
+        )
+        self.reflection_text.pack(fill="both", expand=True, pady=10)
+        
+        # Save button
+        save_frame = tk.Frame(content_frame, bg=COSMIC_BLUE)
+        save_frame.pack(fill="x", pady=10)
+        
+        save_btn = tk.Button(
+            save_frame,
+            text="Save Reflection",
+            font=self.normal_font,
+            bg=NEURAL_GREEN,
+            fg=PEARL_WHITE,
+            command=self.save_reflection
+        )
+        save_btn.pack(side=tk.RIGHT, padx=10)
+
+    def create_mind_tools_tab(self):
+        """Create the Mind Tools tab with various consciousness tools"""
+        # Clear any existing widgets
+        for widget in self.mind_tools_tab.winfo_children():
+            widget.destroy()
             
-        # Meditation tab
-        self.create_meditation_tab()
+        # Apply a grid layout for more control
+        self.mind_tools_tab.grid_columnconfigure(0, weight=1)
+        self.mind_tools_tab.grid_rowconfigure(1, weight=1)
+        
+        # Header
+        header_label = tk.Label(
+            self.mind_tools_tab,
+            text="Mind Tools",
+            font=self.title_font,
+            fg=MYSTICAL_PURPLE,
+            bg=COSMIC_BLUE
+        )
+        header_label.grid(row=0, column=0, sticky="ew", pady=(0, 3))  # Minimal top padding
+        
+        # Create a notebook for sub-tabs with lower height
+        sub_tabs = ttk.Notebook(self.mind_tools_tab)
+        
+        # Style for subtabs - more compact
+        style = ttk.Style()
+        style.configure("MindTools.TNotebook", padding=0)
+        style.configure("MindTools.TNotebook.Tab", padding=(8, 2))
+        
+        # Create frames for sub-tabs
+        journal_frame = tk.Frame(sub_tabs, bg=COSMIC_BLUE)
+        beliefs_frame = tk.Frame(sub_tabs, bg=COSMIC_BLUE)
+        integration_frame = tk.Frame(sub_tabs, bg=COSMIC_BLUE)
+        
+        # Add sub-tabs to notebook
+        sub_tabs.add(journal_frame, text="Journal")
+        sub_tabs.add(beliefs_frame, text="Belief Examination")
+        sub_tabs.add(integration_frame, text="Integration")
+        
+        # Grid the notebook with weight to expand
+        sub_tabs.grid(row=1, column=0, sticky="nsew", padx=5, pady=5)
+        
+        # Create journal content
+        self.create_journal_content(journal_frame)
+        
+        # Create beliefs content
+        self.create_beliefs_content(beliefs_frame)
+        
+        # Create integration content
+        self.create_integration_content(integration_frame)
+
+    def create_journal_content(self, parent_frame):
+        """Create content for the journal section"""
+        # Create a frame for journal content
+        journal_main_frame = ttk.Frame(parent_frame)
+        journal_main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=10)
+        
+        # Header
+        header_label = ttk.Label(
+            journal_main_frame, 
+            text="Consciousness Journal", 
+            font=("Helvetica", 16, "bold"),
+            foreground=MYSTICAL_PURPLE
+        )
+        header_label.pack(pady=(0, 20), anchor=tk.W)
+        
+        # Description
+        description = (
+            "Record your insights, experiences, and reflections on your consciousness exploration. "
+            "Your journal entries are stored securely and can be reviewed at any time."
+        )
+        desc_label = ttk.Label(
+            journal_main_frame, 
+            text=description,
+            wraplength=600,
+            font=("Helvetica", 11)
+        )
+        desc_label.pack(pady=(0, 20), anchor=tk.W)
+        
+        # Create list and detail frames
+        list_frame = ttk.LabelFrame(journal_main_frame, text="Journal Entries")
+        list_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 10))
+        
+        # Journal entries list
+        self.journal_listbox = tk.Listbox(
+            list_frame,
+            height=15,
+            selectbackground=MYSTICAL_PURPLE,
+            activestyle='none',
+            exportselection=False
+        )
+        self.journal_listbox.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        # Add scrollbar to listbox
+        journal_scrollbar = ttk.Scrollbar(self.journal_listbox, orient="vertical")
+        journal_scrollbar.config(command=self.journal_listbox.yview)
+        journal_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.journal_listbox.config(yscrollcommand=journal_scrollbar.set)
+        
+        # Load journal entries
+        self.load_journal_entries()
+        
+        # Buttons for journal management
+        button_frame = ttk.Frame(list_frame)
+        button_frame.pack(fill=tk.X, padx=10, pady=10)
+        
+        new_button = ttk.Button(
+            button_frame,
+            text="New Entry",
+            command=self.new_journal_entry,
+            style="Accent.TButton"
+        )
+        new_button.pack(side=tk.LEFT, padx=(0, 5))
+        
+        view_button = ttk.Button(
+            button_frame,
+            text="View",
+            command=self.view_journal_entry
+        )
+        view_button.pack(side=tk.LEFT, padx=5)
+        
+        edit_button = ttk.Button(
+            button_frame,
+            text="Edit",
+            command=self.edit_journal_entry
+        )
+        edit_button.pack(side=tk.LEFT, padx=5)
+        
+        delete_button = ttk.Button(
+            button_frame,
+            text="Delete",
+            command=self.delete_journal_entry
+        )
+        delete_button.pack(side=tk.LEFT, padx=5)
+        
+        # Detail frame (preview of selected entry)
+        detail_frame = ttk.LabelFrame(journal_main_frame, text="Entry Preview")
+        detail_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=(10, 0))
+        
+        # Preview content
+        self.preview_title = ttk.Label(
+            detail_frame,
+            text="Select an entry to preview",
+            font=("Helvetica", 12, "bold"),
+            foreground=MYSTICAL_PURPLE
+        )
+        self.preview_title.pack(anchor=tk.W, padx=15, pady=(15, 5))
+        
+        self.preview_date = ttk.Label(
+            detail_frame,
+            text="",
+            font=("Helvetica", 10),
+            foreground="gray"
+        )
+        self.preview_date.pack(anchor=tk.W, padx=15, pady=(0, 10))
+        
+        # Preview text
+        self.preview_text = tk.Text(
+            detail_frame,
+            wrap=tk.WORD,
+            height=12,
+            width=40,
+            font=("Helvetica", 11),
+            background="#F0F0F0",
+            relief=tk.FLAT,
+            state=tk.DISABLED
+        )
+        self.preview_text.pack(fill=tk.BOTH, expand=True, padx=15, pady=(0, 15))
+        
+        # Bind selection event
+        self.journal_listbox.bind('<<ListboxSelect>>', self.on_journal_selection)
+    
+    def create_beliefs_content(self, parent_frame):
+        """Create belief examination content in the given frame"""
+        # Header
+        header = tk.Label(
+            parent_frame,
+            text="Belief Examination",
+            font=self.subtitle_font,
+            fg=ENERGY_CYAN,
+            bg=COSMIC_BLUE
+        )
+        header.pack(pady=(20, 10))
+        
+        # Description
+        description = tk.Label(
+            parent_frame,
+            text="Examine and question your beliefs to understand how they shape your perception of reality.",
+            font=self.normal_font,
+            fg=PEARL_WHITE,
+            bg=COSMIC_BLUE,
+            wraplength=600
+        )
+        description.pack(pady=(0, 20))
+        
+        # Main content split into two sections
+        content_frame = tk.Frame(parent_frame, bg=COSMIC_BLUE)
+        content_frame.pack(fill="both", expand=True, padx=20)
+        
+        # Top section - New belief examination
+        new_frame = tk.Frame(content_frame, bg=MYSTICAL_PURPLE)
+        new_frame.pack(fill="x", pady=(0, 10))
+        
+        new_label = tk.Label(
+            new_frame,
+            text="EXAMINE A BELIEF",
+            font=self.normal_font,
+            fg=ENERGY_CYAN,
+            bg=MYSTICAL_PURPLE
+        )
+        new_label.pack(pady=(15, 10), padx=20)
+        
+        # Entry for belief
+        entry_frame = tk.Frame(new_frame, bg=MYSTICAL_PURPLE)
+        entry_frame.pack(fill="x", padx=20, pady=(0, 10))
+        
+        belief_label = tk.Label(
+            entry_frame,
+            text="Enter a belief to examine:",
+            font=self.normal_font,
+            fg=PEARL_WHITE,
+            bg=MYSTICAL_PURPLE
+        )
+        belief_label.pack(side=tk.LEFT, padx=(0, 10))
+        
+        self.belief_entry = tk.Entry(
+            entry_frame,
+            font=self.normal_font,
+            width=40
+        )
+        self.belief_entry.pack(side=tk.LEFT, fill="x", expand=True)
+        
+        # Examine button
+        examine_btn = tk.Button(
+            new_frame,
+            text="Examine This Belief",
+            font=self.normal_font,
+            bg=NEURAL_GREEN,
+            fg=PEARL_WHITE,
+            command=lambda: self.examine_belief()
+        )
+        examine_btn.pack(pady=(0, 15))
+        
+        # Bottom section - Saved beliefs
+        saved_frame = tk.Frame(content_frame, bg=MYSTICAL_PURPLE)
+        saved_frame.pack(fill="both", expand=True)
+        
+        saved_label = tk.Label(
+            saved_frame,
+            text="YOUR EXAMINED BELIEFS",
+            font=self.subtitle_font,
+            fg=ENERGY_CYAN,
+            bg=MYSTICAL_PURPLE
+        )
+        saved_label.pack(pady=(15, 10), padx=20)
+        
+        # Create a frame for the listbox and scrollbar
+        list_frame = tk.Frame(saved_frame, bg=MYSTICAL_PURPLE)
+        list_frame.pack(fill="both", expand=True, padx=20, pady=10)
+        
+        # Scrollbar for the listbox
+        scrollbar = tk.Scrollbar(list_frame)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        # Listbox for saved beliefs
+        self.beliefs_listbox = tk.Listbox(
+            list_frame,
+            font=self.normal_font,
+            bg=COSMIC_INDIGO,
+            fg=PEARL_WHITE,
+            selectbackground=ETHEREAL_PINK,
+            height=10,
+            width=40,
+            yscrollcommand=scrollbar.set
+        )
+        self.beliefs_listbox.pack(side=tk.LEFT, fill="both", expand=True)
+        
+        # Configure the scrollbar
+        scrollbar.config(command=self.beliefs_listbox.yview)
+        
+        # Populate with existing beliefs
+        self.load_beliefs()
+        
+        # Delete button
+        delete_btn = tk.Button(
+            saved_frame,
+            text="Delete Selected",
+            font=self.small_font,
+            bg=ATTENTION_RED,
+            fg=PEARL_WHITE,
+            command=self.delete_belief
+        )
+        delete_btn.pack(anchor="e", padx=20, pady=10)
+
+    def create_integration_content(self, parent_frame):
+        """Create integration content in the given frame"""
+        # Clear existing widgets
+        for widget in parent_frame.winfo_children():
+            widget.destroy()
             
-        # Beliefs tab
-        self.create_ego_dissolution_tab()
-            
-        # Journal tab
-        self.create_journal_tab()
+        # Configure grid for better control
+        parent_frame.grid_columnconfigure(0, weight=1)
+        
+        # Simplified description with smaller font
+        description = tk.Label(
+            parent_frame,
+            text="Connect Mind Mirror with other consciousness exploration tools",
+            font=("Helvetica", 10),
+            fg=PEARL_WHITE,
+            bg=COSMIC_BLUE,
+            anchor="w"
+        )
+        description.grid(row=0, column=0, sticky="ew", padx=5, pady=3)
+        
+        # Create a canvas with scrollbar for potential overflow
+        canvas = tk.Canvas(parent_frame, bg=COSMIC_BLUE, highlightthickness=0)
+        scrollbar = ttk.Scrollbar(parent_frame, orient="vertical", command=canvas.yview)
+        content_frame = tk.Frame(canvas, bg=COSMIC_BLUE)
+        
+        # Configure scrolling
+        canvas.configure(yscrollcommand=scrollbar.set)
+        canvas.grid(row=1, column=0, sticky="nsew", padx=5, pady=5)
+        scrollbar.grid(row=1, column=1, sticky="ns")
+        parent_frame.grid_rowconfigure(1, weight=1)
+        
+        # Create window in canvas for content
+        canvas_window = canvas.create_window((0, 0), window=content_frame, anchor="nw")
+        content_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+        canvas.bind("<Configure>", lambda e: canvas.itemconfig(canvas_window, width=e.width))
+        
+        # Reality Glitcher integration - more compact layout
+        rg_frame = tk.Frame(content_frame, bg=MYSTICAL_PURPLE, bd=1, relief=tk.RAISED)
+        rg_frame.pack(fill="x", pady=5, ipady=0)
+        
+        # Header and button in same row
+        header_frame = tk.Frame(rg_frame, bg=MYSTICAL_PURPLE)
+        header_frame.pack(fill="x", padx=5, pady=2)
+        
+        rg_label = tk.Label(
+            header_frame,
+            text="Reality Glitcher",
+            font=("Helvetica", 12, "bold"),
+            fg=ENERGY_CYAN,
+            bg=MYSTICAL_PURPLE
+        )
+        rg_label.pack(side=tk.LEFT, anchor="w", padx=5)
+        
+        rg_btn = tk.Button(
+            header_frame,
+            text="Connect",
+            font=("Helvetica", 9),
+            bg=COSMIC_INDIGO,
+            fg=PEARL_WHITE,
+            command=self.integrate_with_reality_glitcher,
+            padx=5,
+            pady=1
+        )
+        rg_btn.pack(side=tk.RIGHT, padx=5)
+        
+        # Description
+        rg_desc = tk.Label(
+            rg_frame,
+            text="Export neural patterns for targeted perception glitches. Your consciousness patterns influence reality distortion.",
+            font=("Helvetica", 9),
+            fg=PEARL_WHITE,
+            bg=MYSTICAL_PURPLE,
+            wraplength=500,
+            justify=tk.LEFT
+        )
+        rg_desc.pack(fill="x", padx=10, pady=(0, 8), anchor="w")
+        
+        # Future integrations - more compact
+        future_frame = tk.Frame(content_frame, bg=DEEP_THOUGHT, bd=1, relief=tk.RAISED)
+        future_frame.pack(fill="x", pady=5)
+        
+        future_label = tk.Label(
+            future_frame,
+            text="Future Integrations",
+            font=("Helvetica", 12, "bold"),
+            fg=ENERGY_CYAN,
+            bg=DEEP_THOUGHT
+        )
+        future_label.pack(anchor="w", padx=10, pady=(5, 0))
+        
+        future_desc = tk.Label(
+            future_frame,
+            text="Additional integration options will be available in future updates.",
+            font=("Helvetica", 9),
+            fg=PEARL_WHITE,
+            bg=DEEP_THOUGHT,
+            wraplength=500,
+            justify=tk.LEFT
+        )
+        future_desc.pack(anchor="w", padx=10, pady=(0, 5))
     
     def create_self_reflection_tab(self):
         """Create the self-reflection tab with interactive prompts"""
@@ -1431,9 +2666,11 @@ class EnchantedMindMirror:
                         description = "A guided meditation experience."
                     
                     meditations.append({
-                        "name": name,
+                        "title": name,
                         "file": file,
-                        "description": description
+                        "description": description,
+                        "duration": "10",
+                        "type": "Consciousness Expansion"
                     })
         except Exception as e:
             print(f"Error loading meditations: {e}")
@@ -1447,19 +2684,33 @@ class EnchantedMindMirror:
     
     def on_meditation_select(self, event):
         """Handle selection of a meditation from the list"""
-        if not self.available_meditations:
-            return
-            
         selection = self.meditation_listbox.curselection()
         if not selection:
-            return
+            if self.meditation_listbox.size() > 0:
+                # Default select the first item
+                self.meditation_listbox.selection_set(0)
+                selection = (0,)
+            else:
+                return
             
         index = selection[0]
-        selected_meditation = self.available_meditations[index]
+        meditations = self.get_available_meditations()
         
-        # Update the display
-        self.meditation_title.config(text=selected_meditation["name"])
-        self.meditation_desc.config(text=selected_meditation["description"])
+        if index >= len(meditations):
+            return
+        
+        selected_meditation = meditations[index]
+        
+        # Update the display with the selected meditation info
+        self.meditation_title_var.set(selected_meditation["title"])
+        self.meditation_duration_var.set(f"{selected_meditation.get('duration', '10')} minutes")
+        self.meditation_type_var.set(selected_meditation.get('type', 'Guided'))
+        
+        # Update description text
+        self.meditation_desc_text.config(state=tk.NORMAL)
+        self.meditation_desc_text.delete(1.0, tk.END)
+        self.meditation_desc_text.insert(tk.END, selected_meditation["description"])
+        self.meditation_desc_text.config(state=tk.DISABLED)
     
     def start_meditation(self):
         """Start the selected meditation"""
@@ -1470,152 +2721,189 @@ class EnchantedMindMirror:
             return
             
         index = selection[0]
-        selected_meditation = self.available_meditations[index]
-        duration = int(self.duration_var.get())
+        meditations = self.get_available_meditations()
         
-        # Update meditation stats
-        if "meditation_stats" not in self.user_data:
-            self.user_data["meditation_stats"] = {
-                "sessions": 0,
-                "total_minutes": 0,
-                "last_meditation": None,
-                "practice_streak": 0
-            }
+        if index >= len(meditations):
+            return
         
-        self.user_data["meditation_stats"]["sessions"] += 1
-        self.user_data["meditation_stats"]["total_minutes"] += duration
+        selected_meditation = meditations[index]
         
-        # Update last meditation date
-        today = datetime.now().strftime("%Y-%m-%d")
-        self.user_data["meditation_stats"]["last_meditation"] = today
+        # Get meditation file
+        meditation_file = selected_meditation["file"]
+        meditation_path = os.path.join("resources/meditations", meditation_file)
+        
+        if not os.path.exists(meditation_path):
+            messagebox.showerror("Error", f"Meditation file not found: {meditation_file}")
+            return
+        
+        # Create meditation window
+        med_window = tk.Toplevel(self.master)
+        med_window.title(f"Meditation: {selected_meditation['title']}")
+        med_window.geometry("800x600")
+        med_window.configure(bg=COSMIC_BLUE)
+        self._center_window(med_window)
+        
+        # Create meditation content
+        main_frame = tk.Frame(med_window, bg=COSMIC_BLUE)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=30, pady=30)
+        
+        # Title
+        title_label = tk.Label(
+            main_frame,
+            text=selected_meditation["title"],
+            font=("Helvetica", 18, "bold"),
+            fg=MYSTICAL_PURPLE,
+            bg=COSMIC_BLUE
+        )
+        title_label.pack(pady=(0, 20))
+        
+        # Get duration from menu selection
+        try:
+            duration_minutes = int(self.meditation_duration_var.get().split()[0])
+        except:
+            duration_minutes = 10
+        
+        # Timer display
+        timer_frame = tk.Frame(main_frame, bg=COSMIC_BLUE)
+        timer_frame.pack(pady=20)
+        
+        timer_label = tk.Label(
+            timer_frame,
+            text="Time Remaining:",
+            font=("Helvetica", 12),
+            fg=PEARL_WHITE,
+            bg=COSMIC_BLUE
+        )
+        timer_label.pack(side=tk.LEFT, padx=(0, 10))
+        
+        self.timer_var = tk.StringVar(value=f"{duration_minutes}:00")
+        timer_display = tk.Label(
+            timer_frame,
+            textvariable=self.timer_var,
+            font=("Helvetica", 20, "bold"),
+            fg=ENERGY_CYAN,
+            bg=COSMIC_BLUE
+        )
+        timer_display.pack(side=tk.LEFT)
+        
+        # Load meditation content
+        try:
+            with open(meditation_path, "r") as f:
+                meditation_text = f.read()
+        except Exception as e:
+            messagebox.showerror("Error", f"Could not load meditation: {str(e)}")
+            med_window.destroy()
+            return
+        
+        # Create a frame for the text
+        text_frame = tk.Frame(main_frame, bg=COSMIC_BLUE)
+        text_frame.pack(fill=tk.BOTH, expand=True, pady=20)
+        
+        # Add a scrollbar
+        scrollbar = tk.Scrollbar(text_frame)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        # Text widget for meditation content
+        text_widget = tk.Text(
+            text_frame,
+            wrap=tk.WORD,
+            bg=DEEP_THOUGHT,
+            fg=PEARL_WHITE,
+            font=("Helvetica", 12),
+            padx=15,
+            pady=15,
+            relief=tk.FLAT,
+            yscrollcommand=scrollbar.set
+        )
+        text_widget.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.config(command=text_widget.yview)
+        
+        # Insert the meditation text
+        text_widget.insert(tk.END, meditation_text)
+        text_widget.config(state=tk.DISABLED)  # Make read-only
+        
+        # Controls
+        controls_frame = tk.Frame(main_frame, bg=COSMIC_BLUE)
+        controls_frame.pack(pady=20)
+        
+        # End button
+        end_button = tk.Button(
+            controls_frame,
+            text="End Meditation",
+            bg=NEURAL_GREEN,
+            fg=PEARL_WHITE,
+            font=("Helvetica", 12),
+            command=med_window.destroy
+        )
+        end_button.pack(side=tk.RIGHT, padx=10)
+        
+        # Start timer
+        self.remaining_seconds = duration_minutes * 60
+        self.update_meditation_timer()
+        
+        # Record this meditation session
+        now = datetime.now()
+        session = {
+            "type": "meditation",
+            "title": selected_meditation["title"],
+            "duration": duration_minutes,
+            "timestamp": now.strftime("%Y-%m-%d %H:%M:%S")
+        }
+        
+        # Add to user data
+        if "practice_sessions" not in self.user_data:
+            self.user_data["practice_sessions"] = []
+        
+        self.user_data["practice_sessions"].append(session)
+        self.save_user_data()
         
         # Update practice streak
         self.update_practice_streak()
-        
-        # Save user data
-        self.save_user_data()
-        
-        # Create meditation window
-        self.meditation_window = tk.Toplevel(self.master)
-        self.meditation_window.title(f"Meditation: {selected_meditation['name']}")
-        self.meditation_window.geometry("800x600")
-        self.meditation_window.configure(bg=COSMIC_BLUE)
-        
-        # Create cosmic background for meditation window
-        self.meditation_bg = tk.Canvas(self.meditation_window, bg=COSMIC_BLUE, highlightthickness=0)
-        self.meditation_bg.pack(fill="both", expand=True)
-        
-        # Add stars to meditation background
-        meditation_stars = []
-        for _ in range(100):
-            x = random.randint(0, 800)
-            y = random.randint(0, 600)
-            size = random.uniform(0.5, 3)
-            opacity = random.uniform(0.4, 1.0)
-            star = self.meditation_bg.create_oval(
-                x, y, x + size, y + size,
-                fill=PEARL_WHITE, outline="",
-                stipple="gray50" if opacity < 0.7 else ""
-            )
-            meditation_stars.append(star)
-        
-        # Meditation content
-        meditation_frame = tk.Frame(self.meditation_bg, bg=COSMIC_BLUE)
-        meditation_frame.place(relx=0.5, rely=0.5, anchor="center", relwidth=0.8, relheight=0.8)
-        
-        # Meditation title
-        title = tk.Label(
-            meditation_frame,
-            text=selected_meditation["name"],
-            font=self.title_font,
-            fg=MIND_GOLD,
-            bg=COSMIC_BLUE
-        )
-        title.pack(pady=(0, 20))
-        
-        # Timer display
-        self.time_remaining = duration * 60  # convert to seconds
-        
-        self.timer_display = tk.Label(
-            meditation_frame,
-            text=f"{duration}:00",
-            font=("Helvetica", 40, "bold"),
-            fg=PEARL_WHITE,
-            bg=COSMIC_BLUE
-        )
-        self.timer_display.pack(pady=10)
-        
-        # Meditation guidance text
-        guidance_frame = tk.Frame(meditation_frame, bg=DEEP_THOUGHT, bd=1, relief=tk.RAISED)
-        guidance_frame.pack(fill="both", expand=True, pady=20)
-        
-        # Get meditation content
-        try:
-            with open(os.path.join("resources/meditations", selected_meditation["file"]), "r") as f:
-                meditation_text = f.read()
-        except:
-            meditation_text = "Close your eyes and breathe deeply. Focus on your breath and let go of thoughts."
-        
-        guidance_text = tk.Text(
-            guidance_frame,
-            font=("Helvetica", 14),
-            bg=DEEP_THOUGHT,
-            fg=PEARL_WHITE,
-            wrap=tk.WORD,
-            padx=20,
-            pady=20,
-            height=10,
-            width=50
-        )
-        guidance_text.pack(fill="both", expand=True)
-        guidance_text.insert("1.0", meditation_text)
-        guidance_text.config(state="disabled")  # Make read-only
-        
-        # Control buttons
-        controls_frame = tk.Frame(meditation_frame, bg=COSMIC_BLUE)
-        controls_frame.pack(fill="x", pady=20)
-        
-        # End button
-        end_btn = tk.Button(
-            controls_frame,
-            text="End Session",
-            font=self.normal_font,
-            bg=ATTENTION_RED,
-            fg=PEARL_WHITE,
-            command=self.end_meditation
-        )
-        end_btn.pack(side=tk.RIGHT)
-        
-        # Start timer
-        self.update_meditation_timer()
-        
+    
     def update_meditation_timer(self):
-        """Update the meditation timer display"""
-        if not hasattr(self, 'meditation_window') or not self.meditation_window.winfo_exists():
+        """Update the meditation timer"""
+        if not hasattr(self, 'remaining_seconds'):
             return
             
-        if self.time_remaining <= 0:
-            self.timer_display.config(text="00:00")
+        if self.remaining_seconds <= 0:
+            self.timer_var.set("00:00")
             messagebox.showinfo("Meditation Complete", "Your meditation session has completed.")
-            self.meditation_window.destroy()
             return
             
         # Update timer display
-        minutes = self.time_remaining // 60
-        seconds = self.time_remaining % 60
-        self.timer_display.config(text=f"{minutes}:{seconds:02d}")
+        minutes = self.remaining_seconds // 60
+        seconds = self.remaining_seconds % 60
+        self.timer_var.set(f"{minutes}:{seconds:02d}")
         
         # Decrement timer
-        self.time_remaining -= 1
+        self.remaining_seconds -= 1
         
-        # Schedule next update - use meditation_window instead of master for the after call
-        self.meditation_window.after(1000, self.update_meditation_timer)
+        # Schedule next update
+        self.master.after(1000, self.update_meditation_timer)
     
     def end_meditation(self):
         """End the current meditation session"""
+        # Clean up timer and window
+        self.remaining_seconds = 0
+        
         if hasattr(self, 'meditation_window') and self.meditation_window.winfo_exists():
             self.meditation_window.destroy()
-            messagebox.showinfo("Session Ended", "Your meditation session has been ended.")
+
+        # Record completion in user data
+        now = datetime.now()
+        if "completed_practices" not in self.user_data:
+            self.user_data["completed_practices"] = []
+        
+        self.user_data["completed_practices"].append({
+            "type": "meditation",
+            "timestamp": now.strftime("%Y-%m-%d %H:%M:%S")
+        })
+        
+        self.save_user_data()
+        self.update_practice_streak()
+        
+        # Show completion message
+        messagebox.showinfo("Meditation Complete", "Your meditation session has been completed.")
 
     def create_ego_dissolution_tab(self):
         """Create the ego dissolution tab for examining beliefs"""
@@ -1781,7 +3069,7 @@ class EnchantedMindMirror:
             command=self.delete_belief
         )
         delete_btn.pack(anchor="e", padx=20, pady=10)
-    
+
     def examine_belief(self):
         """Open a dialog to examine and question a belief"""
         belief_text = self.belief_entry.get().strip()
@@ -2209,18 +3497,23 @@ class EnchantedMindMirror:
             os.makedirs(journal_dir)
     
     def load_journal_entries(self):
-        """Load and display journal entries from files"""
+        """Load journal entries from files and populate the listbox"""
+        # Clear existing entries in the listbox
         self.journal_listbox.delete(0, tk.END)
         
-        # First, make sure entries are in user_data for backward compatibility
-        if "journal_entries" not in self.user_data:
-            self.user_data["journal_entries"] = []
-            
-        # Ensure any old entries in user_data are saved to files
-        self.migrate_legacy_entries()
+        # Initialize search_var if it doesn't exist
+        if not hasattr(self, 'search_var'):
+            self.search_var = tk.StringVar(value="")
         
-        # Get all journal entry files
-        journal_dir = os.path.join("resources", "journal")
+        # Initialize sort_var if it doesn't exist
+        if not hasattr(self, 'sort_var'):
+            self.sort_var = tk.StringVar(value="newest")
+        
+        # Ensure the journal directory exists
+        journal_dir = "user_data/journal"
+        os.makedirs(journal_dir, exist_ok=True)
+        
+        # Load journal entries
         entries = []
         
         if os.path.exists(journal_dir):
@@ -2230,25 +3523,13 @@ class EnchantedMindMirror:
                         file_path = os.path.join(journal_dir, filename)
                         with open(file_path, "r") as f:
                             entry = json.load(f)
+                            entry["filename"] = filename  # Store filename for later reference
                             entries.append(entry)
                     except Exception as e:
                         print(f"Error loading journal entry {filename}: {e}")
         
-        # Filter entries based on search
-        search_term = self.search_var.get().lower()
-        if search_term:
-            entries = [e for e in entries if 
-                      search_term in e.get("title", "").lower() or 
-                      search_term in e.get("content", "").lower()]
-        
-        # Sort entries based on user preference
-        sort_order = self.sort_var.get()
-        if sort_order == "newest":
-            entries.sort(key=lambda x: datetime.strptime(x.get("timestamp", "1970-01-01 00:00:00"), 
-                                                         "%Y-%m-%d %H:%M:%S"), reverse=True)
-        else:
-            entries.sort(key=lambda x: datetime.strptime(x.get("timestamp", "1970-01-01 00:00:00"), 
-                                                         "%Y-%m-%d %H:%M:%S"))
+        # Sort entries by timestamp (newest first)
+        entries.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
         
         # Store entries for reference
         self.current_journal_entries = entries
@@ -2258,15 +3539,20 @@ class EnchantedMindMirror:
             # Format the timestamp
             try:
                 entry_time = datetime.strptime(entry["timestamp"], "%Y-%m-%d %H:%M:%S")
-                display_time = entry_time.strftime("%b %d, %Y - %H:%M")
+                display_time = entry_time.strftime("%b %d, %Y")
             except:
-                display_time = entry.get("timestamp", "Unknown date")
+                display_time = "Unknown date"
             
             # Get the title or use "Untitled"
             title = entry.get("title", "Untitled Entry")
             
             # Add to listbox
-            self.journal_listbox.insert(tk.END, f"{display_time} - {title}")
+            self.journal_listbox.insert(tk.END, f"{title} - {display_time}")
+        
+        # Select the first entry if available
+        if entries and self.journal_listbox.size() > 0:
+            self.journal_listbox.selection_set(0)
+            self.on_journal_selection(None)
     
     def migrate_legacy_entries(self):
         """Migrate any entries from user_data to individual files"""
@@ -2294,9 +3580,38 @@ class EnchantedMindMirror:
         # self.save_user_data()
     
     def on_journal_selection(self, event):
-        """Handle selection of a journal entry"""
-        # Do nothing on selection - wait for view button press or double-click
-        pass
+        """Handle selection of a journal entry from the list"""
+        # Get selected index
+        selection = self.journal_listbox.curselection()
+        if not selection:
+            return
+            
+        index = selection[0]
+        
+        # Check if the index is valid for our entries list
+        if not hasattr(self, 'current_journal_entries') or index >= len(self.current_journal_entries):
+            return
+        
+        # Get the selected entry
+        entry = self.current_journal_entries[index]
+        
+        # Update preview widgets
+        if hasattr(self, 'preview_title'):
+            self.preview_title.config(text=entry.get("title", "Untitled Entry"))
+        
+        if hasattr(self, 'preview_date'):
+            try:
+                date_obj = datetime.strptime(entry.get("timestamp", ""), "%Y-%m-%d %H:%M:%S")
+                date_str = date_obj.strftime("%B %d, %Y at %I:%M %p")
+                self.preview_date.config(text=date_str)
+            except:
+                self.preview_date.config(text=entry.get("timestamp", "Unknown date"))
+        
+        if hasattr(self, 'preview_text'):
+            self.preview_text.config(state=tk.NORMAL)
+            self.preview_text.delete(1.0, tk.END)
+            self.preview_text.insert(tk.END, entry.get("content", "No content"))
+            self.preview_text.config(state=tk.DISABLED)
     
     def new_journal_entry(self):
         """Create a new journal entry"""
@@ -2409,306 +3724,7 @@ class EnchantedMindMirror:
         title_entry.focus_set()
     
     def save_journal_entry(self, title, content, window):
-        """Save a journal entry to an individual file"""
-        content = content.strip()
-        if not content:
-            messagebox.showinfo("Empty Entry", "Please write something in your entry before saving.")
-            return
-        
-        # Use a default title if none provided
-        if not title:
-            title = "Untitled Entry"
-        
-        # Create entry object
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        entry = {
-            "timestamp": timestamp,
-            "title": title,
-            "content": content,
-            "id": f"entry_{int(time.time())}"  # Unique ID for the entry
-        }
-        
-        # Save to a file
-        self.save_journal_entry_to_file(entry)
-        
-        # Close the window
-        window.destroy()
-        
-        # Refresh the entries list
-        self.load_journal_entries()
-        
-        # Confirm to user
-        messagebox.showinfo("Entry Saved", "Your journal entry has been saved.")
-    
-    def save_journal_entry_to_file(self, entry):
-        """Save journal entry to an individual file"""
-        # Ensure directory exists
-        self.ensure_journal_directory()
-        
-        # Create filename from timestamp
-        timestamp = entry["timestamp"].replace(" ", "_").replace(":", "-")
-        filename = f"entry_{timestamp}.json"
-        file_path = os.path.join("resources", "journal", filename)
-        
-        # Save to file
-        with open(file_path, "w") as f:
-            json.dump(entry, f, indent=2)
-            
-        # Also keep a reference in user_data for backward compatibility
-        if "journal_entries" not in self.user_data:
-            self.user_data["journal_entries"] = []
-            
-        # Update user data
-        self.user_data["journal_entries"] = [e for e in self.user_data["journal_entries"] 
-                                            if e.get("id", "") != entry.get("id", "")]
-        self.user_data["journal_entries"].append(entry)
-        self.save_user_data()
-    
-    def view_journal_entry(self):
-        """View a selected journal entry"""
-        selection = self.journal_listbox.curselection()
-        if not selection:
-            messagebox.showinfo("No Selection", "Please select an entry to view.")
-            return
-        
-        index = selection[0]
-        if index < len(self.current_journal_entries):
-            entry = self.current_journal_entries[index]
-            
-            # Create view window
-            view_window = tk.Toplevel(self.master)
-            view_window.title("Journal Entry")
-            view_window.geometry("700x500")
-            view_window.configure(bg=COSMIC_BLUE)
-            view_window.grab_set()  # Make window modal
-            
-            # Content frame
-            content_frame = tk.Frame(view_window, bg=COSMIC_BLUE)
-            content_frame.pack(fill="both", expand=True, padx=20, pady=20)
-            
-            # Header with timestamp and title
-            try:
-                entry_time = datetime.strptime(entry["timestamp"], "%Y-%m-%d %H:%M:%S")
-                display_time = entry_time.strftime("%B %d, %Y - %H:%M")
-            except:
-                display_time = entry.get("timestamp", "Unknown date")
-                
-            time_label = tk.Label(
-                content_frame,
-                text=display_time,
-                font=self.subtitle_font,
-                fg=NEURAL_GREEN,
-                bg=COSMIC_BLUE
-            )
-            time_label.pack(anchor="w")
-            
-            title = entry.get("title", "Untitled Entry")
-            title_label = tk.Label(
-                content_frame,
-                text=title,
-                font=("Helvetica", 16, "bold"),
-                fg=MIND_GOLD,
-                bg=COSMIC_BLUE
-            )
-            title_label.pack(anchor="w", pady=(5, 15))
-            
-            # Entry content in a scrolled text widget
-            text_frame = tk.Frame(content_frame, bg=DEEP_THOUGHT, bd=1, relief=tk.RAISED)
-            text_frame.pack(fill="both", expand=True)
-            
-            # Scrollbar
-            scrollbar = tk.Scrollbar(text_frame)
-            scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-            
-            # Text widget with entry content
-            content_text = tk.Text(
-                text_frame,
-                font=("Helvetica", 12),
-                bg=DEEP_THOUGHT,
-                fg=PEARL_WHITE,
-                wrap=tk.WORD,
-                padx=20,
-                pady=20,
-                yscrollcommand=scrollbar.set
-            )
-            content_text.pack(fill="both", expand=True)
-            content_text.insert("1.0", entry.get("content", ""))
-            content_text.config(state="disabled")  # Read-only
-            
-            # Configure scrollbar
-            scrollbar.config(command=content_text.yview)
-            
-            # Buttons
-            button_frame = tk.Frame(view_window, bg=COSMIC_BLUE)
-            button_frame.pack(fill="x", padx=20, pady=10)
-            
-            edit_btn = tk.Button(
-                button_frame,
-                text="Edit",
-                font=self.normal_font,
-                bg=MIND_GOLD,
-                fg=PEARL_WHITE,
-                command=lambda: self.edit_journal_entry(index=index)
-            )
-            edit_btn.pack(side=tk.LEFT, padx=5)
-            
-            close_btn = tk.Button(
-                button_frame,
-                text="Close",
-                font=self.normal_font,
-                bg=DEEP_THOUGHT,
-                fg=PEARL_WHITE,
-                command=view_window.destroy
-            )
-            close_btn.pack(side=tk.RIGHT, padx=5)
-    
-    def edit_journal_entry(self, index=None):
-        """Edit an existing journal entry"""
-        # If no index provided, get from selection
-        if index is None:
-            selection = self.journal_listbox.curselection()
-            if not selection:
-                messagebox.showinfo("No Selection", "Please select an entry to edit.")
-                return
-            index = selection[0]
-        
-        if index < len(self.current_journal_entries):
-            entry = self.current_journal_entries[index]
-            
-            # Create edit window
-            edit_window = tk.Toplevel(self.master)
-            edit_window.title("Edit Journal Entry")
-            edit_window.geometry("700x500")
-            edit_window.configure(bg=COSMIC_BLUE)
-            edit_window.grab_set()  # Make window modal
-            
-            # Entry frame
-            entry_frame = tk.Frame(edit_window, bg=COSMIC_BLUE)
-            entry_frame.pack(fill="both", expand=True, padx=20, pady=20)
-            
-            # Title/date frame
-            header_frame = tk.Frame(entry_frame, bg=COSMIC_BLUE)
-            header_frame.pack(fill="x", pady=10)
-            
-            # Display original timestamp
-            try:
-                entry_time = datetime.strptime(entry["timestamp"], "%Y-%m-%d %H:%M:%S")
-                display_time = entry_time.strftime("%B %d, %Y - %H:%M")
-            except:
-                display_time = entry.get("timestamp", "Unknown date")
-                
-            date_label = tk.Label(
-                header_frame,
-                text=f"Created: {display_time}",
-                font=self.subtitle_font,
-                fg=NEURAL_GREEN,
-                bg=COSMIC_BLUE
-            )
-            date_label.pack(anchor="w")
-            
-            # Add edit timestamp
-            edit_label = tk.Label(
-                header_frame,
-                text=f"Editing: {datetime.now().strftime('%B %d, %Y - %H:%M')}",
-                font=self.small_font,
-                fg=AMBIENT_TEAL,
-                bg=COSMIC_BLUE
-            )
-            edit_label.pack(anchor="w")
-            
-            # Title entry
-            title_frame = tk.Frame(entry_frame, bg=COSMIC_BLUE)
-            title_frame.pack(fill="x", pady=10)
-            
-            title_label = tk.Label(
-                title_frame,
-                text="TITLE:",
-                font=self.normal_font,
-                fg=AMBIENT_TEAL,
-                bg=COSMIC_BLUE
-            )
-            title_label.pack(side=tk.LEFT, padx=(0, 10))
-            
-            title_entry = tk.Entry(
-                title_frame,
-                font=("Helvetica", 12),
-                bg=COSMIC_INDIGO,
-                fg=PEARL_WHITE,
-                width=50
-            )
-            title_entry.pack(side=tk.LEFT, fill="x", expand=True)
-            title_entry.insert(0, entry.get("title", ""))
-            
-            # Content area
-            content_label = tk.Label(
-                entry_frame,
-                text="ENTRY:",
-                font=self.normal_font,
-                fg=AMBIENT_TEAL,
-                bg=COSMIC_BLUE
-            )
-            content_label.pack(anchor="w", pady=(10, 5))
-            
-            # Create a frame for the text widget and scrollbar
-            content_frame = tk.Frame(entry_frame, bg=COSMIC_BLUE)
-            content_frame.pack(fill="both", expand=True)
-            
-            # Add scrollbar
-            content_scrollbar = tk.Scrollbar(content_frame)
-            content_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-            
-            content_text = tk.Text(
-                content_frame,
-                font=("Helvetica", 12),
-                bg=COSMIC_INDIGO,
-                fg=PEARL_WHITE,
-                wrap=tk.WORD,
-                padx=10,
-                pady=10,
-                yscrollcommand=content_scrollbar.set
-            )
-            content_text.pack(side=tk.LEFT, fill="both", expand=True)
-            content_text.insert("1.0", entry.get("content", ""))
-            
-            # Configure scrollbar
-            content_scrollbar.config(command=content_text.yview)
-            
-            # Buttons
-            button_frame = tk.Frame(edit_window, bg=COSMIC_BLUE)
-            button_frame.pack(fill="x", padx=20, pady=10)
-            
-            # Include original ID and timestamp to update the correct file
-            entry_id = entry.get("id", f"entry_{int(time.time())}")
-            original_timestamp = entry.get("timestamp", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-            
-            update_btn = tk.Button(
-                button_frame,
-                text="Update Entry",
-                font=self.normal_font,
-                bg=NEURAL_GREEN,
-                fg=PEARL_WHITE,
-                command=lambda: self.update_journal_entry(
-                    entry_id, 
-                    original_timestamp,
-                    title_entry.get(),
-                    content_text.get("1.0", tk.END),
-                    edit_window
-                )
-            )
-            update_btn.pack(side=tk.RIGHT, padx=5)
-            
-            cancel_btn = tk.Button(
-                button_frame,
-                text="Cancel",
-                font=self.normal_font,
-                bg=DEEP_THOUGHT,
-                fg=PEARL_WHITE,
-                command=edit_window.destroy
-            )
-            cancel_btn.pack(side=tk.RIGHT, padx=5)
-    
-    def update_journal_entry(self, entry_id, original_timestamp, title, content, window):
-        """Update an existing journal entry"""
+        """Save the journal entry to a file"""
         content = content.strip()
         if not content:
             messagebox.showinfo("Empty Entry", "Please write something in your entry before saving.")
@@ -2822,6 +3838,329 @@ class EnchantedMindMirror:
             print(f"Error updating practice streak: {e}")
             # Reset to 1 if there's an error
             self.user_data["meditation_stats"]["practice_streak"] = 1
+
+    def show_export_history(self):
+        """Display the history of exports"""
+        history_window = tk.Toplevel(self.master)
+        history_window.title("Export History")
+        history_window.geometry("550x400")
+        history_window.configure(bg=COSMIC_BLUE)
+        
+        # Center the window
+        self._center_window(history_window)
+        
+        # Header
+        header = tk.Label(
+            history_window,
+            text="Mind Mirror Export History",
+            font=self.title_font,
+            fg=ENERGY_CYAN,
+            bg=COSMIC_BLUE
+        )
+        header.pack(pady=(20, 10))
+        
+        # Description
+        description = tk.Label(
+            history_window,
+            text="Records of neural pattern data exported from Mind Mirror",
+            font=self.normal_font,
+            fg=PEARL_WHITE,
+            bg=COSMIC_BLUE
+        )
+        description.pack(pady=(0, 20))
+        
+        # Check if there are exports
+        if not self.user_data.get("exports", []):
+            no_exports = tk.Label(
+                history_window,
+                text="No export history found. Use the export menu to share your neural patterns.",
+                font=self.normal_font,
+                fg=MIND_GOLD,
+                bg=COSMIC_BLUE,
+                wraplength=450
+            )
+            no_exports.pack(pady=40)
+            
+            close_btn = tk.Button(
+                history_window,
+                text="Close",
+                font=self.normal_font,
+                bg=DEEP_THOUGHT,
+                fg=PEARL_WHITE,
+                command=history_window.destroy
+            )
+            close_btn.pack(pady=20)
+            return
+        
+        # Create a frame for the export list
+        list_frame = tk.Frame(history_window, bg=COSMIC_BLUE)
+        list_frame.pack(fill="both", expand=True, padx=20, pady=10)
+        
+        # Create scrollable area
+        canvas = tk.Canvas(list_frame, bg=COSMIC_BLUE, highlightthickness=0)
+        scrollbar = tk.Scrollbar(list_frame, orient="vertical", command=canvas.yview)
+        scroll_frame = tk.Frame(canvas, bg=COSMIC_BLUE)
+        
+        scroll_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scroll_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+        
+        # Add export records
+        for i, export in enumerate(reversed(self.user_data.get("exports", []))):
+            export_frame = tk.Frame(scroll_frame, bg=DEEP_THOUGHT, bd=1, relief=tk.RAISED)
+            export_frame.pack(fill="x", pady=5, padx=5)
+            
+            # Format date for display
+            try:
+                export_date = datetime.fromisoformat(export.get("timestamp", "")).strftime("%Y-%m-%d %H:%M")
+            except:
+                export_date = "Unknown date"
+            
+            # Header with date and target
+            header_frame = tk.Frame(export_frame, bg=DEEP_THOUGHT)
+            header_frame.pack(fill="x", padx=10, pady=5)
+            
+            date_label = tk.Label(
+                header_frame,
+                text=export_date,
+                font=self.small_font,
+                fg=MIND_GOLD,
+                bg=DEEP_THOUGHT
+            )
+            date_label.pack(side="left")
+            
+            target_label = tk.Label(
+                header_frame,
+                text=f"Exported to: {export.get('target', 'Unknown')}",
+                font=self.small_font,
+                fg=ENERGY_CYAN,
+                bg=DEEP_THOUGHT
+            )
+            target_label.pack(side="right")
+            
+            # Details
+            details_frame = tk.Frame(export_frame, bg=DEEP_THOUGHT)
+            details_frame.pack(fill="x", padx=10, pady=(0, 5))
+            
+            details_text = f"Nodes: {export.get('nodes', '?')} | Connections: {export.get('connections', '?')}"
+            if export.get('file'):
+                details_text += f" | File: {export.get('file')}"
+                
+            details_label = tk.Label(
+                details_frame,
+                text=details_text,
+                font=self.small_font,
+                fg=PEARL_WHITE,
+                bg=DEEP_THOUGHT,
+                justify=tk.LEFT,
+                anchor="w"
+            )
+            details_label.pack(fill="x")
+        
+        # Close button
+        close_btn = tk.Button(
+            history_window,
+            text="Close",
+            font=self.normal_font,
+            bg=DEEP_THOUGHT,
+            fg=PEARL_WHITE,
+            command=history_window.destroy
+        )
+        close_btn.pack(pady=20)
+
+    def show_about(self):
+        """Show information about the Mind Mirror application"""
+        about_window = tk.Toplevel(self.master)
+        about_window.title("About Mind Mirror")
+        about_window.geometry("500x400")
+        about_window.configure(bg=COSMIC_BLUE)
+        about_window.resizable(False, False)
+        
+        # Center the window
+        self._center_window(about_window)
+        
+        # Logo or title
+        title_label = tk.Label(
+            about_window,
+            text="Mind Mirror",
+            font=("Helvetica", 28, "bold"),
+            fg=MYSTICAL_PURPLE,
+            bg=COSMIC_BLUE
+        )
+        title_label.pack(pady=(30, 5))
+        
+        # Version
+        version_label = tk.Label(
+            about_window,
+            text=f"Version {VERSION} ({VERSION_NAME})",
+            font=("Helvetica", 12, "italic"),
+            fg=ENERGY_CYAN,
+            bg=COSMIC_BLUE
+        )
+        version_label.pack(pady=(0, 20))
+        
+        # Description
+        desc_text = "Mind Mirror is a tool for exploring consciousness and neural patterns."
+        desc_label = tk.Label(
+            about_window,
+            text=desc_text,
+            font=self.normal_font,
+            fg=PEARL_WHITE,
+            bg=COSMIC_BLUE,
+            wraplength=400
+        )
+        desc_label.pack(pady=(0, 15))
+        
+        # More details
+        details_text = (
+            "Part of the PROJECT89 Perception-Hacking Suite\n\n"
+            "This software allows you to map and visualize your consciousness, "
+            "examine your beliefs, and integrate with other consciousness-altering tools."
+        )
+        details_label = tk.Label(
+            about_window,
+            text=details_text,
+            font=self.small_font,
+            fg=PEARL_WHITE,
+            bg=COSMIC_BLUE,
+            wraplength=400,
+            justify=tk.CENTER
+        )
+        details_label.pack(pady=(0, 20))
+        
+        # Footer with creation date
+        footer_label = tk.Label(
+            about_window,
+            text="© 2023 PROJECT89",
+            font=("Helvetica", 8),
+            fg=AMBIENT_TEAL,
+            bg=COSMIC_BLUE
+        )
+        footer_label.pack(side=tk.BOTTOM, pady=15)
+        
+        # Close button
+        close_btn = tk.Button(
+            about_window,
+            text="Close",
+            font=self.normal_font,
+            bg=DEEP_THOUGHT,
+            fg=PEARL_WHITE,
+            command=about_window.destroy
+        )
+        close_btn.pack(pady=20)
+
+    def view_journal_entry(self):
+        """View the selected journal entry"""
+        # Get selected index
+        selection = self.journal_listbox.curselection()
+        if not selection:
+            messagebox.showinfo("No Selection", "Please select an entry to view.")
+            return
+            
+        index = selection[0]
+        
+        # Check if the index is valid for our entries list
+        if not hasattr(self, 'current_journal_entries') or index >= len(self.current_journal_entries):
+            return
+        
+        # Get the selected entry
+        entry = self.current_journal_entries[index]
+        
+        # Create view window
+        view_window = tk.Toplevel(self.master)
+        view_window.title("Journal Entry")
+        view_window.geometry("700x500")
+        view_window.configure(bg=COSMIC_BLUE)
+        
+        # Main frame
+        main_frame = tk.Frame(view_window, bg=COSMIC_BLUE)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        
+        # Title and date
+        try:
+            date_obj = datetime.strptime(entry.get("timestamp", ""), "%Y-%m-%d %H:%M:%S")
+            date_str = date_obj.strftime("%B %d, %Y at %I:%M %p")
+        except:
+            date_str = entry.get("timestamp", "Unknown date")
+        
+        date_label = tk.Label(
+            main_frame,
+            text=date_str,
+            font=("Helvetica", 10),
+            fg=AMBIENT_TEAL,
+            bg=COSMIC_BLUE
+        )
+        date_label.pack(anchor=tk.W, pady=(0, 5))
+        
+        title_label = tk.Label(
+            main_frame,
+            text=entry.get("title", "Untitled Entry"),
+            font=("Helvetica", 16, "bold"),
+            fg=MYSTICAL_PURPLE,
+            bg=COSMIC_BLUE
+        )
+        title_label.pack(anchor=tk.W, pady=(0, 20))
+        
+        # Content
+        content_frame = tk.Frame(main_frame, bg=COSMIC_BLUE)
+        content_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Scrollbar
+        scrollbar = tk.Scrollbar(content_frame)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        # Text widget
+        content_text = tk.Text(
+            content_frame,
+            wrap=tk.WORD,
+            font=("Helvetica", 12),
+            bg=DEEP_THOUGHT,
+            fg=PEARL_WHITE,
+            padx=15,
+            pady=15,
+            yscrollcommand=scrollbar.set
+        )
+        content_text.pack(fill=tk.BOTH, expand=True)
+        scrollbar.config(command=content_text.yview)
+        
+        # Insert content
+        content_text.insert(tk.END, entry.get("content", "No content"))
+        content_text.config(state=tk.DISABLED)  # Read-only
+        
+        # Buttons
+        button_frame = tk.Frame(view_window, bg=COSMIC_BLUE)
+        button_frame.pack(fill=tk.X, pady=15)
+        
+        close_button = tk.Button(
+            button_frame,
+            text="Close",
+            font=self.normal_font,
+            bg=DEEP_THOUGHT,
+            fg=PEARL_WHITE,
+            command=view_window.destroy
+        )
+        close_button.pack(side=tk.RIGHT, padx=5)
+
+    def edit_journal_entry(self):
+        """Edit the selected journal entry"""
+        # Get selected index
+        selection = self.journal_listbox.curselection()
+        if not selection:
+            messagebox.showinfo("No Selection", "Please select an entry to edit.")
+            return
+            
+        # For now, just show a message
+        messagebox.showinfo("Edit Entry", "Edit functionality will be implemented in a future update.")
+        
+        # Call view_journal_entry as a fallback
+        self.view_journal_entry()
 
 if __name__ == "__main__":
     app = EnchantedMindMirror()

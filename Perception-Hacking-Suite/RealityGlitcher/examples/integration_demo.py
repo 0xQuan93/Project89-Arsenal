@@ -1,200 +1,250 @@
 #!/usr/bin/env python3
 """
-Mind Mirror Integration Demo
+Integration Demo for Mind Mirror and Reality Glitcher
 
-This script demonstrates the integration between Mind Mirror and 
-Reality Glitcher, showing how consciousness data from Mind Mirror
-can be used to create reality glitches.
+This script demonstrates how data exported from Mind Mirror can be imported into
+Reality Glitcher to create personalized glitch effects based on neural patterns.
 """
 
 import os
 import sys
+import json
 import time
 import random
 import logging
-
-# Add parent directory to path for imports
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-# Import RealityGlitcher
-from main import RealityGlitcher, GlitchType
+from datetime import datetime
+from typing import Dict, List, Optional
 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s | %(levelname)s | %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[logging.StreamHandler()]
 )
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("IntegrationDemo")
 
-def display_banner():
-    """Display a banner for the integration demo"""
-    banner = """
-    ╭────────────────────────────────────────────────────────╮
-    │                                                        │
-    │   🧠 Mind Mirror ⟷ Reality Glitcher Integration Demo   │
-    │                                                        │
-    │   Merging consciousness data with reality distortion   │
-    │                                                        │
-    ╰────────────────────────────────────────────────────────╯
+# Add parent directory to path so we can import the Reality Glitcher
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(parent_dir)
+
+# Try to import Reality Glitcher
+try:
+    from main import RealityGlitcher
+    logger.info("Successfully imported Reality Glitcher")
+except ImportError as e:
+    logger.error(f"Failed to import Reality Glitcher: {e}")
+    sys.exit(1)
+
+def check_for_mind_mirror_data() -> bool:
     """
-    print(banner)
-
-def check_mind_mirror_data():
-    """Check if Mind Mirror export data is available"""
-    # Get the path to the RealityGlitcher root directory
-    reality_glitcher_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    import_path = os.path.join(reality_glitcher_dir, "imports", "mind_mirror_data.json")
+    Check if Mind Mirror data is available in the imports directory.
     
-    if os.path.exists(import_path):
-        logger.info(f"Mind Mirror data found at {import_path}")
+    Returns:
+        True if data is available, False otherwise
+    """
+    imports_dir = os.path.join(parent_dir, "imports")
+    
+    # Ensure imports directory exists
+    os.makedirs(imports_dir, exist_ok=True)
+    
+    # Check for notification file first
+    notification_path = os.path.join(imports_dir, ".new_import")
+    if os.path.exists(notification_path):
+        logger.info("Found new import notification file")
         return True
-    else:
-        logger.warning(f"No Mind Mirror data found at {import_path}. Please run Mind Mirror and export data first.")
+    
+    # Check for any Mind Mirror data files
+    data_files = [f for f in os.listdir(imports_dir) 
+                 if (f.startswith("mind_mirror_data_") or f == "mind_mirror_data.json") 
+                 and f.endswith(".json")]
+    
+    if data_files:
+        logger.info(f"Found {len(data_files)} Mind Mirror data files")
+        return True
+    
+    return False
+
+def create_sample_mind_mirror_data() -> bool:
+    """
+    Create a sample Mind Mirror data file for testing the integration.
+    This is only used if no real Mind Mirror data is available.
+    
+    Returns:
+        True if successful, False otherwise
+    """
+    imports_dir = os.path.join(parent_dir, "imports")
+    os.makedirs(imports_dir, exist_ok=True)
+    
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    data_path = os.path.join(imports_dir, f"mind_mirror_data_{timestamp}.json")
+    meta_path = os.path.join(imports_dir, f"meta_{timestamp}.json")
+    notification_path = os.path.join(imports_dir, ".new_import")
+    
+    try:
+        # Generate sample neural patterns
+        nodes = []
+        connections = []
+        
+        # Create sample nodes
+        node_types = ["perception", "awareness", "concept", "memory", "emotion"]
+        node_labels = ["Reality", "Perception", "Consciousness", "Time", "Space", 
+                      "Self", "Mind", "Awareness", "Memory", "Identity"]
+                      
+        for i in range(10):
+            nodes.append({
+                "id": i,
+                "label": random.choice(node_labels),
+                "type": random.choice(node_types),
+                "strength": random.uniform(0.3, 0.9),
+                "position": {
+                    "x": random.uniform(-1.0, 1.0),
+                    "y": random.uniform(-1.0, 1.0),
+                    "z": random.uniform(-1.0, 1.0)
+                }
+            })
+        
+        # Create sample connections
+        connection_types = ["association", "causation", "similarity"]
+        for i in range(15):
+            source = random.randint(0, 9)
+            target = random.randint(0, 9)
+            if source != target:
+                connections.append({
+                    "source": source,
+                    "target": target,
+                    "type": random.choice(connection_types),
+                    "weight": random.uniform(0.2, 0.8)
+                })
+        
+        # Calculate sample metrics
+        metrics = {
+            "coherence": random.uniform(0.3, 0.8),
+            "complexity": random.uniform(0.4, 0.9),
+            "stability": random.uniform(0.2, 0.7)
+        }
+        
+        # Create the data structure
+        mind_mirror_data = {
+            "source": "Mind Mirror",
+            "user": "Demo User",
+            "version": "1.0.0",
+            "version_name": "Enchanted Mirror",
+            "timestamp": datetime.now().isoformat(),
+            "neural_patterns": {
+                "nodes": nodes,
+                "connections": connections,
+                "metrics": metrics
+            },
+            "metadata": {
+                "pattern_type": random.choice(["meditation", "creative", "analytical", "emotional"]),
+                "source_activity": "demo integration",
+                "intensity": random.uniform(0.4, 0.8),
+                "consciousness_level": random.uniform(0.3, 0.9)
+            }
+        }
+        
+        # Create metadata file
+        metadata = {
+            "source": "Mind Mirror Demo",
+            "user": "Demo User",
+            "export_time": datetime.now().isoformat(),
+            "pattern_description": "Sample neural pattern generated for integration testing"
+        }
+        
+        # Write the data files
+        with open(data_path, "w") as f:
+            json.dump(mind_mirror_data, f, indent=2)
+            
+        with open(meta_path, "w") as f:
+            json.dump(metadata, f, indent=2)
+            
+        # Create notification file
+        with open(notification_path, "w") as f:
+            f.write(timestamp)
+            
+        logger.info(f"Created sample Mind Mirror data files at {imports_dir}")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Failed to create sample Mind Mirror data: {e}")
         return False
 
-def demonstrate_direct_glitches(glitcher):
-    """Create some direct glitches for comparison"""
-    logger.info("Creating direct glitches for comparison...")
+def run_glitch_demo(glitcher: RealityGlitcher) -> None:
+    """
+    Run a demo of glitch effects based on Mind Mirror data
     
-    # Create a visual glitch
-    visual_glitch = glitcher.create_glitch(
-        GlitchType.VISUAL,
-        intensity=0.6,
-        duration=10.0,
-        complexity=0.5,
-        persistence=0.3,
-        target="local_perception"
-    )
-    
-    # Create a cognitive glitch
-    cognitive_glitch = glitcher.create_glitch(
-        GlitchType.COGNITIVE,
-        intensity=0.4,
-        duration=15.0,
-        complexity=0.7,
-        persistence=0.2,
-        target="consensus_reality"
-    )
-    
-    logger.info(f"Created {len(glitcher.active_glitches)} direct glitches")
-    return glitcher.active_glitches
-
-def demonstrate_mind_mirror_integration(glitcher):
-    """Demonstrate integration with Mind Mirror"""
-    logger.info("Beginning Mind Mirror integration demonstration...")
-    
-    # Store the count of glitches before integration
-    glitches_before = len(glitcher.active_glitches)
+    Args:
+        glitcher: Initialized RealityGlitcher instance
+    """
+    logger.info("Starting Reality Glitcher integration demo")
     
     # Integrate with Mind Mirror
-    success = glitcher.integrate_with_mind_mirror()
+    glitcher.integrate_with_mind_mirror()
     
-    if success:
-        logger.info("Mind Mirror integration successful!")
-        
-        # Get Mind Mirror-based glitches (all new glitches after integration)
-        mind_mirror_glitches = glitcher.active_glitches[glitches_before:]
-        logger.info(f"Created {len(mind_mirror_glitches)} glitches from Mind Mirror data")
-        
-        # Print details of each Mind Mirror glitch
-        for i, glitch in enumerate(mind_mirror_glitches, 1):
-            print(f"\nMind Mirror Glitch #{i}:")
-            print(f"  Type: {glitch.type.name}")
-            print(f"  Target: {glitch.target}")
-            print(f"  Intensity: {glitch.parameters.intensity:.2f}")
-            print(f"  Stability: {glitch.stability:.2f}")
-            
-        return mind_mirror_glitches
-    else:
-        logger.error("Mind Mirror integration failed!")
-        return []
-
-def compare_glitches(direct_glitches, mind_mirror_glitches):
-    """Compare direct glitches with those from Mind Mirror"""
-    if not mind_mirror_glitches:
-        logger.warning("No Mind Mirror glitches available for comparison")
+    # Check if integration was successful
+    if not glitcher.active_glitches:
+        logger.warning("No glitches were created from Mind Mirror data")
         return
+    
+    logger.info(f"Created {len(glitcher.active_glitches)} glitches from Mind Mirror data")
+    
+    # Display information about the glitches
+    for i, glitch in enumerate(glitcher.active_glitches):
+        logger.info(f"Glitch {i+1}: {glitch.type.name}")
+        logger.info(f"  Intensity: {glitch.parameters.intensity:.2f}")
+        logger.info(f"  Duration: {glitch.parameters.duration:.2f}s")
+        logger.info(f"  Target: {glitch.target}")
+    
+    # Simulate glitch effects over time
+    logger.info("\nSimulating reality glitches based on Mind Mirror neural patterns...")
+    
+    total_duration = 10  # seconds for the demo
+    check_interval = 0.5  # seconds between status updates
+    
+    start_time = time.time()
+    while (time.time() - start_time) < total_duration:
+        # Update glitch states
+        active_count = sum(1 for g in glitcher.active_glitches if g.is_active)
         
-    print("\n" + "="*50)
-    print("Comparing Direct Glitches vs Mind Mirror Glitches")
-    print("="*50)
+        # Calculate current reality stability
+        stability = glitcher._calculate_current_stability()
+        
+        # Display current status
+        logger.info(f"Reality stability: {stability:.2f} - Active glitches: {active_count}")
+        
+        # Sleep for the check interval
+        time.sleep(check_interval)
     
-    # Calculate average properties
-    direct_intensity = sum(g.parameters.intensity for g in direct_glitches) / len(direct_glitches) if direct_glitches else 0
-    mm_intensity = sum(g.parameters.intensity for g in mind_mirror_glitches) / len(mind_mirror_glitches)
-    
-    direct_stability = sum(g.stability for g in direct_glitches) / len(direct_glitches) if direct_glitches else 0
-    mm_stability = sum(g.stability for g in mind_mirror_glitches) / len(mind_mirror_glitches)
-    
-    # Print comparison table
-    print(f"{'Property':<20} | {'Direct Glitches':<20} | {'Mind Mirror Glitches':<20}")
-    print("-" * 65)
-    print(f"{'Count':<20} | {len(direct_glitches):<20} | {len(mind_mirror_glitches):<20}")
-    print(f"{'Avg. Intensity':<20} | {direct_intensity:.2f}{'':<15} | {mm_intensity:.2f}{'':<15}")
-    print(f"{'Avg. Stability':<20} | {direct_stability:.2f}{'':<15} | {mm_stability:.2f}{'':<15}")
-    print(f"{'Consciousness Data':<20} | {'No':<20} | {'Yes':<20}")
-    print(f"{'Neural Pattern Link':<20} | {'No':<20} | {'Yes':<20}")
-
-def simulate_reality_shifts():
-    """Simulate the effects of reality glitches"""
-    print("\nSimulating reality shifts...")
-    effects = [
-        "Visual perception beginning to distort...",
-        "Cognitive frameworks reorganizing...",
-        "Temporal sequencing becoming flexible...",
-        "Spatial boundaries dissolving...",
-        "Causal relationships inverting...",
-        "Synchronistic events multiplying..."
-    ]
-    
-    for i in range(5):
-        effect = random.choice(effects)
-        print(f"[{i+1}] {effect}")
-        time.sleep(1.5)
+    logger.info("\nDemo complete - Final reality status:")
+    logger.info(f"Reality stability: {glitcher._calculate_current_stability():.2f}")
+    logger.info(f"Active glitches: {sum(1 for g in glitcher.active_glitches if g.is_active)}")
 
 def main():
-    """Main demonstration function"""
-    display_banner()
+    """Main function to run the integration demo"""
+    logger.info("=== Mind Mirror + Reality Glitcher Integration Demo ===")
     
-    # Check for Mind Mirror data
-    if not check_mind_mirror_data():
-        print("\nPlease follow these steps to generate Mind Mirror data:")
-        print("1. Run Mind Mirror application")
-        print("2. Use the Integration menu to export data to Reality Glitcher")
-        print("3. Run this demo again")
+    # Check if Mind Mirror data is available
+    if not check_for_mind_mirror_data():
+        logger.warning("No Mind Mirror data found. Creating sample data for demo purposes.")
+        if not create_sample_mind_mirror_data():
+            logger.error("Failed to create sample data. Exiting.")
+            return
+    
+    # Initialize Reality Glitcher
+    try:
+        glitcher = RealityGlitcher()
+        logger.info("Reality Glitcher initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize Reality Glitcher: {e}")
         return
     
-    # Create RealityGlitcher instance
-    glitcher = RealityGlitcher()
+    # Run the demo
+    run_glitch_demo(glitcher)
     
-    # Demonstrate direct glitches
-    direct_glitches = demonstrate_direct_glitches(glitcher)
-    
-    # Small delay for readability
-    time.sleep(1)
-    
-    # Demonstrate Mind Mirror integration
-    mind_mirror_glitches = demonstrate_mind_mirror_integration(glitcher)
-    
-    # Small delay for readability
-    time.sleep(1)
-    
-    # Compare the glitches
-    compare_glitches(direct_glitches, mind_mirror_glitches)
-    
-    # Simulate reality shifts
-    simulate_reality_shifts()
-    
-    # Get final reality status
-    status = glitcher.get_reality_status()
-    print("\nFinal Reality Status:")
-    print(f"- Active Glitches: {status['active_glitches']}")
-    print(f"- Reality Stability: {status['stability']:.2f}")
-    print(f"- Safety Protocols: {'Active' if status['safetyProtocols'] else 'Inactive'}")
-    
-    print("\nDemo complete! Mind Mirror and Reality Glitcher have been integrated.")
-    print("Your consciousness patterns are now affecting reality distortion.")
+    logger.info("=== Integration Demo Complete ===")
+    logger.info("In a real application, these glitches would affect the user's")
+    logger.info("perception through visual and cognitive effects based on their")
+    logger.info("own neural patterns exported from Mind Mirror.")
 
 if __name__ == "__main__":
     main() 

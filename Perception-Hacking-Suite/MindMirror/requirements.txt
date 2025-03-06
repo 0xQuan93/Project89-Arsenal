@@ -1,3 +1,6 @@
 pygame>=2.1.0
 pillow>=9.0.0
-numpy>=1.20.0 
+numpy>=1.20.0
+matplotlib>=3.5.0
+networkx>=2.7.0  # For network visualizations
+jsonschema>=4.4.0  # For validating JSON data formats 

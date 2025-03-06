@@ -1,79 +1,72 @@
-# PROJECT89 MIND MIRROR
+# Mind Mirror
 
-## Overview
+Part of the PROJECT89 Perception-Hacking Suite
 
-Mind Mirror is a sophisticated consciousness exploration tool that allows users to examine their own thought patterns, engage in guided meditations, record personal insights, and visualize neural connections. As part of PROJECT89's Perception-Hacking Suite, it integrates with other tools like Reality Glitcher for a comprehensive perception-enhancing experience.
+## Description
 
-## Key Features
+Mind Mirror is a consciousness exploration tool that allows you to map your neural patterns, examine beliefs, and integrate with other consciousness-altering tools. It provides a visual interface for understanding your thought patterns and consciousness structure.
 
-- **Immersive Cosmic Interface**: Beautiful animated star field background that creates a perfect environment for introspection
-- **Self-Reflection Tools**: Interactive prompts and journaling system
-- **Meditation Guidance**: Various guided meditation experiences with customizable duration
-- **Neural Pattern Visualization**: Three different ways to visualize thought patterns:
-  - Neural Web: Interconnected thought nodes
-  - Thought Stream: Flow-based thinking patterns
-  - Concept Cloud: Radial concept mapping
-- **Personal Growth Tracking**: Practice streak counter and session statistics
-- **Reality Glitcher Integration**: Export neural patterns for enhanced perception experiments
+## Features
+
+- **Neural Pattern Visualization**: Generate visualizations of your thought patterns and consciousness structure
+- **Self-Reflection Tools**: Guided prompts to deepen self-understanding
+- **Meditation Support**: Guided meditations for consciousness expansion
+- **Belief Examination**: Tools to question and examine beliefs that shape your perception
+- **Journal System**: Record insights and track your consciousness exploration
+- **Reality Glitcher Integration**: Export your neural patterns to influence reality distortion in Reality Glitcher
 
 ## Installation
 
-1. Ensure you have Python 3.8+ installed on your system.
+1. Ensure you have Python 3.8 or higher installed
+2. Clone this repository or download the Perception-Hacking Suite
+3. Navigate to the MindMirror directory
+4. Install dependencies:
 
-2. Install the required dependencies:
-```bash
-pip install pygame pillow numpy
+```
+pip install -r requirements.txt
 ```
 
-3. Run the application:
-```bash
-python enchanted_mindmirror_fixed.py
+## Usage
+
+Run the application with:
+
+```
+python main.py
 ```
 
-## Usage Guide
+### First-time Setup
 
-1. **First Launch**: Enter your name to set up your personal profile.
-2. **Dashboard**: View your practice streak and recommendations.
-3. **Self-Reflection**: Explore guided reflection prompts.
-4. **Consciousness Expansion**: Engage in guided meditations.
-5. **Ego Dissolution**: Examine and challenge limiting beliefs.
-6. **Journal**: Record your insights and experiences.
-7. **Neural Patterns**: Visualize thought connections through 3 different visualization modes.
+On first launch, you'll be prompted to enter your name. This information is used to personalize your Mind Mirror experience and is stored locally.
 
-## Files in this Directory
+### Main Interface
 
-- **enchanted_mindmirror_fixed.py**: The main application file (use this one)
-- **modules/**: Core functionality modules
-  - ego dissolution.py: Belief examination tools
-  - self reflection.py: Self-reflection interfaces
-  - consciousness expansion.py: Meditation guides
-- **resources/**: Application resources
-  - sounds/: Audio files for ambient sound
-  - images/: Visual resources
-  - fonts/: Custom fonts
-  - meditations/: Meditation scripts and guides
-  - journal/: Saved journal entries
-- **user_data/**: Stored user profiles and settings
-- **examples/**: Example usage scripts
+The interface is divided into four main tabs:
 
-## Technical Information
+1. **Dashboard**: Overview of your consciousness exploration progress
+2. **Neural Patterns**: Visualization of your thought patterns
+3. **Consciousness Explorer**: Meditation and self-reflection tools
+4. **Mind Tools**: Journal, belief examination, and integration tools
 
-The Mind Mirror application is built with:
-- Tkinter for the GUI
-- Pygame for audio capabilities
-- PIL/Pillow for image processing
-- NumPy for advanced visualizations
+### Export Functionality
 
-## Integration with Perception-Hacking Suite
+You can export your neural patterns for use with other tools:
 
-Mind Mirror connects with other PROJECT89 tools:
-- **Reality Glitcher**: Export neural patterns to create targeted perception experiments
-- **Dream Weaver**: Send insights and reflection data to influence dreamscape generation
+1. Use the Export menu
+2. Choose "Export to Reality Glitcher" or "Export to File"
+3. Follow the prompts to complete the export
 
-## About Project89
+## Data Storage
 
-PROJECT89 is dedicated to exploring the boundaries between perception, technology, and consciousness. The Perception-Hacking Suite represents our vision of how digital tools can enhance human understanding and experience.
+All user data is stored locally in the `user_data` directory. Backups are automatically created when data is saved.
 
----
+## Integration with Reality Glitcher
 
-*"The mind is not a vessel to be filled, but a fire to be kindled." - Plutarch*
+Mind Mirror can seamlessly integrate with Reality Glitcher:
+
+1. Navigate to Mind Tools > Integration
+2. Click "Connect with Reality Glitcher"
+3. Your neural patterns will be exported and made available for reality manipulation
+
+## License
+
+PROJECT89 Proprietary - All rights reserved 
