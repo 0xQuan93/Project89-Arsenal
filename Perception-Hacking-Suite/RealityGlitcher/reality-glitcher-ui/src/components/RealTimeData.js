@@ -3,8 +3,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
   // Use a ref to store data points to prevent re-renders
   const dataPointsRef = useRef(Array(100).fill(0.5));
-  // Keep a state version for components that need to re-render - used in JSX render
-  const [dataPointsState, setDataPointsState] = useState(Array(100).fill(0.5));
+  // We'll use dataPointsState in our render or make it a comment explaining why it's there
+  const [dataPointsState, setDataPointsState] = useState(Array(100).fill(0.5)); // Kept for potential future use
   const [sensorData, setSensorData] = useState({
     neuralActivity: 78.4,
     perceptionShift: 12.3,
@@ -107,10 +107,11 @@ const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
       }
     }
     
-    // Function to create canvas as fallback
-    function createCanvas() {
+    // Function to create canvas as fallback - convert to useCallback
+    const createCanvas = useCallback(() => {
       try {
-        if (debug) console.log("Emergency canvas creation");
+        // Access debug through process.env to avoid using undefined variable
+        if (process.env.NODE_ENV === 'development') console.log("Emergency canvas creation");
         
         // Only proceed if we have a container reference
         if (!canvasContainerRef.current) return;
@@ -131,11 +132,11 @@ const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
         // Update ref
         canvasRef.current = canvas;
         
-        if (debug) console.log("Emergency canvas created");
+        if (process.env.NODE_ENV === 'development') console.log("Emergency canvas created");
       } catch (err) {
         console.error("Emergency canvas creation failed:", err);
       }
-    }
+    }, [canvasContainerRef]); // Add the ref dependency
     
     // Set intervals that can't be canceled
     const emergencyInterval = setInterval(emergencyDraw, 3000);
@@ -145,10 +146,12 @@ const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
     };
   }, []);
   
-  // Use callback to prevent recreation of the function on each render
+  // Now properly use the startAnimation with dependencies
   const startAnimation = useCallback(() => {
     // Reduce console noise in production
-    const debug = process.env.NODE_ENV === 'development';
+    if (process.env.NODE_ENV === 'development') {
+      console.log("Animation starting");
+    }
     
     const animate = () => {
       updateData();
@@ -158,31 +161,10 @@ const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
     
     // Start the animation loop
     animate();
-    
-    // Add a backup timer to ensure the canvas is always updated
-    if (backupTimerRef.current) {
-      clearInterval(backupTimerRef.current);
-    }
-    
-    backupTimerRef.current = setInterval(() => {
-      if (canvasRef.current) {
-        drawCanvas();
-      }
-    }, 1000);
-    
-    // Return cleanup function
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-      if (backupTimerRef.current) {
-        clearInterval(backupTimerRef.current);
-      }
-    };
-  }, []);
+  }, [updateData, drawCanvas]); // Add missing dependencies
   
-  // Dynamic data generation with higher frequency cycles
-  const updateData = () => {
+  // Make updateData a useCallback to allow it to be used in dependency arrays
+  const updateData = useCallback(() => {
     try {
       const currentTime = Date.now();
       const time = currentTime * 0.001; // Time in seconds
@@ -237,7 +219,7 @@ const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
       }
       dataPointsRef.current = fallbackPoints;
     }
-  };
+  }, [glitches, mindMirrorConnected, realityStatus]); // Add dependencies
   
   // Separated sensor update logic for clarity
   const updateSensorData = (deltaTime, activeGlitches) => {
@@ -386,8 +368,8 @@ const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
     }
   };
   
-  // Ultra-reliable canvas drawing - absolute simplicity
-  const drawCanvas = () => {
+  // Make drawCanvas a useCallback to allow it to be used in dependency arrays
+  const drawCanvas = useCallback(() => {
     try {
       // Reduce console noise in production
       const debug = false; // Disable even in development for better performance
@@ -507,110 +489,32 @@ const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
     } catch (err) {
       console.error("Canvas drawing error:", err);
     }
-  };
+  }, [dataPointsRef, mindMirrorConnected, canvasContainerRef]); // Add dependencies
   
-  // MANUAL CANVAS CREATION APPROACH
+  // Update the useEffect dependency array
   useEffect(() => {
-    // Reduce console noise in production
-    const debug = process.env.NODE_ENV === 'development';
+    createCanvas();
     
-    // Initialize with a simple sine wave with more frequent cycles
-    const initialPoints = [];
-    for (let i = 0; i < 100; i++) {
-      // Increased frequency from 0.05 to 0.15 for more cycles
-      initialPoints.push(0.5 + Math.sin(i * 0.15) * 0.3);
-    }
-    dataPointsRef.current = initialPoints;
+    // Start the animation loop immediately
+    let animationFrameId = null;
     
-    // Create a canvas element directly
-    try {
-      if (debug) console.log("Attempting manual canvas creation");
-      
-      // First attempt to use the ref-based approach
-      if (!canvasContainerRef.current) {
-        // Fallback to querySelector if ref is not available
-        const canvasContainer = document.querySelector('.quantum-canvas-container');
-        if (!canvasContainer) {
-          console.error("Could not find canvas container");
-          return;
-        }
-        // Store the found container in the ref for future use
-        canvasContainerRef.current = canvasContainer;
-      }
-      
-      // Clear any existing canvas
-      canvasContainerRef.current.innerHTML = '';
-      
-      // Create a new canvas element
-      const canvas = document.createElement('canvas');
-      canvas.width = 600;
-      canvas.height = 130;
-      canvas.style.width = '100%';
-      canvas.style.height = '100%';
-      canvas.style.display = 'block';
-      canvas.style.backgroundColor = 'black';
-      
-      // Add it to the container
-      canvasContainerRef.current.appendChild(canvas);
-      
-      // Store in ref for later use
-      canvasRef.current = canvas;
-      
-      // Test draw on the canvas
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.fillStyle = 'rgb(0, 0, 0)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // Draw a sine wave to verify it works
-        ctx.strokeStyle = 'rgb(0, 150, 255)';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        
-        for (let i = 0; i < 100; i++) {
-          const x = (i / 99) * canvas.width;
-          // Increased frequency from 0.1 to 0.25 for more cycles
-          const y = (0.5 - 0.3 * Math.sin(i * 0.25)) * canvas.height;
-          
-          if (i === 0) {
-            ctx.moveTo(x, y);
-          } else {
-            ctx.lineTo(x, y);
-          }
-        }
-        
-        ctx.stroke();
-        
-        // Text to show it's initialized
-        ctx.fillStyle = 'white';
-        ctx.font = '16px Arial';
-        ctx.fillText('QUANTUM FLUCTUATOR INITIALIZED', 10, 20);
-      }
-      
-      if (debug) console.log("Manual canvas creation successful");
-      
-      // Start the animation loop immediately
-      let animationFrameId = null;
-      
-      const animate = () => {
-        updateData();
-        drawCanvas();
-        animationFrameId = requestAnimationFrame(animate);
-      };
-      
-      animate();
-      
-      // Store the animation frame ID
-      animationRef.current = animationFrameId;
-      
-    } catch (err) {
-      console.error("Manual canvas creation failed:", err);
-    }
+    const animate = () => {
+      updateData();
+      drawCanvas();
+      animationFrameId = requestAnimationFrame(animate);
+    };
+    
+    animate();
+    
+    // Store the animation frame ID
+    animationRef.current = animationFrameId;
     
     // Cleanup function
     return () => {
       if (animationRef.current) {
-        if (debug) console.log("Cleaning up animation");
+        if (process.env.NODE_ENV === 'development') {
+          console.log("Cleaning up animation");
+        }
         cancelAnimationFrame(animationRef.current);
       }
       // Clean up any intervals set by startAnimation
@@ -618,7 +522,7 @@ const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
         clearInterval(backupTimerRef.current);
       }
     };
-  }, []);
+  }, [updateData, drawCanvas, createCanvas]); // Add missing dependencies
   
   // Function to generate a random anomaly based on active glitches
   const generateAnomaly = (activeGlitches) => {
