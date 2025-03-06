@@ -11,6 +11,7 @@ const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
     quantumEntanglement: 45.2
   });
   const [anomalies, setAnomalies] = useState([]);
+  const [lastAnomalyTime, setLastAnomalyTime] = useState(0);
   const canvasRef = useRef(null);
   const activeGlitches = glitches.filter(g => g.active);
   
@@ -68,88 +69,171 @@ const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
       // Mind Mirror global effect on quantum entanglement
       const mindMirrorEntanglementBoost = mindMirrorConnected ? 10 + (Math.random() * 15) : 0;
       
-      // Apply effects and fluctuations to sensor data with constraints
+      // Apply safety protocols (reduced effect if enabled)
+      const safetyFactor = realityStatus.safetyProtocols ? 0.6 : 1.0;
+      
+      // Update sensor data
       setSensorData(prev => ({
-        neuralActivity: Math.max(0, Math.min(100, prev.neuralActivity + neuralEffect * 0.1 + fluctuation())),
-        perceptionShift: Math.max(0, Math.min(100, prev.perceptionShift + perceptionEffect * 0.1 + fluctuation())),
-        realityCoherence: Math.max(0, Math.min(100, 
-          // Reality coherence is inversely affected by glitches
-          prev.realityCoherence - coherenceEffect * 0.1 + (realityStatus.safetyProtocols ? 0.2 : -0.1) + fluctuation()
-        )),
-        temporalSync: Math.max(0, Math.min(100, prev.temporalSync - temporalEffect * 0.1 + fluctuation())),
-        cognitiveDissonance: Math.max(0, Math.min(100, prev.cognitiveDissonance + cognitiveEffect * 0.1 + fluctuation())),
-        quantumEntanglement: Math.max(0, Math.min(100, 
-          // Quantum entanglement is boosted by Mind Mirror integration
-          prev.quantumEntanglement + entanglementEffect * 0.1 + (mindMirrorEntanglementBoost * 0.01) + fluctuation()
-        ))
+        neuralActivity: Math.max(0, Math.min(100, prev.neuralActivity + (neuralEffect * safetyFactor) + fluctuation())),
+        perceptionShift: Math.max(0, Math.min(100, prev.perceptionShift + (perceptionEffect * safetyFactor) + fluctuation())),
+        realityCoherence: Math.max(0, Math.min(100, prev.realityCoherence - (coherenceEffect * safetyFactor) + fluctuation())),
+        temporalSync: Math.max(0, Math.min(100, prev.temporalSync - (temporalEffect * safetyFactor) + fluctuation())),
+        cognitiveDissonance: Math.max(0, Math.min(100, prev.cognitiveDissonance + (cognitiveEffect * safetyFactor) + fluctuation())),
+        quantumEntanglement: Math.max(0, Math.min(100, prev.quantumEntanglement + (entanglementEffect * safetyFactor) + (mindMirrorConnected ? 1.5 : fluctuation())))
       }));
       
-      // Add data point for waveform
+      // Add new data point for waveform
       setDataPoints(prev => {
-        // Create more complex waveform patterns with Mind Mirror
+        // Create more complex waveform patterns with Mind Mirror and active glitches
         const baseWave = Math.sin(Date.now() / 500) * 0.3;
         const noiseComponent = activeGlitches.length ? (Math.random() * activeGlitches.length / 10) : 0;
         const mindMirrorComponent = mindMirrorConnected ? 
           Math.sin(Date.now() / 300) * Math.cos(Date.now() / 700) * 0.15 : 0;
         
-        const newPoint = baseWave + noiseComponent + mindMirrorComponent + 0.5;
-        const newPoints = [...prev, newPoint];
-        return newPoints.slice(-100); // Keep only the last 100 points
+        // Add effects from glitches
+        let glitchEffect = 0;
+        activeGlitches.forEach(glitch => {
+          // Different glitch types create different pattern effects
+          switch(glitch.type) {
+            case 'VISUAL':
+              glitchEffect += Math.sin(Date.now() / 400) * glitch.intensity * 0.05;
+              break;
+            case 'TEMPORAL':
+              glitchEffect += Math.sin(Date.now() / (300 - glitch.intensity * 200)) * glitch.intensity * 0.07;
+              break;
+            case 'SPATIAL':
+              glitchEffect += Math.random() * glitch.intensity * 0.1;
+              break;
+            case 'COGNITIVE':
+              // Cognitive glitches create more structured patterns
+              glitchEffect += Math.sin(Date.now() / 600 + Math.cos(Date.now() / 400)) * glitch.intensity * 0.08;
+              break;
+            case 'SYNCHRONISTIC':
+              // Synchronistic glitches create harmonic patterns
+              glitchEffect += (Math.sin(Date.now() / 200) * Math.sin(Date.now() / 500)) * glitch.intensity * 0.1;
+              break;
+            default:
+              glitchEffect += Math.random() * glitch.intensity * 0.03;
+          }
+          
+          // Advanced glitches have stronger effects
+          if (glitch.isAdvanced) {
+            glitchEffect *= 1.5;
+          }
+          
+          // Cross-modal glitches create interference patterns
+          if (glitch.crossModal) {
+            glitchEffect += Math.sin(Date.now() / 250) * Math.cos(Date.now() / 350) * glitch.intensity * 0.12;
+          }
+        });
+        
+        // Normalize value between 0 and 1 for consistent display
+        const newPoint = 0.5 + baseWave + noiseComponent + mindMirrorComponent + glitchEffect;
+        const clampedPoint = Math.max(0, Math.min(1, newPoint)); // Ensure value stays between 0 and 1
+        
+        const newPoints = [...prev, clampedPoint];
+        return newPoints.slice(-100); // Keep last 100 points for smoother graph
       });
       
-      // Update anomalies
-      if (activeGlitches.length > 0 && Math.random() < 0.1) {
-        generateRandomAnomaly(activeGlitches);
-      } else if (anomalies.length > 0 && Math.random() < 0.05) {
+      // Update anomalies - with reduced frequency and limits
+      const now = Date.now();
+      const timeSinceLastAnomaly = now - lastAnomalyTime;
+      const minimumInterval = 3000; // minimum 3 seconds between anomaly updates
+      
+      if (activeGlitches.length > 0 && timeSinceLastAnomaly > minimumInterval && Math.random() < 0.25) {
+        // Limit to generating at most 2 anomalies per cycle
+        const anomaliesToGenerate = Math.min(2, Math.ceil(Math.random() * 2));
+        
+        // Use a batch update approach to reduce UI jumps
+        const newAnomalies = [];
+        for (let i = 0; i < anomaliesToGenerate; i++) {
+          if (Math.random() < 0.7) { // 70% chance for each potential anomaly
+            newAnomalies.push(generateAnomaly(activeGlitches));
+          }
+        }
+        
+        if (newAnomalies.length > 0) {
+          setAnomalies(prev => {
+            // Keep only last 5 anomalies for display
+            const updated = [...prev, ...newAnomalies].slice(-5);
+            return updated;
+          });
+          setLastAnomalyTime(now);
+        }
+      } else if (anomalies.length > 0 && Math.random() < 0.05 && timeSinceLastAnomaly > minimumInterval) {
         // Occasionally remove an anomaly
         setAnomalies(prev => prev.slice(0, prev.length - 1));
+        setLastAnomalyTime(now);
       }
       
-    }, 100); // Increased frequency for smoother animation
+    }, 1000); // Reduced from 100ms to 1000ms for less frequent updates
     
     return () => clearInterval(interval);
-  }, [activeGlitches, realityStatus.safetyProtocols, mindMirrorConnected, anomalies]);
+  }, [activeGlitches, realityStatus.safetyProtocols, mindMirrorConnected, anomalies, lastAnomalyTime]);
   
   // Function to generate a random anomaly based on active glitches
-  const generateRandomAnomaly = (activeGlitches) => {
-    if (activeGlitches.length === 0) return;
+  const generateAnomaly = (activeGlitches) => {
+    if (activeGlitches.length === 0) return null;
     
     const glitch = activeGlitches[Math.floor(Math.random() * activeGlitches.length)];
     const sectorNum = Math.floor(Math.random() * 1000);
     const intensity = Math.floor(glitch.intensity * 100);
     
     let anomalyType = '';
-    switch(glitch.type) {
-      case 'VISUAL':
-        anomalyType = 'visual pattern mismatch';
-        break;
-      case 'AUDITORY':
-        anomalyType = 'frequency resonance';
-        break;
-      case 'TEMPORAL':
-        anomalyType = 'temporal dilation';
-        break;
-      case 'SPATIAL':
-        anomalyType = 'spatial distortion';
-        break;
-      case 'COGNITIVE':
-        anomalyType = 'cognitive dissonance spike';
-        break;
-      default:
-        anomalyType = 'reality fluctuation';
+    
+    // If it's an advanced glitch, make the anomaly reflect the specific type
+    if (glitch.isAdvanced && glitch.type === 'COGNITIVE' && glitch.distortionType) {
+      switch(glitch.distortionType) {
+        case 'CONFIRMATION_BIAS':
+          anomalyType = 'confirmation bias pattern';
+          break;
+        case 'BLACK_WHITE_THINKING':
+          anomalyType = 'binary logic error';
+          break;
+        case 'CATASTROPHIZING':
+          anomalyType = 'catastrophic prediction';
+          break;
+        case 'EMOTIONAL_REASONING':
+          anomalyType = 'emotional reasoning cascade';
+          break;
+        case 'FILTERING':
+          anomalyType = 'selective perception filter';
+          break;
+        default:
+          anomalyType = 'cognitive distortion';
+      }
+    } else if (glitch.crossModal) {
+      anomalyType = 'cross-modal interference';
+    } else {
+      switch(glitch.type) {
+        case 'VISUAL':
+          anomalyType = 'visual pattern mismatch';
+          break;
+        case 'AUDITORY':
+          anomalyType = 'frequency resonance';
+          break;
+        case 'TEMPORAL':
+          anomalyType = 'temporal dilation';
+          break;
+        case 'SPATIAL':
+          anomalyType = 'spatial distortion';
+          break;
+        case 'COGNITIVE':
+          anomalyType = 'cognitive dissonance spike';
+          break;
+        case 'SYNCHRONISTIC':
+          anomalyType = 'synchronicity pattern';
+          break;
+        default:
+          anomalyType = 'reality fluctuation';
+      }
     }
     
-    const newAnomaly = {
-      id: Date.now(),
+    return {
+      id: Date.now() + Math.random(), // Ensure unique IDs even with rapid generation
       text: `» Sector ${sectorNum}: ${anomalyType} detected (${intensity}% intensity)`,
       timestamp: Date.now()
     };
-    
-    setAnomalies(prev => {
-      // Keep only last 5 anomalies for display
-      const updated = [...prev, newAnomaly].slice(-5);
-      return updated;
-    });
   };
   
   // Draw waveform on canvas
@@ -168,14 +252,6 @@ const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
     ctx.strokeStyle = 'rgba(0, 40, 100, 0.2)';
     ctx.lineWidth = 0.5;
     
-    // Vertical grid lines
-    for (let x = 0; x < width; x += 20) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, height);
-      ctx.stroke();
-    }
-    
     // Horizontal grid lines
     for (let y = 0; y < height; y += 20) {
       ctx.beginPath();
@@ -184,108 +260,76 @@ const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
       ctx.stroke();
     }
     
-    // Draw baseline
-    ctx.strokeStyle = 'rgba(0, 60, 150, 0.3)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(0, height / 2);
-    ctx.lineTo(width, height / 2);
-    ctx.stroke();
+    // Vertical grid lines
+    for (let x = 0; x < width; x += 40) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height);
+      ctx.stroke();
+    }
     
-    // Calculate average glitch intensity
-    const avgIntensity = activeGlitches.length 
-      ? activeGlitches.reduce((sum, g) => sum + g.intensity, 0) / activeGlitches.length
-      : 0;
+    // Create gradient for the line
+    const gradient = ctx.createLinearGradient(0, height/2 - 50, 0, height/2 + 50);
+    gradient.addColorStop(0, 'rgba(0, 200, 255, 0.7)');
+    gradient.addColorStop(0.5, 'rgba(0, 150, 255, 1)');
+    gradient.addColorStop(1, 'rgba(0, 100, 255, 0.7)');
     
-    // Count Mind Mirror glitches
-    const mindMirrorGlitches = activeGlitches.filter(g => g.source === 'Mind Mirror');
-    
-    // Draw waveform with glitch effects
+    // Draw the waveform with smoother transitions
+    ctx.strokeStyle = gradient;
     ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
     
-    // Color depends on Mind Mirror connection
-    const waveColor = mindMirrorGlitches.length > 0 
-      ? `rgba(170, 50, 220, ${0.7 + avgIntensity * 0.3})` // Purple for Mind Mirror
-      : `rgba(57, 255, 20, ${0.6 + avgIntensity * 0.4})`; // Green for normal
-      
-    ctx.strokeStyle = waveColor;
+    // Apply a quantum effect based on active glitches
+    const quantumEffect = activeGlitches.length * 0.03;
+    
     ctx.beginPath();
     
-    const drawGlitchy = activeGlitches.length > 0 && Math.random() < avgIntensity * 0.3;
-    
-    dataPoints.forEach((point, i) => {
+    for (let i = 0; i < dataPoints.length; i++) {
       const x = (i / (dataPoints.length - 1)) * width;
-      // Add a glitch effect to the wave depending on active glitches
-      let y = point * height;
       
-      if (drawGlitchy && i > 0 && i < dataPoints.length - 1 && Math.random() < 0.1) {
-        // Add random vertical glitch
-        y += (Math.random() * 20) - 10;
+      // Calculate y position - normalize to the canvas height
+      // The dataPoints are normalized between 0 and 1
+      const y = (1 - dataPoints[i]) * height;
+      
+      // Apply quantum distortion effects
+      let distortedY = y;
+      if (activeGlitches.length > 0) {
+        // Add slight distortion based on active glitches
+        const distortionAmount = Math.sin(i * 0.1 + Date.now() * 0.001) * quantumEffect * 20;
+        distortedY += distortionAmount;
       }
       
       if (i === 0) {
-        ctx.moveTo(x, y);
+        ctx.moveTo(x, distortedY);
       } else {
-        ctx.lineTo(x, y);
+        ctx.lineTo(x, distortedY);
       }
-    });
+    }
+    
     ctx.stroke();
     
-    // Add an extra echo/ghost line for Mind Mirror glitches
-    if (mindMirrorGlitches.length > 0) {
-      ctx.strokeStyle = 'rgba(170, 50, 220, 0.3)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      
-      dataPoints.forEach((point, i) => {
+    // Add glow effect for the waveform
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = "rgba(0, 150, 255, 0.5)";
+    ctx.stroke();
+    
+    // Add points at data locations for quantum fluctuation visualization
+    if (activeGlitches.length > 0 || mindMirrorConnected) {
+      for (let i = 0; i < dataPoints.length; i += 5) { // Draw every 5th point for performance
         const x = (i / (dataPoints.length - 1)) * width;
-        // Offset the duplicate line slightly to create an echo effect
-        const y = point * height - 5;
+        const y = (1 - dataPoints[i]) * height;
         
-        if (i === 0) {
-          ctx.moveTo(x, y);
-        } else {
-          ctx.lineTo(x, y);
-        }
-      });
-      ctx.stroke();
-    }
-    
-    // Add some digital noise based on active glitches
-    if (activeGlitches.length > 0) {
-      const noiseAmount = Math.min(300, activeGlitches.length * 40);
-      
-      // Different noise color for Mind Mirror glitches
-      const noiseColor = mindMirrorGlitches.length > 0 
-        ? 'rgba(170, 50, 220, 0.1)' 
-        : 'rgba(57, 255, 20, 0.1)';
+        // Determine point color based on Mind Mirror connection
+        ctx.fillStyle = mindMirrorConnected ? 
+          'rgba(168, 85, 247, 0.8)' : 
+          'rgba(0, 150, 255, 0.8)';
         
-      ctx.fillStyle = noiseColor;
-      
-      for (let i = 0; i < noiseAmount; i++) {
-        const x = Math.random() * width;
-        const y = Math.random() * height;
-        const size = Math.random() * 2 + 1;
-        ctx.fillRect(x, y, size, size);
+        // Draw quantum particle
+        ctx.beginPath();
+        ctx.arc(x, y, 2 + (Math.random() * 2), 0, Math.PI * 2);
+        ctx.fill();
       }
-    }
-    
-    // Add Mind Mirror specific interference patterns
-    if (mindMirrorConnected) {
-      ctx.strokeStyle = 'rgba(170, 50, 220, 0.2)';
-      ctx.lineWidth = 0.5;
-      
-      // Add a sinusoidal interference pattern
-      ctx.beginPath();
-      for (let x = 0; x < width; x += 2) {
-        const y = height / 2 + Math.sin(x / 10 + Date.now() / 1000) * 20;
-        if (x === 0) {
-          ctx.moveTo(x, y);
-        } else {
-          ctx.lineTo(x, y);
-        }
-      }
-      ctx.stroke();
     }
     
   }, [dataPoints, activeGlitches, mindMirrorConnected]);
@@ -422,17 +466,17 @@ const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
       </div>
       
       {/* Anomaly Detection */}
-      <div className="anomaly-section">
+      <div className="anomaly-section mt-4">
         <div className="text-sm text-blue-400 mb-2">Detected Anomalies:</div>
-        <div className="anomaly-text">
+        <div className="anomaly-text min-h-[100px] max-h-[120px] overflow-y-auto scrollbar">
           {anomalies.length > 0 ? (
             anomalies.map((anomaly, index) => (
-              <div key={anomaly.id}>
+              <div key={anomaly.id} className="py-1 opacity-0 animate-fade-in">
                 {anomaly.text}
               </div>
             ))
           ) : (
-            <div className="opacity-70">No anomalies detected in current reality matrix</div>
+            <div className="opacity-70 py-1">No anomalies detected in current reality matrix</div>
           )}
         </div>
       </div>
