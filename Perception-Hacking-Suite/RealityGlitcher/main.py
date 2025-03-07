@@ -16,6 +16,10 @@ from enum import Enum, auto
 import uuid
 import json
 import os
+import http.server
+import socketserver
+import threading
+import webbrowser
 
 # Configure logging with mystical formatting
 logging.basicConfig(
@@ -108,6 +112,14 @@ class Glitch:
         status = "ACTIVE" if self.active else "INACTIVE"
         return f"<Glitch {self.id} | {self.type.name} | {status} | Stability: {self.stability:.2f}>"
 
+class UIHandler(http.server.SimpleHTTPRequestHandler):
+    """Custom handler for serving the React UI"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, directory=os.path.join(os.path.dirname(os.path.abspath(__file__)), "reality-glitcher-ui", "build"), **kwargs)
+
+    def log_message(self, format, *args):
+        """Override to use our logger"""
+        logger.debug(format % args)
 
 class RealityGlitcher:
     """Main interface for creating and managing reality glitches"""
@@ -137,6 +149,9 @@ class RealityGlitcher:
         self.session_id = str(uuid.uuid4())[:6]
         logger.info(f"✧ Reality Glitcher initialized | Session: {self.session_id} ✧")
         self._print_ascii_banner()
+        
+        # Start UI server
+        self.start_ui_server()
         
     def _print_ascii_banner(self):
         """Display the ASCII art banner for Reality Glitcher"""
@@ -675,42 +690,51 @@ class RealityGlitcher:
         self.deactivate_all_glitches()
         return False  # Don't suppress exceptions
 
+    def start_ui_server(self):
+        """Start the server for the React UI"""
+        # Find an available port
+        port = 3000
+        while port < 3100:
+            try:
+                self.httpd = socketserver.TCPServer(("", port), UIHandler)
+                break
+            except OSError:
+                port += 1
+                continue
 
-# Example usage
-if __name__ == "__main__":
+        if port >= 3100:
+            logger.error("Could not find an available port for the UI server")
+            return
+
+        # Start server in a separate thread
+        self.server_thread = threading.Thread(target=self.httpd.serve_forever)
+        self.server_thread.daemon = True  # Thread will be killed when main program exits
+        self.server_thread.start()
+        
+        logger.info(f"UI server started on port {port}")
+        
+        # Open the UI in the default browser
+        webbrowser.open(f"http://localhost:{port}")
+
+    def __del__(self):
+        """Cleanup when the object is destroyed"""
+        if hasattr(self, 'httpd'):
+            self.httpd.shutdown()
+            self.httpd.server_close()
+
+def main():
+    """Main entry point for the Reality Glitcher"""
+    glitcher = RealityGlitcher()
+    
+    # Keep the main thread running
     try:
-        with RealityGlitcher() as glitcher:
-            # Create a visual glitch
-            visual_glitch = glitcher.create_glitch(
-                GlitchType.VISUAL,
-                intensity=0.7,
-                duration=5.0,
-                complexity=0.6
-            )
-            
-            if visual_glitch:
-                # Simulate glitch duration
-                time.sleep(1.0)  # Reduced for demonstration
-                
-                # Check reality status
-                status = glitcher.get_reality_status()
-                print(f"\nReality Status: {status['reality_coherence']}")
-                print(f"Stability: {status['stability']:.2f}")
-                
-                # Create a second glitch if the first was successful
-                audio_glitch = glitcher.create_glitch(
-                    GlitchType.AUDITORY,
-                    intensity=0.5,
-                    duration=3.0
-                )
-                
-                # Simulate glitch duration
-                time.sleep(1.0)  # Reduced for demonstration
-                
-        # Context manager automatically deactivates all glitches
-        print("\nReality normalized. Session complete.")
-                
-    except Exception as e:
-        logger.error(f"Critical error in reality manipulation: {e}")
-        print("\n⚠️ EMERGENCY PROTOCOL ACTIVATED ⚠️")
-        print("Force-normalizing reality parameters...")
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        logger.info("Reality Glitcher shutting down...")
+        if hasattr(glitcher, 'httpd'):
+            glitcher.httpd.shutdown()
+            glitcher.httpd.server_close()
+
+if __name__ == "__main__":
+    main()

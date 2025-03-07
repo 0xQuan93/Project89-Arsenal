@@ -10,6 +10,7 @@ import pygame
 from PIL import Image, ImageTk, ImageFilter
 import numpy as np
 import threading
+import uuid
 
 # Constants
 VERSION = "1.0"
@@ -1544,13 +1545,14 @@ class EnchantedMindMirror:
     def save_user_data(self):
         """Save user data to JSON file with backup"""
         try:
-            # Ensure user_data directory exists
-            os.makedirs("user_data", exist_ok=True)
+            # Ensure user_data directory exists using absolute path
+            user_data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "user_data")
+            os.makedirs(user_data_dir, exist_ok=True)
             
             # Create a backup of the current file if it exists
-            user_data_path = "user_data/user_profile.json"
+            user_data_path = os.path.join(user_data_dir, "user_profile.json")
             if os.path.exists(user_data_path):
-                backup_path = f"user_data/user_profile_backup_{int(time.time())}.json"
+                backup_path = os.path.join(user_data_dir, f"user_profile_backup_{int(time.time())}.json")
                 try:
                     with open(user_data_path, "r") as src:
                         with open(backup_path, "w") as dst:
@@ -1563,7 +1565,7 @@ class EnchantedMindMirror:
                 json.dump(self.user_data, f, indent=2)
             
             # Maintain max 5 backup files
-            self._cleanup_backup_files()
+            self._cleanup_backup_files(user_data_dir)
             
         except Exception as e:
             print(f"Error saving user data: {str(e)}")
@@ -1589,14 +1591,14 @@ class EnchantedMindMirror:
         except Exception as e:
             print(f"Error handling corrupted data file: {str(e)}")
 
-    def _cleanup_backup_files(self):
+    def _cleanup_backup_files(self, user_data_dir):
         """Keep only the 5 most recent backup files"""
         try:
             # List all backup files
             backup_files = []
-            for filename in os.listdir("user_data"):
+            for filename in os.listdir(user_data_dir):
                 if filename.startswith("user_profile_backup_") and filename.endswith(".json"):
-                    backup_files.append(os.path.join("user_data", filename))
+                    backup_files.append(os.path.join(user_data_dir, filename))
             
             # Sort by modification time, oldest first
             backup_files.sort(key=lambda x: os.path.getmtime(x))
@@ -3510,7 +3512,7 @@ class EnchantedMindMirror:
             self.sort_var = tk.StringVar(value="newest")
         
         # Ensure the journal directory exists
-        journal_dir = "user_data/journal"
+        journal_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "user_data", "journal")
         os.makedirs(journal_dir, exist_ok=True)
         
         # Load journal entries
@@ -3734,37 +3736,41 @@ class EnchantedMindMirror:
         if not title:
             title = "Untitled Entry"
         
-        # Find the existing file
-        journal_dir = os.path.join("resources", "journal")
-        timestamp_str = original_timestamp.replace(" ", "_").replace(":", "-")
-        old_filename = f"entry_{timestamp_str}.json"
-        old_file_path = os.path.join(journal_dir, old_filename)
+        # Create necessary directories if they don't exist
+        journal_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "user_data", "journal")
+        os.makedirs(journal_dir, exist_ok=True)
         
-        # Create updated entry object
-        # Keep the original timestamp for file identification
-        updated_entry = {
-            "timestamp": original_timestamp,
+        # Generate timestamp for new entries
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        timestamp_str = timestamp.replace(" ", "_").replace(":", "-")
+        filename = f"entry_{timestamp_str}.json"
+        file_path = os.path.join(journal_dir, filename)
+        
+        # Create entry object
+        entry = {
+            "timestamp": timestamp,
             "title": title,
             "content": content,
-            "id": entry_id,
-            "last_edited": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            "id": str(uuid.uuid4()),
+            "created_at": timestamp
         }
         
-        # Delete old file if it exists
-        if os.path.exists(old_file_path):
-            os.remove(old_file_path)
-        
-        # Save updated entry
-        self.save_journal_entry_to_file(updated_entry)
-        
-        # Close window
-        window.destroy()
-        
-        # Refresh entries
-        self.load_journal_entries()
-        
-        # Confirm to user
-        messagebox.showinfo("Entry Updated", "Your journal entry has been updated.")
+        # Save entry
+        try:
+            with open(file_path, "w") as f:
+                json.dump(entry, f, indent=2)
+            
+            # Close window
+            window.destroy()
+            
+            # Refresh entries
+            self.load_journal_entries()
+            
+            # Confirm to user
+            messagebox.showinfo("Entry Saved", "Your journal entry has been saved successfully.")
+            
+        except Exception as e:
+            messagebox.showerror("Save Error", f"Could not save journal entry: {str(e)}")
     
     def delete_journal_entry(self):
         """Delete the selected journal entry"""

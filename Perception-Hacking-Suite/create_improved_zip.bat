@@ -13,13 +13,42 @@ if %ERRORLEVEL% neq 0 (
     exit /b 1
 )
 
-rem Create output directory
-if not exist "improved_zip" mkdir improved_zip
-if not exist "improved_zip\MindMirror\user_data" mkdir "improved_zip\MindMirror\user_data"
-if not exist "improved_zip\RealityGlitcher\imports" mkdir "improved_zip\RealityGlitcher\imports"
+rem Create exclude patterns file first
+echo Creating exclude patterns...
+echo user_data > exclude_patterns.txt
+echo __pycache__ >> exclude_patterns.txt
+echo *.pyc >> exclude_patterns.txt
+echo .git >> exclude_patterns.txt
+echo .gitignore >> exclude_patterns.txt
+echo *.log >> exclude_patterns.txt
+echo *.tmp >> exclude_patterns.txt
+echo *.bak >> exclude_patterns.txt
+echo node_modules >> exclude_patterns.txt
+echo .env >> exclude_patterns.txt
+echo .env.local >> exclude_patterns.txt
+echo .DS_Store >> exclude_patterns.txt
 
-rem Copy files to the package directory
-echo Copying files to package directory...
+rem Clean up any existing package directory
+if exist "improved_zip" (
+    echo Cleaning up existing package directory...
+    rmdir /s /q "improved_zip"
+)
+
+rem Create fresh output directory structure
+echo Creating fresh directory structure...
+mkdir "improved_zip"
+mkdir "improved_zip\MindMirror"
+mkdir "improved_zip\MindMirror\user_data"
+mkdir "improved_zip\MindMirror\user_data\journal"
+mkdir "improved_zip\MindMirror\resources"
+mkdir "improved_zip\MindMirror\resources\journal"
+mkdir "improved_zip\RealityGlitcher"
+mkdir "improved_zip\RealityGlitcher\imports"
+mkdir "improved_zip\RealityGlitcher\reality-glitcher-ui"
+mkdir "improved_zip\RealityGlitcher\reality-glitcher-ui\build"
+
+rem Copy core files to the package directory
+echo Copying core files to package directory...
 copy combined_app.py improved_zip\
 copy combined_requirements.txt improved_zip\
 
@@ -28,10 +57,22 @@ copy fixed_zip_launcher.bat improved_zip\Run-P89-Suite.bat
 copy launch_reality_glitcher.bat improved_zip\Launch-Reality-Glitcher.bat
 
 echo Copying MindMirror files...
-xcopy /E /I /Y MindMirror improved_zip\MindMirror
+rem Copy MindMirror files excluding user data and cache
+xcopy /E /I /Y MindMirror\*.py improved_zip\MindMirror\
+xcopy /E /I /Y MindMirror\resources\*.* improved_zip\MindMirror\resources\ /EXCLUDE:exclude_patterns.txt
 
 echo Copying RealityGlitcher files...
-xcopy /E /I /Y RealityGlitcher improved_zip\RealityGlitcher
+rem Copy RealityGlitcher files excluding cache and temporary files
+xcopy /E /I /Y RealityGlitcher\*.py improved_zip\RealityGlitcher\
+xcopy /E /I /Y RealityGlitcher\resources\*.* improved_zip\RealityGlitcher\resources\ /EXCLUDE:exclude_patterns.txt
+
+echo Copying Reality Glitcher UI files...
+rem Copy the built UI files
+if exist "RealityGlitcher\reality-glitcher-ui\build" (
+    xcopy /E /I /Y RealityGlitcher\reality-glitcher-ui\build\*.* improved_zip\RealityGlitcher\reality-glitcher-ui\build\ /EXCLUDE:exclude_patterns.txt
+) else (
+    echo WARNING: Reality Glitcher UI build files not found. UI will not be included.
+)
 
 rem Create README file
 echo Creating README file...
@@ -71,7 +112,7 @@ echo    cd RealityGlitcher && python main.py  # For just the Reality Glitcher >>
 rem Create the ZIP file
 echo Creating ZIP file...
 cd improved_zip
-powershell -Command "Compress-Archive -Path * -DestinationPath ..\PROJECT89-Perception-Hacking-Suite-Improved.zip -Force"
+powershell -NoProfile -Command "Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::CreateFromDirectory('.', '..\PROJECT89-Perception-Hacking-Suite-Improved.zip')"
 cd ..
 
 if %ERRORLEVEL% neq 0 (
@@ -79,6 +120,9 @@ if %ERRORLEVEL% neq 0 (
     pause
     exit /b 1
 )
+
+rem Clean up temporary files
+del exclude_patterns.txt
 
 echo.
 echo Improved ZIP package created successfully!
