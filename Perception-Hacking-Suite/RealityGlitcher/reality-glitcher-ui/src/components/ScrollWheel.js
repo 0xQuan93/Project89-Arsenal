@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import '../RealityGlitcher.css';
 
 // Renaming component to better reflect what it does now
 const IntensitySlider = ({ 
@@ -35,7 +36,7 @@ const IntensitySlider = ({
   };
   
   // Update value based on click/drag position
-  const updateValueFromPosition = (clientX, rect) => {
+  const updateValueFromPosition = useCallback((clientX, rect) => {
     // Calculate relative position (0 to 1)
     const relativePos = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
     
@@ -45,22 +46,22 @@ const IntensitySlider = ({
     // Update value
     setCurrentValue(newValue);
     onChange && onChange(newValue);
-  };
+  }, [min, max, onChange]);
   
-  // Handle mouse move for dragging
-  const handleMouseMove = (e) => {
+  // Handle mouse move for dragging - wrapped in useCallback
+  const handleMouseMove = useCallback((e) => {
     if (!isDragging || !sliderRef.current) return;
     
     const rect = sliderRef.current.getBoundingClientRect();
     updateValueFromPosition(e.clientX, rect);
-  };
+  }, [isDragging, updateValueFromPosition]);
   
-  // Handle mouse up to stop dragging
-  const handleMouseUp = () => {
+  // Handle mouse up to stop dragging - wrapped in useCallback
+  const handleMouseUp = useCallback(() => {
     setIsDragging(false);
     document.removeEventListener('mousemove', handleMouseMove);
     document.removeEventListener('mouseup', handleMouseUp);
-  };
+  }, [handleMouseMove]);
   
   // Clean up event listeners
   useEffect(() => {
@@ -68,7 +69,7 @@ const IntensitySlider = ({
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, []);
+  }, [handleMouseMove, handleMouseUp]);
   
   // Update value if external value changes
   useEffect(() => {

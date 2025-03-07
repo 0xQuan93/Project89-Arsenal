@@ -69,9 +69,10 @@ const GlitchVisualization = ({ glitch }) => {
           case 'EMOTIONAL_REASONING':
             baseColor = [236, 72, 153]; // Pink-red for emotional reasoning
             break;
-          case 'FILTERING':
-            // Return a filtered version of original color
-            return `rgba(${baseColor[0]}, ${baseColor[1] * 0.7}, ${baseColor[2] * 0.7}, ${Math.random() * 0.6 + 0.4})`;
+          default:
+            // Default color for unknown distortion types
+            baseColor = [147, 197, 253]; // Default blue
+            break;
         }
       }
       
@@ -856,6 +857,9 @@ const GlitchVisualization = ({ glitch }) => {
         renderCognitiveGlitch();
       } else if (glitch.type === 'SYNCHRONISTIC') {
         renderSynchronisticGlitch();
+      } else {
+        // Default behavior for unknown glitch types
+        renderVisualGlitch();
       }
       
       // Handle cross-modal effects by adding additional layers

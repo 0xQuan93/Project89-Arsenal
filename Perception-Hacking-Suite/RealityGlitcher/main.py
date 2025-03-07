@@ -79,7 +79,7 @@ class Glitch:
         
         logger.debug(f"Created {glitch_type.name} glitch (ID: {self.id}) with " 
                     f"stability {self.stability:.2f}")
-        
+    
     def _calculate_stability(self) -> float:
         """Calculate the stability of the glitch based on its parameters"""
         # Higher intensity and complexity reduce stability
@@ -128,6 +128,12 @@ class RealityGlitcher:
             "emergency_exit": True,       # Provides escape mechanism from severe glitches
             "perception_firewall": True   # Prevents glitch spread to unintended targets
         }
+        self.config = {
+            "glitch_intensity": 0.7,      # Default intensity for glitches
+            "max_active_glitches": 5,     # Maximum number of active glitches allowed
+            "auto_stabilize": True,       # Automatically stabilize reality if too unstable
+            "mind_mirror_integration": True  # Enable Mind Mirror integration
+        }
         self.session_id = str(uuid.uuid4())[:6]
         logger.info(f"✧ Reality Glitcher initialized | Session: {self.session_id} ✧")
         self._print_ascii_banner()
@@ -150,7 +156,7 @@ class RealityGlitcher:
         """
         Load neural pattern data exported from Mind Mirror
         This allows RealityGlitcher to synchronize with the user's neural patterns
-        
+            
         Returns:
             Dictionary containing Mind Mirror data or None if file not found or invalid
         """
@@ -233,7 +239,7 @@ class RealityGlitcher:
             if not all(key in data for key in ["source", "neural_patterns", "metadata"]):
                 logger.error("Invalid Mind Mirror data format")
                 return None
-            
+        
             # Log information about the loaded data
             logger.info(f"Successfully loaded Mind Mirror data from user: {data.get('user', 'Unknown')}")
             logger.info(f"Version: {data.get('version', 'unknown')} {data.get('version_name', '')}")

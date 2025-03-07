@@ -6,9 +6,6 @@ import GlitchCard from './GlitchCard';
 import CreateGlitchModal from './CreateGlitchModal';
 import GlitchVisualization from './GlitchVisualization';
 
-// Set a fixed maximum height constant for the control panel
-const MAX_CONTROL_PANEL_HEIGHT = 1116;
-
 const RealityGlitcherUI = () => {
   // State for reality status
   const [realityStatus, setRealityStatus] = useState({

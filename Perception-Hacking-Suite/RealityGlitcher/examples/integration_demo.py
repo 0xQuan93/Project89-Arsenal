@@ -204,7 +204,7 @@ def run_glitch_demo(glitcher: RealityGlitcher) -> None:
     start_time = time.time()
     while (time.time() - start_time) < total_duration:
         # Update glitch states
-        active_count = sum(1 for g in glitcher.active_glitches if g.is_active)
+        active_count = sum(1 for g in glitcher.active_glitches if g.active)
         
         # Calculate current reality stability
         stability = glitcher._calculate_current_stability()
@@ -217,7 +217,7 @@ def run_glitch_demo(glitcher: RealityGlitcher) -> None:
     
     logger.info("\nDemo complete - Final reality status:")
     logger.info(f"Reality stability: {glitcher._calculate_current_stability():.2f}")
-    logger.info(f"Active glitches: {sum(1 for g in glitcher.active_glitches if g.is_active)}")
+    logger.info(f"Active glitches: {sum(1 for g in glitcher.active_glitches if g.active)}")
 
 def main():
     """Main function to run the integration demo"""

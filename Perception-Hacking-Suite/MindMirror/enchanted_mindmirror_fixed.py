@@ -397,7 +397,7 @@ class EnchantedMindMirror:
                        padding=[10, 2],  # Very minimal vertical padding
                        font=('Helvetica', 10))
         style.map("TNotebook.Tab", 
-                 background=[("selected", MYSTICAL_PURPLE)], 
+                 background=[("selected", MYSTICAL_PURPLE)],
                  foreground=[("selected", MIND_GOLD)])
 
         # Create tab frames using a consistent frame with a content container
@@ -1041,7 +1041,7 @@ class EnchantedMindMirror:
         x = (window.winfo_screenwidth() // 2) - (width // 2)
         y = (window.winfo_screenheight() // 2) - (height // 2)
         window.geometry(f"{width}x{height}+{x}+{y}")
-    
+        
     def generate_export_data(self):
         """Generate neural pattern data for export to Reality Glitcher"""
         # Create sample data structure that Reality Glitcher would understand
@@ -1174,13 +1174,13 @@ class EnchantedMindMirror:
                     # Ensure it's within bounds
                     strength = min(1.0, max(0.1, strength))
                     
-                    connection = {
+                connection = {
                         "source": i,
-                        "target": target,
+                    "target": target,
                         "strength": strength,
                         "type": self._determine_connection_type(source_node["type"], target_node["type"])
-                    }
-                    export_data["neural_patterns"]["connections"].append(connection)
+                }
+                export_data["neural_patterns"]["connections"].append(connection)
         
         return export_data
 
@@ -1540,7 +1540,7 @@ class EnchantedMindMirror:
         except Exception as e:
             print(f"Error loading user data: {str(e)}")
             print("Using default values")
-
+    
     def save_user_data(self):
         """Save user data to JSON file with backup"""
         try:
@@ -1608,7 +1608,7 @@ class EnchantedMindMirror:
                 
         except Exception as e:
             print(f"Warning: Could not clean up backup files: {str(e)}")
-    
+
     def on_tab_change(self, event):
         """Handle tab change events to ensure proper rendering"""
         # Get the currently selected tab
@@ -2859,7 +2859,7 @@ class EnchantedMindMirror:
         
         # Update practice streak
         self.update_practice_streak()
-    
+        
     def update_meditation_timer(self):
         """Update the meditation timer"""
         if not hasattr(self, 'remaining_seconds'):
@@ -3069,7 +3069,7 @@ class EnchantedMindMirror:
             command=self.delete_belief
         )
         delete_btn.pack(anchor="e", padx=20, pady=10)
-
+    
     def examine_belief(self):
         """Open a dialog to examine and question a belief"""
         belief_text = self.belief_entry.get().strip()
@@ -3799,7 +3799,7 @@ class EnchantedMindMirror:
                         e for e in self.user_data["journal_entries"] 
                         if e.get("id", "") != entry_id
                     ]
-                    self.save_user_data()
+                self.save_user_data()
                 
                 # Refresh the list
                 self.load_journal_entries()
