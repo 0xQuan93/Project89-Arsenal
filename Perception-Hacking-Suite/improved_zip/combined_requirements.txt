@@ -1,0 +1,14 @@
+# Combined requirements for Mind Mirror and Reality Glitcher
+# Mind Mirror dependencies
+pygame>=2.1.0
+pillow>=9.0.0
+numpy>=1.20.0
+matplotlib>=3.5.0
+networkx>=2.7.0
+jsonschema>=4.4.0
+
+# Reality Glitcher dependencies
+# (None additional needed based on the code review)
+
+# Additional dependencies for packaging
+pyinstaller>=5.1 
