@@ -13,21 +13,21 @@ import threading
 import uuid
 
 # Constants
-VERSION = "1.0"
-VERSION_NAME = "Cosmic Consciousness"
+VERSION = "1.1.0"
+VERSION_NAME = "Consciousness Ascension"
 
 # Color palette
-COSMIC_BLUE = "#0A1128"
-MYSTICAL_PURPLE = "#7B2CBF"
-AMBIENT_TEAL = "#4CC9F0"
-MIND_GOLD = "#F7B801"
-DEEP_THOUGHT = "#023E8A"
-PEARL_WHITE = "#EEF4ED"
-NEURAL_GREEN = "#39A776"
-ATTENTION_RED = "#E63946"
-COSMIC_INDIGO = "#170B5A"
-ENERGY_CYAN = "#38FFE8"
-ETHEREAL_PINK = "#FF7ECE"
+COSMIC_BLUE = "#1a1a2e"
+MYSTICAL_PURPLE = "#533483"
+AMBIENT_TEAL = "#48d1cc"
+MIND_GOLD = "#e94560"
+DEEP_THOUGHT = "#16213e"
+PEARL_WHITE = "#f5f5f5"
+NEURAL_GREEN = "#50c878"
+ATTENTION_RED = "#ff4444"
+COSMIC_INDIGO = "#0f3460"
+ENERGY_CYAN = "#00fff5"
+ETHEREAL_PINK = "#ff69b4"
 COSMIC_GOLD = "#FFD700"
 MIND_GREEN = "#218380"
 
@@ -448,11 +448,12 @@ class EnchantedMindMirror:
         # Configure grid
         self.dashboard_tab.grid_columnconfigure(0, weight=1)
         
-        # Welcome header - place at the very top with zero padding
+        # Welcome header with time-based greeting
         header_frame = tk.Frame(self.dashboard_tab, bg=COSMIC_BLUE)
         header_frame.grid(row=0, column=0, sticky="ew", pady=(0, 5))
         
-        welcome_text = f"Welcome back, {self.user_data['name']}"
+        greeting = self._get_time_based_greeting()
+        welcome_text = f"{greeting}, {self.user_data['name']}"
         welcome_label = tk.Label(
             header_frame,
             text=welcome_text,
@@ -460,31 +461,38 @@ class EnchantedMindMirror:
             fg=PEARL_WHITE,
             bg=COSMIC_BLUE
         )
-        welcome_label.pack(pady=(0, 0))  # No padding
+        welcome_label.pack(pady=(0, 0))
         
-        subtitle = "Your consciousness exploration dashboard"
-        subtitle_label = tk.Label(
+        # Add inspirational quote
+        quote = self._get_daily_quote()
+        quote_label = tk.Label(
             header_frame,
-            text=subtitle,
-            font=("Helvetica", 14),
+            text=quote,
+            font=("Helvetica", 12, "italic"),
             fg=AMBIENT_TEAL,
-            bg=COSMIC_BLUE
+            bg=COSMIC_BLUE,
+            wraplength=600
         )
-        subtitle_label.pack(pady=(2, 0))  # Minimal padding
+        quote_label.pack(pady=(5, 0))
         
         # Main dashboard content
         content_frame = tk.Frame(self.dashboard_tab, bg=COSMIC_BLUE)
         content_frame.grid(row=1, column=0, sticky="nsew", padx=20, pady=5)
-        self.dashboard_tab.grid_rowconfigure(1, weight=1)  # Make content expandable
+        self.dashboard_tab.grid_rowconfigure(1, weight=1)
         
         # Left side - Stats and streak
-        left_frame = tk.Frame(content_frame, bg=COSMIC_BLUE, width=300)  # Set fixed width
+        left_frame = tk.Frame(content_frame, bg=COSMIC_BLUE, width=300)
         left_frame.pack(side=tk.LEFT, fill="both", expand=True, padx=(0, 20))
-        left_frame.pack_propagate(False)  # Prevent shrinking
+        left_frame.pack_propagate(False)
         
-        # Practice streak
+        # Practice streak with glowing effect
         streak_frame = tk.Frame(left_frame, bg=DEEP_THOUGHT, bd=1, relief=tk.RAISED)
-        streak_frame.pack(fill="x", pady=10, ipady=20)  # Increased internal padding
+        streak_frame.pack(fill="x", pady=10, ipady=20)
+        
+        # Add subtle glow effect based on streak length
+        glow_color = self._get_streak_glow_color(self.user_data["meditation_stats"].get("practice_streak", 0))
+        glow_frame = tk.Frame(streak_frame, bg=glow_color, height=3)
+        glow_frame.pack(fill="x", side=tk.TOP)
         
         streak_label = tk.Label(
             streak_frame,
@@ -493,59 +501,70 @@ class EnchantedMindMirror:
             fg=PEARL_WHITE,
             bg=DEEP_THOUGHT
         )
-        streak_label.pack(pady=(20, 10))  # Increased padding
+        streak_label.pack(pady=(20, 10))
         
-        # Current streak with glow effect
+        # Current streak with dynamic color
         current_streak = self.user_data["meditation_stats"].get("practice_streak", 0)
         streak_count = tk.Label(
             streak_frame,
             text=str(current_streak),
             font=("Helvetica", 60, "bold"),
-            fg=MIND_GOLD,
+            fg=glow_color,
             bg=DEEP_THOUGHT
         )
         streak_count.pack()
         
         streak_text = tk.Label(
             streak_frame,
-            text="days in a row",
+            text=self._get_streak_message(current_streak),
             font=self.small_font,
             fg=PEARL_WHITE,
             bg=DEEP_THOUGHT
         )
         streak_text.pack(pady=(5, 10))
         
-        # Add separator
-        separator = tk.Frame(streak_frame, height=2, bg=AMBIENT_TEAL)
+        # Add separator with glow
+        separator = tk.Frame(streak_frame, height=2, bg=glow_color)
         separator.pack(fill="x", padx=20, pady=10)
         
         # Stats frame for additional metrics
         stats_frame = tk.Frame(streak_frame, bg=DEEP_THOUGHT)
         stats_frame.pack(fill="x", padx=20)
         
-        # Highest streak
+        # Stats with icons
         highest_streak = self.user_data["meditation_stats"].get("highest_streak", current_streak)
         highest_label = tk.Label(
             stats_frame,
-            text=f"Highest Streak: {highest_streak} days",
+            text=f"🏆 Highest Streak: {highest_streak} days",
             font=self.small_font,
             fg=ENERGY_CYAN,
             bg=DEEP_THOUGHT
         )
         highest_label.pack(anchor="w", pady=2)
         
-        # Total sessions
         total_sessions = self.user_data["meditation_stats"].get("total_sessions", 0)
         total_label = tk.Label(
             stats_frame,
-            text=f"Total Sessions: {total_sessions}",
+            text=f"🌟 Total Sessions: {total_sessions}",
             font=self.small_font,
             fg=ENERGY_CYAN,
             bg=DEEP_THOUGHT
         )
         total_label.pack(anchor="w", pady=2)
         
-        # Next milestone
+        # Add average session duration if available
+        if "session_durations" in self.user_data.get("meditation_stats", {}):
+            avg_duration = sum(self.user_data["meditation_stats"]["session_durations"]) / len(self.user_data["meditation_stats"]["session_durations"])
+            avg_label = tk.Label(
+                stats_frame,
+                text=f"⏱️ Average Session: {int(avg_duration)} minutes",
+                font=self.small_font,
+                fg=ENERGY_CYAN,
+                bg=DEEP_THOUGHT
+            )
+            avg_label.pack(anchor="w", pady=2)
+        
+        # Next milestone with progress bar
         next_milestone = self._get_next_milestone(current_streak)
         if next_milestone:
             milestone_frame = tk.Frame(streak_frame, bg=DEEP_THOUGHT)
@@ -553,24 +572,39 @@ class EnchantedMindMirror:
             
             next_milestone_label = tk.Label(
                 milestone_frame,
-                text=f"Next Milestone: {next_milestone} days",
+                text=f"🎯 Next Milestone: {next_milestone} days",
                 font=self.small_font,
                 fg=MYSTICAL_PURPLE,
                 bg=DEEP_THOUGHT
             )
             next_milestone_label.pack(anchor="w")
             
+            # Progress bar frame
+            progress_frame = tk.Frame(milestone_frame, bg=DEEP_THOUGHT)
+            progress_frame.pack(fill="x", pady=(5, 0))
+            
+            # Calculate progress percentage
+            progress = (current_streak / next_milestone) * 100
+            
+            # Progress bar background
+            progress_bg = tk.Frame(progress_frame, bg=COSMIC_INDIGO, height=10)
+            progress_bg.pack(fill="x", pady=(2, 5))
+            
+            # Progress bar fill
+            progress_fill = tk.Frame(progress_bg, bg=glow_color, height=10)
+            progress_fill.place(relwidth=min(1.0, progress/100), relheight=1.0)
+            
             days_to_go = next_milestone - current_streak
             days_to_go_label = tk.Label(
                 milestone_frame,
-                text=f"Only {days_to_go} days to go!",
+                text=f"{days_to_go} days to go!",
                 font=self.small_font,
                 fg=MIND_GOLD,
                 bg=DEEP_THOUGHT
             )
             days_to_go_label.pack(anchor="w")
         
-        # Right side content remains the same
+        # Right side - Dynamic Recommendations
         right_frame = tk.Frame(content_frame, bg=COSMIC_BLUE)
         right_frame.pack(side=tk.RIGHT, fill="both", expand=True, padx=(20, 0))
         
@@ -583,6 +617,221 @@ class EnchantedMindMirror:
         )
         recommendations_label.pack(anchor="w", pady=(0, 20))
         
+        # Get dynamic recommendations based on user activity
+        recommendations = self._get_dynamic_recommendations()
+        
+        for rec in recommendations:
+            rec_frame = tk.Frame(right_frame, bg=MYSTICAL_PURPLE, bd=1, relief=tk.RAISED)
+            rec_frame.pack(fill="x", pady=10, ipady=10)
+            
+            # Add recommendation icon
+            header_frame = tk.Frame(rec_frame, bg=MYSTICAL_PURPLE)
+            header_frame.pack(fill="x", padx=15, pady=(10, 5))
+            
+            icon_label = tk.Label(
+                header_frame,
+                text=rec.get("icon", "✨"),
+                font=("Helvetica", 16),
+                fg=MIND_GOLD,
+                bg=MYSTICAL_PURPLE
+            )
+            icon_label.pack(side=tk.LEFT)
+            
+            title = tk.Label(
+                header_frame,
+                text=rec["title"],
+                font=("Helvetica", 14, "bold"),
+                fg=MIND_GOLD,
+                bg=MYSTICAL_PURPLE,
+                anchor="w",
+                padx=10
+            )
+            title.pack(side=tk.LEFT, fill="x", expand=True)
+            
+            desc = tk.Label(
+                rec_frame,
+                text=rec["description"],
+                font=self.small_font,
+                fg=PEARL_WHITE,
+                bg=MYSTICAL_PURPLE,
+                anchor="w",
+                justify="left",
+                wraplength=380
+            )
+            desc.pack(fill="x", padx=15, pady=(0, 10))
+            
+            button_frame = tk.Frame(rec_frame, bg=MYSTICAL_PURPLE)
+            button_frame.pack(fill="x", padx=15, pady=(0, 10))
+            
+            button = tk.Button(
+                button_frame,
+                text=rec["button_text"],
+                font=self.small_font,
+                bg=COSMIC_BLUE,
+                fg=PEARL_WHITE,
+                bd=0,
+                padx=10,
+                pady=5,
+                command=rec["command"],
+                activebackground=AMBIENT_TEAL,
+                activeforeground=PEARL_WHITE,
+                cursor="hand2"
+            )
+            button.pack(side=tk.RIGHT)
+    
+    def _get_time_based_greeting(self):
+        """Return a greeting based on the time of day"""
+        hour = datetime.now().hour
+        if 5 <= hour < 12:
+            return "Good morning"
+        elif 12 <= hour < 17:
+            return "Good afternoon"
+        elif 17 <= hour < 22:
+            return "Good evening"
+        else:
+            return "Good night"
+    
+    def _get_daily_quote(self):
+        """Return an inspirational quote for consciousness exploration"""
+        quotes = [
+            "The universe is not outside of you. Look inside yourself; everything that you want, you already are.",
+            "Your consciousness is the key to unlocking deeper realities.",
+            "Every meditation is a step closer to understanding the true nature of existence.",
+            "Reality is merely an illusion, albeit a very persistent one. - Albert Einstein",
+            "The only way to make sense out of change is to plunge into it, move with it, and join the dance.",
+            "Your perception creates your reality. Choose wisely what you observe.",
+            "In the depth of consciousness lies the key to infinite possibilities."
+        ]
+        # Use the day of the year to select a quote, ensuring the same quote shows all day
+        day_of_year = datetime.now().timetuple().tm_yday
+        return quotes[day_of_year % len(quotes)]
+    
+    def _get_streak_glow_color(self, streak):
+        """Return a color based on streak length"""
+        if streak >= 365:
+            return "#FFD700"  # Golden glow
+        elif streak >= 100:
+            return "#E6E6FA"  # Lavender glow
+        elif streak >= 30:
+            return "#98FB98"  # Pale green glow
+        elif streak >= 7:
+            return "#87CEEB"  # Sky blue glow
+        else:
+            return AMBIENT_TEAL
+    
+    def _get_streak_message(self, streak):
+        """Return a custom message based on streak length"""
+        if streak == 0:
+            return "Start your journey today"
+        elif streak == 1:
+            return "First day of practice!"
+        elif streak < 7:
+            return f"{streak} days in a row"
+        elif streak == 7:
+            return "One week strong!"
+        elif streak < 30:
+            return f"{streak} days of dedication"
+        elif streak == 30:
+            return "Monthly mastery achieved!"
+        elif streak < 100:
+            return f"{streak} days of transformation"
+        elif streak == 100:
+            return "Century of consciousness!"
+        else:
+            return f"{streak} days of mastery"
+    
+    def _get_dynamic_recommendations(self):
+        """Generate personalized recommendations based on user activity"""
+        recommendations = []
+        stats = self.user_data.get("meditation_stats", {})
+        current_streak = stats.get("practice_streak", 0)
+        total_sessions = stats.get("total_sessions", 0)
+        
+        # Always recommend meditation if no session today
+        if not self._meditated_today():
+            recommendations.append({
+                "icon": "🧘",
+                "title": "Begin Your Daily Practice",
+                "description": "Maintain your consciousness connection with today's meditation session.",
+                "button_text": "Start Meditation",
+                "command": lambda: self.tab_control.select(self.consciousness_tab)
+            })
+        
+        # Recommend journaling if no recent entries
+        if not self._has_recent_journal_entry():
+            recommendations.append({
+                "icon": "📝",
+                "title": "Record Your Insights",
+                "description": "Document your inner journey and reality glitches. Recent experiences are waiting to be explored.",
+                "button_text": "Open Journal",
+                "command": lambda: self.tab_control.select(self.mind_tools_tab)
+            })
+        
+        # Recommend pattern exploration for consistent meditators
+        if current_streak >= 3:
+            recommendations.append({
+                "icon": "🧠",
+                "title": "Explore Neural Patterns",
+                "description": "Your consistent practice has opened new neural pathways. Visualize your expanding consciousness.",
+                "button_text": "View Patterns",
+                "command": lambda: self.tab_control.select(self.neural_patterns_tab)
+            })
+        
+        # Recommend trying a new meditation type
+        if total_sessions >= 5:
+            recommendations.append({
+                "icon": "🌌",
+                "title": "Expand Your Practice",
+                "description": "You're ready for deeper exploration. Try a different meditation technique to broaden your experience.",
+                "button_text": "Explore Techniques",
+                "command": lambda: self.tab_control.select(self.consciousness_tab)
+            })
+        
+        # If no dynamic recommendations, add default ones
+        if not recommendations:
+            recommendations = [
+                {
+                    "icon": "✨",
+                    "title": "Begin Your Meditation Practice",
+                    "description": "Regular meditation enhances self-awareness and deepens your connection to consciousness. Start with short sessions to build your practice.",
+                    "button_text": "Start Meditation",
+                    "command": lambda: self.tab_control.select(self.consciousness_tab)
+                },
+                {
+                    "icon": "📘",
+                    "title": "Record Your Insights",
+                    "description": "Document your inner journey and reality glitches. Journaling helps identify patterns in your consciousness exploration.",
+                    "button_text": "Open Journal",
+                    "command": lambda: self.tab_control.select(self.mind_tools_tab)
+                }
+            ]
+        
+        return recommendations[:3]  # Limit to 3 recommendations
+    
+    def _meditated_today(self):
+        """Check if user has meditated today"""
+        if "completed_practices" not in self.user_data:
+            return False
+        
+        today = datetime.now().date()
+        for practice in self.user_data["completed_practices"]:
+            practice_date = datetime.strptime(practice["timestamp"], "%Y-%m-%d %H:%M:%S").date()
+            if practice_date == today:
+                return True
+        return False
+    
+    def _has_recent_journal_entry(self):
+        """Check if user has made a journal entry in the last 2 days"""
+        if "journal_entries" not in self.user_data:
+            return False
+        
+        two_days_ago = datetime.now() - timedelta(days=2)
+        for entry in self.user_data.get("journal_entries", []):
+            entry_date = datetime.strptime(entry.get("timestamp", ""), "%Y-%m-%d %H:%M:%S")
+            if entry_date > two_days_ago:
+                return True
+        return False
+    
     def _get_next_milestone(self, current_streak):
         """Get the next milestone for the current streak"""
         milestones = [1, 3, 5, 7, 10, 14, 21, 30, 50, 100, 365]
