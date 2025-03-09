@@ -495,10 +495,12 @@ class EnchantedMindMirror:
         )
         streak_label.pack(pady=(20, 10))  # Increased padding
         
+        # Current streak with glow effect
+        current_streak = self.user_data["meditation_stats"].get("practice_streak", 0)
         streak_count = tk.Label(
             streak_frame,
-            text=str(self.user_data["meditation_stats"]["practice_streak"]),
-            font=("Helvetica", 60, "bold"),  # Increased font size
+            text=str(current_streak),
+            font=("Helvetica", 60, "bold"),
             fg=MIND_GOLD,
             bg=DEEP_THOUGHT
         )
@@ -511,9 +513,64 @@ class EnchantedMindMirror:
             fg=PEARL_WHITE,
             bg=DEEP_THOUGHT
         )
-        streak_text.pack(pady=(5, 20))  # Increased padding
+        streak_text.pack(pady=(5, 10))
         
-        # Right side - Recommendations
+        # Add separator
+        separator = tk.Frame(streak_frame, height=2, bg=AMBIENT_TEAL)
+        separator.pack(fill="x", padx=20, pady=10)
+        
+        # Stats frame for additional metrics
+        stats_frame = tk.Frame(streak_frame, bg=DEEP_THOUGHT)
+        stats_frame.pack(fill="x", padx=20)
+        
+        # Highest streak
+        highest_streak = self.user_data["meditation_stats"].get("highest_streak", current_streak)
+        highest_label = tk.Label(
+            stats_frame,
+            text=f"Highest Streak: {highest_streak} days",
+            font=self.small_font,
+            fg=ENERGY_CYAN,
+            bg=DEEP_THOUGHT
+        )
+        highest_label.pack(anchor="w", pady=2)
+        
+        # Total sessions
+        total_sessions = self.user_data["meditation_stats"].get("total_sessions", 0)
+        total_label = tk.Label(
+            stats_frame,
+            text=f"Total Sessions: {total_sessions}",
+            font=self.small_font,
+            fg=ENERGY_CYAN,
+            bg=DEEP_THOUGHT
+        )
+        total_label.pack(anchor="w", pady=2)
+        
+        # Next milestone
+        next_milestone = self._get_next_milestone(current_streak)
+        if next_milestone:
+            milestone_frame = tk.Frame(streak_frame, bg=DEEP_THOUGHT)
+            milestone_frame.pack(fill="x", padx=20, pady=(10, 0))
+            
+            next_milestone_label = tk.Label(
+                milestone_frame,
+                text=f"Next Milestone: {next_milestone} days",
+                font=self.small_font,
+                fg=MYSTICAL_PURPLE,
+                bg=DEEP_THOUGHT
+            )
+            next_milestone_label.pack(anchor="w")
+            
+            days_to_go = next_milestone - current_streak
+            days_to_go_label = tk.Label(
+                milestone_frame,
+                text=f"Only {days_to_go} days to go!",
+                font=self.small_font,
+                fg=MIND_GOLD,
+                bg=DEEP_THOUGHT
+            )
+            days_to_go_label.pack(anchor="w")
+        
+        # Right side content remains the same
         right_frame = tk.Frame(content_frame, bg=COSMIC_BLUE)
         right_frame.pack(side=tk.RIGHT, fill="both", expand=True, padx=(20, 0))
         
@@ -524,74 +581,15 @@ class EnchantedMindMirror:
             fg=AMBIENT_TEAL,
             bg=COSMIC_BLUE
         )
-        recommendations_label.pack(anchor="w", pady=(0, 20))  # Increased bottom padding
+        recommendations_label.pack(anchor="w", pady=(0, 20))
         
-        # Define recommendations with associated actions
-        recommendations = [
-            {
-                "title": "Begin Your Meditation Practice",
-                "description": "Regular meditation enhances self-awareness. Start with short sessions to build your practice.",
-                "button_text": "Start Meditation",
-                "command": lambda: self.tab_control.select(self.consciousness_tab)
-            },
-            {
-                "title": "Record Your Insights",
-                "description": "Journaling enhances reflection and consolidates insights. Document your inner journey.",
-                "button_text": "Open Journal",
-                "command": lambda: self.tab_control.select(self.mind_tools_tab)
-            },
-            {
-                "title": "Explore Neural Patterns",
-                "description": "Visualize how your thoughts connect to reveal deeper cognitive patterns.",
-                "button_text": "View Patterns",
-                "command": lambda: self.tab_control.select(self.neural_patterns_tab)
-            }
-        ]
-        
-        for rec in recommendations:
-            rec_frame = tk.Frame(right_frame, bg=MYSTICAL_PURPLE, bd=1, relief=tk.RAISED)
-            rec_frame.pack(fill="x", pady=10, ipady=10)  # Increased padding
-            
-            title = tk.Label(
-                rec_frame,
-                text=rec["title"],
-                font=("Helvetica", 14, "bold"),
-                fg=MIND_GOLD,
-                bg=MYSTICAL_PURPLE,
-                anchor="w"
-            )
-            title.pack(fill="x", padx=15, pady=(10, 5))  # Increased padding
-            
-            desc = tk.Label(
-                rec_frame,
-                text=rec["description"],
-                font=self.small_font,
-                fg=PEARL_WHITE,
-                bg=MYSTICAL_PURPLE,
-                anchor="w",
-                justify="left",
-                wraplength=380
-            )
-            desc.pack(fill="x", padx=15, pady=(0, 10))  # Increased padding
-            
-            button_frame = tk.Frame(rec_frame, bg=MYSTICAL_PURPLE)  # New frame for button alignment
-            button_frame.pack(fill="x", padx=15, pady=(0, 10))
-            
-            button = tk.Button(
-                button_frame,
-                text=rec["button_text"],
-                font=self.small_font,
-                bg=COSMIC_BLUE,
-                fg=PEARL_WHITE,
-                bd=0,
-                padx=10,  # Added padding to button
-                pady=5,   # Added padding to button
-                command=rec["command"],
-                activebackground=AMBIENT_TEAL,  # Highlighted color when clicked
-                activeforeground=PEARL_WHITE,  # Text color when clicked
-                cursor="hand2"  # Hand cursor when hovering
-            )
-            button.pack(side=tk.RIGHT)  # Aligned to right
+    def _get_next_milestone(self, current_streak):
+        """Get the next milestone for the current streak"""
+        milestones = [1, 3, 5, 7, 10, 14, 21, 30, 50, 100, 365]
+        for milestone in milestones:
+            if current_streak < milestone:
+                return milestone
+        return None  # Return None if all milestones have been achieved
     
     def create_neural_patterns_tab(self):
         """Create the neural patterns visualization tab"""
@@ -3820,15 +3818,23 @@ class EnchantedMindMirror:
     def update_practice_streak(self):
         """Update the user's meditation practice streak based on the last session date"""
         if "meditation_stats" not in self.user_data:
-            return
+            self.user_data["meditation_stats"] = {
+                "practice_streak": 0,
+                "highest_streak": 0,
+                "total_sessions": 0,
+                "milestone_notifications": []  # Track which milestones have been shown
+            }
             
         # Get today's date and the last meditation date
         today = datetime.now().date()
         last_meditation_str = self.user_data["meditation_stats"].get("last_meditation")
         
         if not last_meditation_str:
-            # First time meditating, set streak to 1
+            # First time meditating
             self.user_data["meditation_stats"]["practice_streak"] = 1
+            self.user_data["meditation_stats"]["highest_streak"] = 1
+            self.user_data["meditation_stats"]["total_sessions"] = 1
+            self._show_streak_milestone(1)
             return
             
         try:
@@ -3837,18 +3843,70 @@ class EnchantedMindMirror:
             
             # Calculate days difference
             days_diff = (today - last_meditation).days
+            current_streak = self.user_data["meditation_stats"]["practice_streak"]
             
             if days_diff == 1:
                 # Consecutive day, increment streak
-                self.user_data["meditation_stats"]["practice_streak"] += 1
+                new_streak = current_streak + 1
+                self.user_data["meditation_stats"]["practice_streak"] = new_streak
+                
+                # Update highest streak if needed
+                if new_streak > self.user_data["meditation_stats"].get("highest_streak", 0):
+                    self.user_data["meditation_stats"]["highest_streak"] = new_streak
+                    
+                # Check for streak milestones
+                self._show_streak_milestone(new_streak)
+                
             elif days_diff > 1:
                 # Streak broken, reset to 1
                 self.user_data["meditation_stats"]["practice_streak"] = 1
+                # Show encouraging message for starting new streak
+                messagebox.showinfo(
+                    "New Streak Started",
+                    "Welcome back to your practice! Starting a new meditation streak. Remember, consistency is more important than perfection."
+                )
             # If days_diff is 0, they already meditated today so don't change the streak
+            
+            # Update total sessions
+            self.user_data["meditation_stats"]["total_sessions"] = self.user_data["meditation_stats"].get("total_sessions", 0) + 1
+            
         except Exception as e:
             print(f"Error updating practice streak: {e}")
             # Reset to 1 if there's an error
             self.user_data["meditation_stats"]["practice_streak"] = 1
+            
+    def _show_streak_milestone(self, streak):
+        """Show notification for streak milestones"""
+        # Define milestones and their messages
+        milestones = {
+            1: "🌱 Beginning your journey! First day of practice.",
+            3: "🌿 Three days of practice! You're building a beautiful habit.",
+            5: "🌳 Five-day streak! Your consciousness is growing stronger.",
+            7: "🌟 A week of consistent practice! You're becoming attuned to deeper patterns.",
+            10: "💫 Ten days! Your dedication to consciousness exploration is inspiring.",
+            14: "🌙 Two weeks of practice! Reality is starting to notice your commitment.",
+            21: "🌌 Three weeks! You're developing a powerful connection to consciousness.",
+            30: "✨ Monthly Master! 30 days of dedicated practice.",
+            50: "🎯 Incredible! 50 days of reality exploration.",
+            100: "🔮 Reality Hacker Status: 100 days of consciousness mastery!",
+            365: "🌍 Legendary: A full year of dedicated practice! You've become one with the patterns."
+        }
+        
+        # Check if this streak is a milestone
+        if streak in milestones and streak not in self.user_data["meditation_stats"].get("milestone_notifications", []):
+            # Show milestone message
+            messagebox.showinfo(
+                "Streak Milestone Achieved!",
+                f"{milestones[streak]}\n\nCurrent Streak: {streak} days\nHighest Streak: {self.user_data['meditation_stats'].get('highest_streak', streak)}"
+            )
+            
+            # Record that this milestone has been shown
+            if "milestone_notifications" not in self.user_data["meditation_stats"]:
+                self.user_data["meditation_stats"]["milestone_notifications"] = []
+            self.user_data["meditation_stats"]["milestone_notifications"].append(streak)
+            
+            # Save the updated user data
+            self.save_user_data()
 
     def show_export_history(self):
         """Display the history of exports"""
