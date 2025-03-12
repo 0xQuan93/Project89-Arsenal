@@ -1,0 +1,48 @@
+# PROJECT89 AGENT ARSENAL DEPENDENCIES
+# This file contains all the Python packages needed for both Mind Mirror and Reality Glitcher
+
+# Core libraries
+numpy>=1.19.0
+scipy>=1.5.0
+matplotlib>=3.3.0
+pandas>=1.1.0
+pillow>=8.0.0
+
+# Visualization
+pygame>=2.0.0
+plotly>=4.14.0
+seaborn>=0.11.0
+
+# UI libraries
+tkinter>=8.6.0
+
+# Simulation tools
+networkx>=2.5.0
+sympy>=1.7.0
+
+# Data processing
+scikit-learn>=0.24.0
+joblib>=1.0.0
+
+# Multimedia
+sounddevice>=0.4.1
+pydub>=0.25.1
+librosa>=0.8.0
+
+# System integration
+psutil>=5.8.0
+
+# Quantum simulation (for Reality Glitcher)
+qutip>=4.6.0
+qiskit>=0.30.0
+
+# Utilities
+tqdm>=4.61.0
+colorama>=0.4.4
+pyyaml>=5.4.0
+python-dateutil>=2.8.1
+
+# Optional advanced features - uncomment if needed
+# tensorflow>=2.4.0
+# torch>=1.8.0
+# opencv-python>=4.5.1 

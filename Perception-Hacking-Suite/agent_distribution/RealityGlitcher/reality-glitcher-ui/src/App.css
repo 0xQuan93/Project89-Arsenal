@@ -1,0 +1,146 @@
+/* Global styles for RealityGlitcher application */
+
+body, html, #root {
+  margin: 0;
+  padding: 0;
+  background-color: #000;
+  color: #3abcff;
+  font-family: 'Courier New', Courier, monospace;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.App {
+  display: block;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  position: relative;
+  overflow-y: auto;
+  background-color: #000;
+}
+
+.App::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 50% 50%, rgba(57, 255, 20, 0.1), transparent 40%),
+    linear-gradient(to bottom, #000510 0%, #001336 100%);
+  z-index: -2;
+}
+
+.App::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    linear-gradient(rgba(57, 255, 20, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(57, 255, 20, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+  z-index: -1;
+}
+
+/* Override any Tailwind classes that might cause the black screen */
+.min-h-screen {
+  display: block !important;
+  min-height: 100vh !important;
+}
+
+/* Add a scrollbar style that matches the cyberpunk theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 20, 40, 0.7);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(57, 255, 20, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(57, 255, 20, 0.5);
+}
+
+/* Animation for bg pattern */
+@keyframes bg-shift {
+  0% {
+    background-position: 0px 0px;
+  }
+  100% {
+    background-position: 50px 50px;
+  }
+}
+
+/* Focus styles */
+button:focus, input:focus, select:focus, textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+/* Custom Classes */
+.text-shadow-glow {
+  text-shadow: 0 0 5px currentColor;
+}
+
+.border-glow {
+  box-shadow: 0 0 5px currentColor;
+}
+
+/* Animation for critical warnings */
+.critical-warning {
+  animation: warning-pulse 2s infinite;
+}
+
+@keyframes warning-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

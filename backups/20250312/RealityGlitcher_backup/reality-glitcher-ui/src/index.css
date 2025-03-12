@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import custom CSS */
+@import './custom.css';
+/* Test class */
+.test-red {
+    color: red !important;
+  }

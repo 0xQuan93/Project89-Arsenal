@@ -1,0 +1,186 @@
+@keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: .5;
+    }
+  }
+
+/* Enhanced custom effects for Reality Glitcher UI */
+
+/* Neon text effect */
+.neon-text {
+  text-shadow: 
+    0 0 5px rgba(57, 255, 20, 0.7),
+    0 0 10px rgba(57, 255, 20, 0.5),
+    0 0 20px rgba(57, 255, 20, 0.3);
+}
+
+/* Input Range Sliders styling */
+input[type="range"] {
+  appearance: none;
+  height: 6px;
+  background: #0f1a2d;
+  border-radius: 5px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #3498db;
+  cursor: pointer;
+  border: 2px solid #7DD3FC;
+  box-shadow: 0 0 5px #7DD3FC, 0 0 10px #7DD3FC;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #3498db;
+  cursor: pointer;
+  border: 2px solid #7DD3FC;
+  box-shadow: 0 0 5px #7DD3FC, 0 0 10px #7DD3FC;
+}
+
+/* Glass morphism effect */
+.glass-effect {
+  background: rgba(13, 23, 43, 0.3);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border: 1px solid rgba(72, 149, 239, 0.2);
+}
+
+/* Reality scan line effect */
+.scan-lines {
+  position: relative;
+  overflow: hidden;
+}
+
+.scan-lines:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 50%,
+    rgba(57, 255, 20, 0.05) 51%,
+    transparent 52%
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
+}
+
+/* Glitch text effect for warnings */
+.glitch-text {
+  position: relative;
+  animation: glitch-animation 2.5s infinite;
+}
+
+.glitch-text:before,
+.glitch-text:after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.glitch-text:before {
+  left: 2px;
+  text-shadow: -1px 0 #ff00c1;
+  clip: rect(44px, 450px, 56px, 0);
+  animation: glitch-anim-1 5s infinite linear alternate-reverse;
+}
+
+.glitch-text:after {
+  left: -2px;
+  text-shadow: -1px 0 #00fff9;
+  clip: rect(24px, 450px, 36px, 0);
+  animation: glitch-anim-2 4s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-anim-1 {
+  0% { clip: rect(24px, 450px, 26px, 0); }
+  20% { clip: rect(14px, 450px, 46px, 0); }
+  40% { clip: rect(54px, 450px, 96px, 0); }
+  60% { clip: rect(4px, 450px, 36px, 0); }
+  80% { clip: rect(74px, 450px, 86px, 0); }
+  100% { clip: rect(34px, 450px, 66px, 0); }
+}
+
+@keyframes glitch-anim-2 {
+  0% { clip: rect(34px, 450px, 56px, 0); }
+  20% { clip: rect(24px, 450px, 26px, 0); }
+  40% { clip: rect(44px, 450px, 46px, 0); }
+  60% { clip: rect(64px, 450px, 76px, 0); }
+  80% { clip: rect(14px, 450px, 26px, 0); }
+  100% { clip: rect(44px, 450px, 56px, 0); }
+}
+
+/* Custom styling for the Reality Glitcher UI */
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #000;
+  color: #39c;
+  font-family: 'Courier New', monospace;
+}
+
+/* Force the app to be visible */
+#root {
+  display: block !important;
+}
+
+/* Cyberpunk UI elements */
+.cyber-panel {
+  border: 1px solid rgba(0, 136, 255, 0.5);
+  background-color: rgba(0, 20, 40, 0.7);
+  box-shadow: 0 0 10px rgba(0, 136, 255, 0.2);
+  border-radius: 4px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.cyber-text {
+  color: #39c;
+  text-shadow: 0 0 5px rgba(0, 136, 255, 0.5);
+}
+
+.cyber-title {
+  color: #5af;
+  text-shadow: 0 0 10px rgba(80, 160, 255, 0.7);
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+/* Ensure all text is visible */
+h1, h2, h3, h4, h5, h6, p, div, span {
+  color: inherit;
+}
+
+/* Ensure grid layout is visible */
+.grid {
+  display: grid !important;
+}

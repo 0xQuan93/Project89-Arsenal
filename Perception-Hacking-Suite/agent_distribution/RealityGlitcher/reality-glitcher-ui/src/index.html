@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project 89 Reality Glitcher</title>
+    
+    <!-- Attempt to load external CSS files -->
+    <link rel="stylesheet" href="index.css" onerror="console.warn('Failed to load index.css')">
+    <link rel="stylesheet" href="tailwind.css" onerror="console.warn('Failed to load tailwind.css')">
+    <link rel="stylesheet" href="custom.css" onerror="console.warn('Failed to load custom.css')">
+    <link rel="stylesheet" href="RealityGlitcher.css" onerror="console.warn('Failed to load RealityGlitcher.css')">
+    
+    <!-- Critical styles that are guaranteed to work -->
+    <style>
+        body {
+            background-color: #000;
+            color: #00FFFF;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #00FFFF;
+            padding-bottom: 1rem;
+        }
+        .glitch-text {
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00FFFF, 0 0 20px #00FFFF;
+            letter-spacing: 2px;
+        }
+        .glitch-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            margin-top: 0.5rem;
+        }
+        .section {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #FF00FF;
+        }
+        .glitch-status {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        .status-item {
+            text-align: center;
+            padding: 1rem;
+            border: 1px solid #333;
+            border-radius: 5px;
+            flex: 1;
+            margin: 0 0.5rem;
+        }
+        .status-label {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        .status-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 0.5rem;
+        }
+        .quantum-button {
+            background-color: transparent;
+            border: 1px solid #00FFFF;
+            color: #00FFFF;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 1rem;
+            margin-bottom: 1rem;
+        }
+        .quantum-button:hover {
+            background-color: rgba(0, 255, 255, 0.2);
+            box-shadow: 0 0 10px #00FFFF;
+        }
+        .loading {
+            display: inline-block;
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin: 2rem auto;
+        }
+        .loading div {
+            position: absolute;
+            top: 33px;
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            background: #00FFFF;
+            animation-timing-function: cubic-bezier(0, 1, 1, 0);
+        }
+        .loading div:nth-child(1) {
+            left: 8px;
+            animation: loading1 0.6s infinite;
+        }
+        .loading div:nth-child(2) {
+            left: 8px;
+            animation: loading2 0.6s infinite;
+        }
+        .loading div:nth-child(3) {
+            left: 32px;
+            animation: loading2 0.6s infinite;
+        }
+        .loading div:nth-child(4) {
+            left: 56px;
+            animation: loading3 0.6s infinite;
+        }
+        @keyframes loading1 {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+        @keyframes loading2 {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(24px, 0); }
+        }
+        @keyframes loading3 {
+            0% { transform: scale(1); }
+            100% { transform: scale(0); }
+        }
+        
+        /* Additional quantum and glitch effects */
+        .quantum-field {
+            position: relative;
+            overflow: hidden;
+        }
+        .quantum-field::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle, rgba(0,255,255,0.1) 0%, rgba(0,0,0,0) 70%);
+            pointer-events: none;
+            opacity: 0;
+            animation: pulse 8s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 0; }
+            50% { opacity: 0.5; }
+            100% { opacity: 0; }
+        }
+        
+        /* Text glitch effect */
+        .glitch {
+            position: relative;
+        }
+        .glitch::before, .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.8;
+        }
+        .glitch::before {
+            color: #ff00ff;
+            animation: glitch-effect 3s infinite;
+        }
+        .glitch::after {
+            color: #00ffff;
+            animation: glitch-effect 2s infinite reverse;
+        }
+        @keyframes glitch-effect {
+            0% { transform: translate(0); }
+            20% { transform: translate(-3px, 3px); }
+            40% { transform: translate(-3px, -3px); }
+            60% { transform: translate(3px, 3px); }
+            80% { transform: translate(3px, -3px); }
+            100% { transform: translate(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Root element that React will try to attach to -->
+    <div id="root"></div>
+    
+    <!-- Fallback UI that displays when React isn't loaded -->
+    <div id="fallback-ui" class="container quantum-field">
+        <div class="header">
+            <div class="glitch-text glitch" data-text="REALITY GLITCHER">REALITY GLITCHER</div>
+            <div class="glitch-subtitle">PROJECT 89 PERCEPTION MANIPULATION INTERFACE</div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">REALITY STATUS</div>
+            <div class="glitch-status">
+                <div class="status-item">
+                    <div class="status-label">STABILITY</div>
+                    <div class="status-value" id="stability-value">78%</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">ACTIVE GLITCHES</div>
+                    <div class="status-value" id="active-glitches-count">3</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">COHERENCE</div>
+                    <div class="status-value" id="coherence-value">92%</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">GLITCH CONTROLS</div>
+            <div>
+                <button class="quantum-button" onclick="showMessage('Creating visual glitch...')">CREATE VISUAL GLITCH</button>
+                <button class="quantum-button" onclick="showMessage('Creating auditory glitch...')">CREATE AUDITORY GLITCH</button>
+                <button class="quantum-button" onclick="showMessage('Creating temporal glitch...')">CREATE TEMPORAL GLITCH</button>
+                <button class="quantum-button" onclick="showMessage('Creating spatial glitch...')">CREATE SPATIAL GLITCH</button>
+                <button class="quantum-button" onclick="showMessage('Resetting all glitches...')">RESET ALL GLITCHES</button>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">MIND MIRROR INTEGRATION</div>
+            <div style="text-align: center;">
+                <div id="mind-mirror-status">Consciousness data detected. Scanning neural patterns...</div>
+                <div class="loading"><div></div><div></div><div></div><div></div></div>
+                <button class="quantum-button" onclick="showMessage('Integrating consciousness data...')">INTEGRATE CONSCIOUSNESS DATA</button>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">ACTIVE GLITCHES</div>
+            <div id="active-glitches-list">
+                <div style="padding: 1rem; border: 1px solid #333; margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <div style="font-weight: bold; color: #FF00FF;">VISUAL_ECHO</div>
+                        <div>ID: 8f7d2e3a</div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9rem; opacity: 0.8;">
+                        <div>Intensity: 67%</div>
+                        <div>Stability: 83%</div>
+                        <div>Duration: 28s</div>
+                    </div>
+                    <div style="margin-top: 0.5rem; font-size: 0.9rem;">
+                        Source: Mind Mirror neural pattern integration
+                    </div>
+                </div>
+                
+                <div style="padding: 1rem; border: 1px solid #333; margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <div style="font-weight: bold; color: #FF00FF;">QUANTUM_ENTANGLEMENT</div>
+                        <div>ID: 3a9f1c7b</div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9rem; opacity: 0.8;">
+                        <div>Intensity: 58%</div>
+                        <div>Stability: 72%</div>
+                        <div>Duration: 45s</div>
+                    </div>
+                    <div style="margin-top: 0.5rem; font-size: 0.9rem;">
+                        Source: Mind Mirror consciousness map
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status message display -->
+        <div id="status-message" style="position: fixed; bottom: 20px; right: 20px; background: rgba(0,0,0,0.8); border: 1px solid #00FFFF; color: #00FFFF; padding: 10px 20px; border-radius: 5px; display: none; z-index: 1000;"></div>
+    </div>
+    
+    <script>
+        console.log("Reality Glitcher UI initialized");
+        
+        // Simple function to show status messages
+        function showMessage(message) {
+            const msgEl = document.getElementById('status-message');
+            msgEl.textContent = message;
+            msgEl.style.display = 'block';
+            
+            setTimeout(() => {
+                msgEl.style.display = 'none';
+            }, 3000);
+            
+            // Log to console for debugging
+            console.log(message);
+        }
+        
+        // Update random values periodically to simulate activity
+        function updateRandomValues() {
+            const stability = Math.floor(70 + Math.random() * 30);
+            const coherence = Math.floor(70 + Math.random() * 30);
+            
+            document.getElementById('stability-value').textContent = stability + '%';
+            document.getElementById('coherence-value').textContent = coherence + '%';
+            
+            setTimeout(updateRandomValues, 5000);
+        }
+        
+        // Initialize simulation
+        updateRandomValues();
+        
+        // Try to detect if React has loaded by checking if our fallback UI should be hidden
+        function checkReactLoaded() {
+            // If React has modified the root element, hide our fallback
+            const root = document.getElementById('root');
+            if (root && root.children.length > 0) {
+                const fallback = document.getElementById('fallback-ui');
+                if (fallback) {
+                    fallback.style.display = 'none';
+                    console.log("React application detected, hiding fallback UI");
+                }
+            } else {
+                // Check again in a second
+                setTimeout(checkReactLoaded, 1000);
+            }
+        }
+        
+        // Start checking if React has loaded
+        checkReactLoaded();
+        
+        // Attempt to load the actual React app
+        try {
+            const script = document.createElement('script');
+            script.src = 'index.js';
+            script.type = 'module';
+            script.onerror = (e) => {
+                console.log("Could not load React application. Using static fallback UI.", e);
+                showMessage("Using fallback UI - React could not be loaded");
+            };
+            document.body.appendChild(script);
+        } catch (e) {
+            console.log("Error loading React application:", e);
+            showMessage("Using fallback UI - React could not be loaded");
+        }
+    </script>
+</body>
+</html> 

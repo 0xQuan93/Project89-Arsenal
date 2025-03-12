@@ -1,0 +1,431 @@
+.reality-data-container {
+  background-color: rgba(0, 20, 40, 0.8);
+  border: 1px solid #1e40af;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  contain: layout style;
+}
+
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #1e3a8a;
+  padding-bottom: 8px;
+  height: 36px;
+}
+
+.section-heading h3 {
+  color: #38bdf8;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.section-heading-secondary {
+  margin-top: 16px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #1e3a8a;
+  padding-bottom: 4px;
+  height: 28px;
+}
+
+.section-heading-secondary h4 {
+  color: #60a5fa;
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  height: 24px;
+  min-width: 120px;
+}
+
+/* Updated Mind Mirror status with stable, non-flickering styles */
+.mind-mirror-status {
+  background-color: rgba(147, 51, 234, 0.3);
+  color: #c084fc;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #7e22ce;
+  position: relative;
+  overflow: hidden;
+  min-width: 120px;
+  text-align: center;
+}
+
+/* Create a subtle static glow instead of animation */
+.mind-mirror-status::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, rgba(192, 132, 252, 0.2) 0%, rgba(147, 51, 234, 0) 70%);
+  pointer-events: none;
+}
+
+/* New static class for mind mirror connected state */
+.reality-data-container.mind-mirror-connected {
+  /* No styles here - removed all Mind Mirror specific styling */
+}
+
+/* Remove Mind Mirror styling from sensor bars */
+.reality-data-container.mind-mirror-connected .reality-vector-container .sensor-bar-fill.uncertain,
+.reality-data-container.mind-mirror-connected .reality-vector-container .sensor-bar-fill.observed,
+.reality-data-container.mind-mirror-connected .reality-vector-container .sensor-value {
+  /* Reset all Mind Mirror specific styling to default */
+  background: initial;
+  color: initial;
+  text-shadow: initial;
+  box-shadow: initial;
+}
+
+/* Enhanced styling for quantum container */
+.quantum-container {
+  width: 100%;
+  height: 180px; /* Increased height for better visualization */
+  border: 1px solid #1e40af;
+  border-radius: 6px;
+  background-color: rgba(0, 10, 30, 0.8);
+  margin-bottom: 20px; /* Add more spacing between graph and sensors */
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 0 15px rgba(0, 50, 150, 0.2) inset;
+  transition: all 0.3s ease; /* Smooth transitions */
+}
+
+/* Add Mind Mirror specific styling for the quantum canvas only */
+.mind-mirror-connected .quantum-container {
+  border-color: rgba(147, 51, 234, 0.7); /* Purple border for Mind Mirror */
+  box-shadow: 0 0 15px rgba(147, 51, 234, 0.2) inset; /* Purple glow for Mind Mirror */
+}
+
+/* Special enhanced styling when glitches are active */
+.quantum-container.has-glitches {
+  box-shadow: 0 0 20px rgba(0, 100, 220, 0.3) inset, 0 0 5px rgba(0, 150, 220, 0.2);
+  background: linear-gradient(180deg, 
+    rgba(0, 10, 30, 0.85) 0%,
+    rgba(0, 15, 40, 0.8) 50%, 
+    rgba(0, 10, 30, 0.85) 100%
+  );
+}
+
+/* Special enhanced styling for Mind Mirror with glitches */
+.mind-mirror-connected .quantum-container.has-glitches {
+  box-shadow: 0 0 20px rgba(147, 51, 234, 0.3) inset, 0 0 5px rgba(147, 51, 234, 0.2);
+  background: linear-gradient(180deg, 
+    rgba(20, 0, 40, 0.85) 0%,
+    rgba(30, 10, 50, 0.8) 50%, 
+    rgba(20, 0, 40, 0.85) 100%
+  );
+}
+
+/* Glitch types styling */
+.quantum-container.has-visual-glitch {
+  box-shadow: 0 0 15px rgba(0, 150, 255, 0.2) inset;
+}
+
+.quantum-container.has-temporal-glitch {
+  box-shadow: 0 0 15px rgba(255, 150, 0, 0.2) inset;
+}
+
+.quantum-container.has-spatial-glitch {
+  box-shadow: 0 0 15px rgba(0, 200, 180, 0.2) inset;
+}
+
+.quantum-container.has-cognitive-glitch {
+  box-shadow: 0 0 15px rgba(255, 100, 100, 0.2) inset;
+}
+
+.quantum-container.has-synchronistic-glitch {
+  box-shadow: 0 0 15px rgba(230, 100, 230, 0.2) inset;
+}
+
+/* Quantum canvas styles */
+.quantum-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Emergency mode indicator styling */
+.emergency-mode-indicator {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(239, 68, 68, 0.8);
+  color: white;
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 4px;
+  z-index: 10;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+  animation: pulse 2s infinite;
+}
+
+/* Active glitch indicators */
+.glitch-indicator {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  display: flex;
+  gap: 5px;
+  z-index: 5;
+}
+
+.glitch-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  animation: glitch-pulse 2s infinite ease-in-out;
+}
+
+.glitch-dot.visual {
+  background-color: rgba(100, 180, 255, 0.9);
+}
+
+.glitch-dot.temporal {
+  background-color: rgba(255, 160, 50, 0.9);
+}
+
+.glitch-dot.spatial {
+  background-color: rgba(50, 200, 180, 0.9);
+}
+
+.glitch-dot.cognitive {
+  background-color: rgba(255, 100, 100, 0.9);
+}
+
+.glitch-dot.synchronistic {
+  background-color: rgba(230, 120, 250, 0.9);
+}
+
+@keyframes pulse {
+  0% { opacity: 0.7; }
+  50% { opacity: 1; }
+  100% { opacity: 0.7; }
+}
+
+@keyframes glitch-pulse {
+  0% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 0.7; transform: scale(1); }
+}
+
+.sensor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+}
+
+@media (min-width: 768px) {
+  .sensor-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.sensor-item {
+  margin-bottom: 8px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  height: 65px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+/* Add subtle hover effect to indicate interactivity */
+.sensor-item:hover {
+  transform: translateY(-1px);
+}
+
+.sensor-label {
+  color: #60a5fa;
+  font-size: 14px;
+  margin-bottom: 4px;
+  height: 16px;
+}
+
+.sensor-value {
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  position: relative;
+  min-width: 60px;
+  height: 22px;
+}
+
+/* Quantum uncertainty styling */
+.sensor-value.uncertain {
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 0 8px rgba(100, 180, 255, 0.4);
+  animation: quantum-fluctuation 3s infinite ease-in-out;
+}
+
+/* Observed value styling - more solid and defined */
+.sensor-value.observed {
+  color: white;
+  text-shadow: 0 0 12px rgba(100, 180, 255, 0.7);
+  transition: all 0.3s ease;
+}
+
+.sensor-bar {
+  height: 8px;
+  width: 100%;
+  background-color: rgba(30, 64, 175, 0.3);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  min-height: 8px;
+  margin-top: 4px;
+}
+
+/* Base sensor bar styling */
+.sensor-bar-fill {
+  height: 100%;
+  background-color: #3b82f6;
+  border-radius: 4px;
+  position: relative;
+  transform: translateZ(0);
+  will-change: width;
+}
+
+/* Quantum uncertainty in the bar */
+.sensor-bar-fill.uncertain {
+  animation: bar-fluctuation 3s infinite ease-in-out;
+  background: linear-gradient(90deg, #3b82f6, #60a5fa, #3b82f6);
+  background-size: 200% 100%;
+}
+
+/* Observed bar styling */
+.sensor-bar-fill.observed {
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+  transition: width 0.3s ease-out, box-shadow 0.3s ease;
+}
+
+/* Special styling for reality vector */
+.reality-vector-container .sensor-bar-fill.uncertain {
+  background: linear-gradient(90deg, #FF9500, #FFBA49, #FF9500);
+  background-size: 200% 100%;
+}
+
+.reality-vector-container .sensor-bar-fill.observed {
+  background: linear-gradient(90deg, #FF9500, #FFBA49);
+  box-shadow: 0 0 10px rgba(255, 186, 73, 0.6);
+}
+
+/* Quantum animations */
+@keyframes quantum-fluctuation {
+  0% { opacity: 0.9; }
+  50% { opacity: 1; }
+  100% { opacity: 0.9; }
+}
+
+@keyframes bar-fluctuation {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Different colors for different sensor types */
+.sensor-item[data-type="neuralActivity"] .sensor-bar-fill {
+  background-color: #4171ff;
+}
+
+.sensor-item[data-type="perceptionShift"] .sensor-bar-fill {
+  background-color: #64c896;
+}
+
+.sensor-item[data-type="realityCoherence"] .sensor-bar-fill {
+  background-color: #41a5f5;
+}
+
+.sensor-item[data-type="temporalSync"] .sensor-bar-fill {
+  background-color: #64b4ff;
+}
+
+.sensor-item[data-type="cognitiveDissonance"] .sensor-bar-fill {
+  background-color: #ff6464;
+}
+
+.sensor-item[data-type="quantumEntanglement"] .sensor-bar-fill {
+  background-color: #dc78ff;
+}
+
+.anomalies-container {
+  margin-top: 16px;
+}
+
+.anomalies-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.anomaly-item {
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid #1e3a8a;
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.anomaly-label {
+  color: #fbbf24;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.anomaly-value {
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* NEW: Reality Vector styling */
+.reality-vector-container {
+  margin-top: 20px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(30, 58, 138, 0.5);
+  box-sizing: border-box;
+}
+
+.reality-vector-container .section-heading-secondary h4 {
+  color: #FFBA49;
+  font-size: 16px;
+  font-weight: 500;
+  text-shadow: 0 0 10px rgba(255, 186, 73, 0.4);
+}
+
+.reality-vector-container .sensor-label {
+  color: #FFBA49;
+}
+
+.reality-vector-container .sensor-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #FFBA49;
+  text-shadow: 0 0 10px rgba(255, 186, 73, 0.4);
+  height: 28px;
+}
+
+.reality-vector-container .sensor-grid {
+  grid-template-columns: 1fr;
+} 

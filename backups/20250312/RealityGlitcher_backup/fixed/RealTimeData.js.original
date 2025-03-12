@@ -1,0 +1,1262 @@
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import "./RealTimeData.css";
+
+// New SensorItem component to properly use React Hooks
+const SensorItem = ({
+  label,
+  valueProp,
+  sensorValue,
+  maxValue = 100,
+  isMindMirrorConnected,
+}) => {
+  // Apply quantum uncertainty effect - value fluctuates slightly
+  // This simulates the Heisenberg uncertainty principle
+  const [quantumState, setQuantumState] = useState({
+    observed: false,
+    value: sensorValue,
+    // Create a unique random seed for each sensor
+    seed: Math.random() * 1000,
+  });
+
+  // Use a ref to track previous Mind Mirror state to prevent erratic updates
+  const prevMindMirrorRef = useRef(isMindMirrorConnected);
+
+  // Update quantum state with uncertainty when value changes
+  useEffect(() => {
+    // IMPORTANT: When Mind Mirror state changes, don't immediately change values
+    // This prevents layout shifts and erratic behavior
+    if (prevMindMirrorRef.current !== isMindMirrorConnected) {
+      // Gradually adapt to the mind mirror state change rather than instantly changing
+      prevMindMirrorRef.current = isMindMirrorConnected;
+    }
+
+    const quantumTimer = setInterval(() => {
+      if (!quantumState.observed) {
+        // When not being observed, value has uncertainty
+        // FIXED: Use more stable fluctuation with Mind Mirror
+        const fluctuationAmount = isMindMirrorConnected ? 1.0 : 2.0; // Less fluctuation with Mind Mirror
+        setQuantumState((prev) => ({
+          ...prev,
+          value:
+            sensorValue +
+            Math.sin(Date.now() * 0.001 + prev.seed) * fluctuationAmount,
+        }));
+      }
+    }, 100);
+
+    return () => clearInterval(quantumTimer);
+  }, [
+    sensorValue,
+    quantumState.observed,
+    quantumState.seed,
+    isMindMirrorConnected,
+  ]);
+
+  // Observe/collapse function - called when user hovers
+  const observeValue = () => {
+    // When observed, value "collapses" to the actual measurement
+    setQuantumState((prev) => ({
+      ...prev,
+      observed: true,
+      value: sensorValue,
+    }));
+  };
+
+  // Stop observing function
+  const stopObserving = () => {
+    // When observation stops, value becomes uncertain again
+    setQuantumState((prev) => ({
+      ...prev,
+      observed: false,
+    }));
+  };
+
+  // Calculate percentage for the progress bar
+  const percent = Math.min(
+    100,
+    Math.max(0, (quantumState.value / maxValue) * 100),
+  );
+
+  // UPDATED: Only show color shift in the sensor value, not the entire item
+  // This prevents the label and surrounding elements from shifting colors
+  const valueStyle = {
+    transform: `translateX(${percent}%)`,
+    // Only change color based on Mind Mirror state - no animation or transition
+    backgroundColor: isMindMirrorConnected
+      ? "rgba(220, 130, 255, 0.75)"
+      : "rgba(120, 200, 255, 0.75)",
+  };
+
+  // UPDATED: No label or class changes when Mind Mirror is connected
+  // This keeps the regular view with just color shifts in the progress area
+  return (
+    <div
+      className="sensor-item"
+      onMouseEnter={observeValue}
+      onMouseLeave={stopObserving}
+    >
+      <div className="sensor-label">{label}</div>
+      <div className="sensor-bar">
+        <div className="sensor-value" style={valueStyle}></div>
+      </div>
+      <div className="sensor-reading">{Math.round(quantumState.value)}</div>
+    </div>
+  );
+};
+
+const RealTimeData = ({ glitches, realityStatus, mindMirrorConnected }) => {
+  // Use a ref to store data points to prevent re-renders
+  const dataPointsRef = useRef(Array(100).fill(0.5));
+  // Using ref instead of state to prevent re-renders - removing unused setAnomalyData
+  const anomalyData = useRef({});
+  const sensorDataRef = useRef({
+    neuralActivity: 78.4,
+    perceptionShift: 12.3,
+    realityCoherence: 89.7,
+    temporalSync: 99.2,
+    cognitiveDissonance: 15.0,
+    quantumEntanglement: 45.2,
+    realityVector: 65.7, // New combined vector
+  });
+
+  // NEW: Vector data for combined probability representation
+  const vectorDataRef = useRef({
+    points: Array(100).fill(0.5),
+    lastUpdateTime: Date.now(),
+    influence: 0.5, // How strongly the vector influences the main graph
+    glitchInfluenceMap: {}, // Maps glitch IDs to their influence on the vector
+  });
+
+  // NEW: Add a timeline data buffer to store historical data points
+  const timelineDataRef = useRef({
+    // Store the last 100 data points (for 10-second history at 100ms updates)
+    // Initialize with data points properly distributed across time
+    history: (() => {
+      const now = Date.now();
+      // Create evenly distributed timestamps across the full 10-second window
+      return Array.from({ length: 100 }, (_, i) => {
+        // Distribute timestamps with most recent at index 99
+        const timeOffset = (99 - i) * 100; // Exactly 100ms intervals
+        // Create smooth sine waves for initial data
+        const sineValue = 0.5 + Math.sin((i / 100) * Math.PI * 4) * 0.2;
+        const cosValue = 0.5 + Math.cos((i / 100) * Math.PI * 3) * 0.15;
+        return {
+          timestamp: now - timeOffset,
+          value: sineValue,
+          vectorValue: cosValue,
+          quantumEffects: [],
+          observed: false,
+        };
+      }).sort((a, b) => a.timestamp - b.timestamp); // Sort by timestamp to ensure proper order
+    })(),
+    lastUpdateIndex: 99, // Start at the newest point
+    historySize: 100,
+    // Quantum observation window - when user hovers over a time segment
+    observationWindow: {
+      start: -1,
+      end: -1,
+      center: -1, // Track cursor center for gradual effect
+      active: false,
+      // Add transition zones for smoother effect
+      fadeInStart: -1,
+      fadeOutEnd: -1,
+    },
+    // Add update interval tracking to ensure consistent history
+    lastUpdateTime: Date.now(),
+    updateInterval: 100, // Target 100ms between history points
+  });
+
+  // ADDED: Smooth animation data for quantum fluctuator - with continuous flow
+  const animationDataRef = useRef({
+    // Continuous data flow - no transitions, just constant stream
+    streamData: Array.from({ length: 100 }, () => ({
+      value: 0.5,
+      velocity: Math.random() * 0.01 - 0.005,
+      phase: Math.random() * Math.PI * 2,
+    })),
+    lastUpdateTime: 0,
+  });
+
+  // ADDED: Safety ref to detect render issues
+  const safetyRef = useRef({
+    lastRenderAttempt: Date.now(),
+    renderFailCount: 0,
+    isEmergencyMode: false,
+  });
+
+  // Refs for canvas and animation
+  const canvasRef = useRef(null);
+  const animationRef = useRef(null);
+  const canvasContainerRef = useRef(null);
+  const backupTimerRef = useRef(null);
+
+  // Debug flag - set to false for production
+  const debug = process.env.NODE_ENV === "development";
+
+  // Add throttling for state updates to prevent excessive re-renders while maintaining real-time data
+  const [lastStateUpdateTime, setLastStateUpdateTime] = useState(0);
+
+  // NEW: Add observer effect tracker
+  const observerEffectRef = useRef({
+    active: false,
+    intensity: 0,
+    startTime: 0,
+    duration: 0,
+    detectionProbability: 0.7, // 70% chance of detecting visibility change
+    lastVisibilityChange: 0,
+    cooldownPeriod: 8000, // Minimum 8 seconds between events
+  });
+
+  // Function to create emergency data
+  const createReliableData = () => {
+    // Generate high-frequency, naturally flowing data points
+    const time = Date.now() * 0.001;
+    const reliablePoints = [];
+
+    // Generate 100 continuous flowing points
+    for (let i = 0; i < 100; i++) {
+      const x = i / 100;
+      // Use multiple overlapping wave patterns for natural flow
+      let y = 0.5;
+
+      // Add multiple harmonic waves with different phases
+      y += Math.sin(x * Math.PI * 2 + time * 2.5) * 0.15;
+      y += Math.sin(x * Math.PI * 4 + time * 1.7) * 0.08;
+      y += Math.sin(x * Math.PI * 7 + time * 3.3) * 0.04;
+
+      // Ensure value is in valid range
+      y = Math.max(0.1, Math.min(0.9, y));
+
+      reliablePoints.push(y);
+    }
+
+    // Add metadata
+    reliablePoints.lastUpdateTime = Date.now();
+    reliablePoints.realityIntensityFactor = 0.3; // Low intensity for stable mode
+
+    // Also reset the stream data with proper physics values
+    animationDataRef.current.streamData = Array.from(
+      { length: 100 },
+      (_, i) => ({
+        value: reliablePoints[i] || 0.5,
+        velocity: Math.random() * 0.01 - 0.005,
+        phase: Math.random() * Math.PI * 2,
+      }),
+    );
+
+    return reliablePoints;
+  };
+
+  // Emergency draw function - for canvas fallback
+  const emergencyDraw = () => {
+    try {
+      // Create canvas if it doesn't exist
+      if (!canvasRef.current) {
+        createCanvas();
+        if (!canvasRef.current) {
+          console.error("Cannot create canvas for emergency draw");
+          return;
+        }
+      }
+
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext("2d", { alpha: false });
+
+      if (!ctx) {
+        console.error("Cannot get 2d context for emergency draw");
+        return;
+      }
+
+      // Ensure canvas dimensions
+      if (canvas.width === 0 || canvas.height === 0) {
+        canvas.width = 600;
+        canvas.height = 130;
+      }
+
+      // Generate high-frequency emergency data
+      const emergencyData = createReliableData();
+      const time = Date.now() * 0.001;
+
+      // Create clean black background
+      ctx.fillStyle = "#070b14";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Add emergency grid pattern
+      ctx.strokeStyle = "rgba(100, 30, 30, 0.3)";
+      ctx.lineWidth = 1;
+
+      // Vertical emergency grid lines
+      for (let i = 0; i < canvas.width; i += 30) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i, canvas.height);
+        ctx.stroke();
+      }
+
+      // Draw emergency waveform with more stable pattern
+      ctx.beginPath();
+      ctx.lineWidth = 2;
+      ctx.lineCap = "round";
+
+      // Draw quantized emergency wave pattern
+      for (let i = 0; i < 100; i += 1) {
+        const x = (i / 99) * canvas.width;
+        // Use a more stable pattern
+        const quantizedTime = Math.floor(time * 2) / 2;
+        const baseY = emergencyData[i];
+        const emergencyPhaseShift = Math.sin(quantizedTime * 2 + i / 20) * 0.08;
+        const y = (1 - (baseY + emergencyPhaseShift)) * canvas.height;
+
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+
+      // Create emergency gradient
+      const emergencyGradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+      emergencyGradient.addColorStop(0, "rgba(255, 50, 50, 0.8)");
+      emergencyGradient.addColorStop(0.5, "rgba(255, 100, 30, 0.7)");
+      emergencyGradient.addColorStop(1, "rgba(255, 70, 50, 0.8)");
+
+      ctx.strokeStyle = emergencyGradient;
+      ctx.stroke();
+
+      // Add emergency warning text with improved readability
+      ctx.font = "bold 12px monospace";
+      ctx.fillStyle = "rgba(255, 100, 50, 0.9)";
+      ctx.fillText("EMERGENCY QUANTUM FLUCTUATOR", 10, 20);
+
+      ctx.font = "10px monospace";
+      ctx.fillStyle = "rgba(255, 150, 50, 0.8)";
+      ctx.fillText("QUANTUM STABILITY CRITICAL", 10, 40);
+      ctx.fillText("SELF-RESTORATION IN PROGRESS", 10, 60);
+
+      // Add stability reading
+      ctx.font = "10px monospace";
+      ctx.fillStyle = "#FF8040";
+      ctx.fillText(`STABILITY: CRITICAL`, canvas.width - 140, 20);
+    } catch (e) {
+      console.error("Emergency draw failed:", e);
+    }
+  };
+
+  // Add canvas mouse interaction for quantum observation
+  const handleCanvasMouseMove = useCallback((e) => {
+    if (!canvasRef.current) return;
+
+    // Get canvas bounds
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+
+    // Update observation window to cover a region around the cursor
+    // MODIFIED: Use wider, more subtle window
+    const windowWidth = 80; // Wider window (80px vs 40px) for smoother transitions
+    const startX = Math.max(0, x - windowWidth / 2);
+    const endX = Math.min(canvasRef.current.width, x + windowWidth / 2);
+
+    // MODIFIED: Add gradual observation effect with fade-in/out zones
+    timelineDataRef.current.observationWindow = {
+      start: startX,
+      end: endX,
+      center: x, // Track cursor center for gradual effect
+      active: true,
+      // Add transition zones for smoother effect
+      fadeInStart: Math.max(0, startX - 20),
+      fadeOutEnd: Math.min(canvasRef.current.width, endX + 20),
+    };
+  }, []);
+
+  const handleCanvasMouseLeave = useCallback(() => {
+    // Clear observation window when mouse leaves canvas
+    timelineDataRef.current.observationWindow = {
+      start: -1,
+      end: -1,
+      center: -1,
+      active: false,
+      fadeInStart: -1,
+      fadeOutEnd: -1,
+    };
+  }, []);
+
+  // Update createCanvas to add mouse event listeners
+  const createCanvas = useCallback(() => {
+    if (canvasContainerRef.current && !canvasRef.current) {
+      // Create the canvas element
+      const canvas = document.createElement("canvas");
+
+      // FIXED: Make canvas fill its container width
+      const containerWidth = canvasContainerRef.current.clientWidth || 858;
+      canvas.width = containerWidth;
+      canvas.height = 130;
+
+      // Add mouse event listeners for quantum observation
+      canvas.addEventListener("mousemove", handleCanvasMouseMove);
+      canvas.addEventListener("mouseleave", handleCanvasMouseLeave);
+
+      // Store reference and append to container
+      canvasRef.current = canvas;
+      canvasContainerRef.current.appendChild(canvas);
+
+      return canvas;
+    }
+    return canvasRef.current;
+  }, [handleCanvasMouseMove, handleCanvasMouseLeave]);
+
+  // Cleanup event listeners when component unmounts
+  useEffect(() => {
+    return () => {
+      if (canvasRef.current) {
+        canvasRef.current.removeEventListener(
+          "mousemove",
+          handleCanvasMouseMove,
+        );
+        canvasRef.current.removeEventListener(
+          "mouseleave",
+          handleCanvasMouseLeave,
+        );
+      }
+    };
+  }, [handleCanvasMouseMove, handleCanvasMouseLeave]);
+
+  // Animation speed multiplier - higher values = faster cycles
+  const cycleSpeedMultiplier = 7.5; // Increased from 5.0 to 7.5 for even faster cycles
+
+  // NEW: Calculate the reality vector from all sensor data and active glitches
+  const calculateRealityVector = () => {
+    try {
+      // Get all relevant sensor values
+      const {
+        neuralActivity,
+        perceptionShift,
+        realityCoherence,
+        temporalSync,
+        cognitiveDissonance,
+        quantumEntanglement,
+      } = sensorDataRef.current;
+
+      // Calculate weighted vector from sensor data
+      // Higher weights are given to more significant indicators
+      let vectorValue = 0;
+
+      // Neural activity (moderate positive contribution)
+      vectorValue += (neuralActivity / 100) * 0.15;
+
+      // Perception shift (high negative contribution - more shift means less stable reality)
+      vectorValue -= (perceptionShift / 100) * 0.25;
+
+      // Reality coherence (very high positive contribution)
+      vectorValue += (realityCoherence / 100) * 0.3;
+
+      // Temporal sync (high positive contribution)
+      vectorValue += (temporalSync / 100) * 0.2;
+
+      // Cognitive dissonance (moderate negative contribution)
+      vectorValue -= (cognitiveDissonance / 100) * 0.15;
+
+      // Quantum entanglement (low positive contribution)
+      vectorValue += (quantumEntanglement / 100) * 0.1;
+
+      // Normalize to 0-1 range (from our potentially -0.4 to +0.6 calculation)
+      vectorValue = (vectorValue + 0.4) / 1.0;
+      vectorValue = Math.max(0.1, Math.min(0.9, vectorValue));
+
+      // Factor in active glitches
+      if (glitches && glitches.length > 0) {
+        // Create influence map if it doesn't exist
+        if (
+          Object.keys(vectorDataRef.current.glitchInfluenceMap).length === 0
+        ) {
+          // Initialize influence map for consistent effects
+          glitches.forEach((glitch) => {
+            const glitchId =
+              glitch.id || Math.random().toString(36).substring(7);
+
+            // Use hash function to create a consistent influence pattern
+            const hash = (str) =>
+              str.split("").reduce((a, b) => (a << 5) - a + b.charCodeAt(0), 0);
+            const hashValue = hash(glitchId);
+
+            // Generate a random but consistent influence pattern
+            const pattern = [];
+            for (let i = 0; i < 100; i++) {
+              // Use sine wave with unique frequency based on hash
+              const freq = 0.05 + (Math.abs(hashValue) % 20) / 100;
+              const phase = (Math.abs(hashValue) % 628) / 100;
+              pattern.push(Math.sin(i * freq + phase) * 0.2);
+            }
+
+            vectorDataRef.current.glitchInfluenceMap[glitchId] = {
+              strength: (Math.abs(hashValue) % 50) / 100 + 0.3, // 0.3 to 0.8
+              pattern,
+            };
+          });
+        }
+
+        // Apply each glitch's influence
+        glitches.forEach((glitch) => {
+          const glitchId = glitch.id || "";
+          const influence = vectorDataRef.current.glitchInfluenceMap[glitchId];
+
+          if (influence) {
+            const now = Date.now() * 0.001;
+            const timeIndex = Math.floor(now * 10) % 100;
+            const influenceValue =
+              influence.pattern[timeIndex] * influence.strength;
+
+            // Apply the influence to our vector
+            vectorValue += influenceValue;
+            vectorValue = Math.max(0.1, Math.min(0.9, vectorValue));
+          }
+        });
+      }
+
+      return vectorValue;
+    } catch (err) {
+      console.error("Vector calculation failed:", err);
+      return 0.5; // Safe fallback
+    }
+  };
+
+  // Modified draw function to show linear time progression with quantum effects
+  const drawCanvas = useCallback(() => {
+    try {
+      // Ensure canvas exists
+      if (!canvasRef.current) {
+        createCanvas();
+        if (!canvasRef.current) return;
+      }
+
+      const canvas = canvasRef.current;
+
+      // Optimized rendering context
+      const ctx = canvas.getContext("2d", {
+        alpha: false, // No transparency
+        desynchronized: true, // Allow browser optimizations
+        willReadFrequently: false, // No pixel reads
+        powerPreference: "high-performance", // Request GPU acceleration
+      });
+
+      if (!ctx) return;
+
+      // Set canvas size if needed - UPDATED to use container width
+      if (canvas.width === 0 || canvas.height === 0) {
+        const containerWidth = canvasContainerRef.current
+          ? canvasContainerRef.current.clientWidth
+          : 858;
+        canvas.width = containerWidth;
+        canvas.height = 130;
+      }
+
+      // PERFORMANCE: Simple solid background - no gradient
+      ctx.fillStyle = "#070b14";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Get timeline history data
+      const historyArray = [...timelineDataRef.current.history];
+      // Sort by timestamp to ensure chronological order
+      const sortedHistory = historyArray.sort(
+        (a, b) => a.timestamp - b.timestamp,
+      );
+
+      const now = Date.now();
+      // Calculate time scale to fit 10 seconds of data
+      const timeScale = canvas.width / 10000; // 10 seconds at 1 pixel per ms
+
+      // Start time is now minus 10 seconds
+      const startTime = now - 10000;
+
+      // Variables to collect full width data points for smoother rendering
+      const fullWidthData = [];
+
+      // How many actual points to include across the canvas
+      const numPoints = 120; // Slightly higher density than 100 points for smoother curve
+
+      // Step size for canvas width
+      const stepSize = canvas.width / numPoints;
+
+      // Dot step size - how often to show dots
+      // Adjust based on density preference - smaller number means more dots
+      const dotStepSize = mindMirrorConnected ? 6 : 8; // More dots when Mind Mirror connected
+
+      // Add extra points at right edge for smoother transition to real-time
+      const extraRightEdgePoints = 8;
+
+      // Add left edge points to ensure full coverage
+      const extraLeftEdgePoints = 5;
+
+      // Start by adding extra points at the left edge (oldest data)
+      for (let i = 0; i < extraLeftEdgePoints; i++) {
+        // Position closely spaced points from 0% to 5% of canvas width
+        const x = i * ((canvas.width * 0.05) / extraLeftEdgePoints);
+        // Timestamp for this x position
+        const timestamp = startTime + x / timeScale;
+
+        // Find data from sorted history near this timestamp if available
+        let value = 0.5;
+        let vectorValue = 0.5;
+        let observed = i % 2 === 0; // Force observation for some edge points
+
+        // Find closest historical points for interpolation
+        if (sortedHistory.length > 0) {
+          // Find the points before and after this timestamp
+          let beforeIdx = -1;
+          let afterIdx = -1;
+
+          for (let j = 0; j < sortedHistory.length; j++) {
+            if (sortedHistory[j].timestamp <= timestamp) {
+              beforeIdx = j;
+            } else {
+              afterIdx = j;
+              break;
+            }
+          }
+
+          if (beforeIdx >= 0 && afterIdx >= 0) {
+            // Interpolate between two points
+            const beforePoint = sortedHistory[beforeIdx];
+            const afterPoint = sortedHistory[afterIdx];
+            const timeDiff = afterPoint.timestamp - beforePoint.timestamp;
+            const timeRatio =
+              timeDiff > 0 ? (timestamp - beforePoint.timestamp) / timeDiff : 0;
+
+            // Linear interpolation
+            value =
+              beforePoint.value +
+              (afterPoint.value - beforePoint.value) * timeRatio;
+            vectorValue =
+              beforePoint.vectorValue +
+              (afterPoint.vectorValue - beforePoint.vectorValue) * timeRatio;
+            observed = beforePoint.observed || afterPoint.observed;
+          } else if (beforeIdx >= 0) {
+            // Use the point before
+            value = sortedHistory[beforeIdx].value;
+            vectorValue = sortedHistory[beforeIdx].vectorValue;
+            observed = sortedHistory[beforeIdx].observed;
+          } else if (afterIdx >= 0) {
+            // Use the point after
+            value = sortedHistory[afterIdx].value;
+            vectorValue = sortedHistory[afterIdx].vectorValue;
+            observed = sortedHistory[afterIdx].observed;
+          }
+        }
+
+        // Add to full width dataset
+        fullWidthData.push({
+          x: x,
+          timestamp: timestamp,
+          value: value,
+          vectorValue: vectorValue,
+          observed: observed,
+          quantumEffects: [],
+        });
+      }
+
+      // Then regular points across the timeline
+      for (let i = 0; i < numPoints; i++) {
+        // Calculate position and timestamp
+        const x = Math.floor(i * stepSize + canvas.width * 0.05); // Start at 5% of width
+        // Don't go beyond canvas width
+        if (x > canvas.width) continue;
+
+        // Calculate timestamp for this x position
+        const timestamp = startTime + x / timeScale;
+
+        // Calculate position ratio and age ratio (for effects)
+        const positionRatio = x / canvas.width;
+        const ageRatio = (timestamp - startTime) / (now - startTime); // 0 = oldest, 1 = newest
+
+        // Initially not observed
+        let observed = false;
+
+        // Add regular dots for continuity
+        if (i % dotStepSize === 0) {
+          observed = true;
+        }
+
+        // ENHANCE LEFT EDGE: Add dots to fill left edge of timeline
+        if (
+          positionRatio <= 0.2 &&
+          i % Math.max(1, Math.floor(dotStepSize / 3)) === 0
+        ) {
+          observed = true;
+        }
+
+        // NEW: Add even more regular dots throughout the entire timeline for continuity
+        if (i % Math.max(1, Math.floor(dotStepSize / 2)) === 0) {
+          observed = true;
+        }
+
+        // ENHANCED MIDDLE SECTION: Significantly increase dot density in the middle
+        // This creates a more continuous visual flow in the middle section
+        if (positionRatio >= 0.25 && positionRatio <= 0.75) {
+          // Create a higher density of dots in the middle section
+          if (i % Math.max(1, Math.floor(dotStepSize / 4)) === 0) {
+            observed = true;
+          }
+
+          // Add even more dots in the center of the middle section for maximum continuity
+          if (positionRatio >= 0.4 && positionRatio <= 0.6 && i % 3 === 0) {
+            observed = true;
+          }
+        }
+
+        let effects = [];
+        // Add declarations for value and vectorValue to fix undefined errors
+        let value = 0.5;
+        let vectorValue = 0.5;
+
+        // Find closest historical points for interpolation
+        if (sortedHistory.length > 0) {
+          // Find the points before and after this timestamp
+          let beforeIdx = -1;
+          let afterIdx = -1;
+
+          for (let j = 0; j < sortedHistory.length; j++) {
+            if (sortedHistory[j].timestamp <= timestamp) {
+              beforeIdx = j;
+            } else {
+              afterIdx = j;
+              break;
+            }
+          }
+
+          if (beforeIdx >= 0 && afterIdx >= 0) {
+            // Interpolate between two points
+            const beforePoint = sortedHistory[beforeIdx];
+            const afterPoint = sortedHistory[afterIdx];
+            const timeDiff = afterPoint.timestamp - beforePoint.timestamp;
+            const timeRatio =
+              timeDiff > 0 ? (timestamp - beforePoint.timestamp) / timeDiff : 0;
+
+            // Linear interpolation
+            value =
+              beforePoint.value +
+              (afterPoint.value - beforePoint.value) * timeRatio;
+            vectorValue =
+              beforePoint.vectorValue +
+              (afterPoint.vectorValue - beforePoint.vectorValue) * timeRatio;
+            observed = beforePoint.observed || afterPoint.observed;
+            effects = beforePoint.quantumEffects || [];
+          } else if (beforeIdx >= 0) {
+            // Use the point before
+            value = sortedHistory[beforeIdx].value;
+            vectorValue = sortedHistory[beforeIdx].vectorValue;
+            observed = sortedHistory[beforeIdx].observed;
+            effects = sortedHistory[beforeIdx].quantumEffects || [];
+          } else if (afterIdx >= 0) {
+            // Use the point after
+            value = sortedHistory[afterIdx].value;
+            vectorValue = sortedHistory[afterIdx].vectorValue;
+            observed = sortedHistory[afterIdx].observed;
+            effects = sortedHistory[afterIdx].quantumEffects || [];
+          } else {
+            // Should never happen, but just in case
+            value = 0.5 + Math.sin(x * 0.01) * 0.2;
+            vectorValue = 0.5 + Math.cos(x * 0.01) * 0.15;
+          }
+        } else {
+          // No history data, generate a sine wave with natural variation
+          value = 0.5 + Math.sin(i * 0.1) * 0.2 + Math.sin(i * 0.03) * 0.1;
+          vectorValue =
+            0.5 + Math.cos(i * 0.08) * 0.15 + Math.cos(i * 0.02) * 0.1;
+
+          // Ensure values stay in valid range
+          value = Math.max(0.1, Math.min(0.9, value));
+          vectorValue = Math.max(0.1, Math.min(0.9, vectorValue));
+        }
+
+        // ENHANCED: Apply fluctuation across the entire timeline with varying patterns per section
+        // Different sections of the timeline get different fluctuation patterns
+
+        // Left section (older data) - multi-frequency oscillation
+        if (positionRatio < 0.3) {
+          // Multi-frequency oscillation with randomized parameters
+          const baseFreq = 0.15 + Math.random() * 0.1;
+          const secondFreq = 0.05 + Math.random() * 0.05;
+          const thirdFreq = 0.3 + Math.random() * 0.2;
+
+          // Create natural-looking wave pattern
+          const oscillation =
+            Math.sin(i * baseFreq) * 0.06 +
+            Math.cos(i * secondFreq) * 0.04 +
+            Math.sin(i * thirdFreq + timestamp * 0.0001) * 0.03;
+
+          // Apply stronger fluctuation to older data
+          const fluctuationStrength = 0.15 * (1 - ageRatio); // Stronger for older data
+          value += oscillation * fluctuationStrength;
+          vectorValue += oscillation * 0.7 * fluctuationStrength;
+        }
+
+        // If Mind Mirror is connected, apply ADDITIONAL neural-like patterns
+        // This creates the distinctive neural signature seen in the screenshot
+        if (mindMirrorConnected) {
+          // Neural frequency components - only appear when Mind Mirror is connected
+          const neuralOscillation =
+            Math.sin(i * 0.65 + timestamp * 0.0005) * 0.04 +
+            Math.cos(i * 0.9 + timestamp * 0.0002) * 0.035 +
+            Math.sin(i * 1.2 + timestamp * 0.0001) * 0.03;
+
+          // Apply neural pattern
+          value += neuralOscillation;
+          vectorValue += neuralOscillation * 0.6;
+
+          // Higher frequency micro-fluctuations (neural activity)
+          const microFluctuation =
+            Math.sin(i * 3.5 + timestamp * 0.002) * 0.008;
+          value += microFluctuation;
+          vectorValue += microFluctuation;
+
+          // Boost overall amplitude in Mind Mirror connected state
+          const mindMirrorAmplifier = 1.5;
+          const amplitudeBoost =
+            (Math.random() * 0.02 - 0.01) * mindMirrorAmplifier;
+          value += amplitudeBoost;
+          vectorValue += amplitudeBoost * 0.7;
+        }
+
+        // Ensure values stay in valid range
+        value = Math.max(0.1, Math.min(0.9, value));
+        vectorValue = Math.max(0.1, Math.min(0.9, vectorValue));
+
+        // Add to full width dataset
+        fullWidthData.push({
+          x: x,
+          timestamp: timestamp,
+          value: value,
+          vectorValue: vectorValue,
+          observed: observed, // Now this includes regular interval dots regardless of Mind Mirror
+          quantumEffects: effects,
+        });
+      }
+
+      // Then, add extra points concentrated at the right edge to close the gap
+      for (let i = 0; i < extraRightEdgePoints; i++) {
+        // Position closely spaced points from 90% to 100% of canvas width
+        const x =
+          canvas.width * 0.9 +
+          i * ((canvas.width * 0.1) / extraRightEdgePoints);
+        // Current timestamp (ensure we're at current time)
+        const timestamp = now - (canvas.width - x) / timeScale;
+
+        // Find most recent actual data value
+        let value = 0.5;
+        let vectorValue = 0.5;
+
+        // Get most recent values from sorted history if available
+        if (sortedHistory.length > 0) {
+          const mostRecent = sortedHistory[sortedHistory.length - 1];
+          value = mostRecent.value;
+          vectorValue = mostRecent.vectorValue;
+
+          // Add small natural variation
+          value += Math.random() * 0.06 - 0.03;
+          vectorValue += Math.random() * 0.04 - 0.02;
+
+          // Ensure values stay in valid range
+          value = Math.max(0.1, Math.min(0.9, value));
+          vectorValue = Math.max(0.1, Math.min(0.9, vectorValue));
+        }
+
+        // ALWAYS force observation for right edge points to ensure dots appear
+        fullWidthData.push({
+          x: x,
+          timestamp: timestamp,
+          value: value,
+          vectorValue: vectorValue,
+          observed: true, // Always observed to ensure dots appear
+          quantumEffects: [],
+        });
+      }
+
+      // NEW: Add points beyond NOW to fill black space to the right
+      const futurePadding = 10; // How many padding points to add beyond now
+      for (let i = 0; i < futurePadding; i++) {
+        // Position points from 100% to 107% of canvas width
+        const x = canvas.width + i * ((canvas.width * 0.07) / futurePadding);
+        // Future timestamp
+        // Remove unused secondsFromNow variable
+        // const secondsFromNow = (i / futurePadding) * 0.5; // 0 to 0.5 seconds in future
+        const timestamp = now + i * 50; // 50ms apart
+
+        // Get most recent actual data value + small random variation
+        let value = 0.5;
+        let vectorValue = 0.5;
+
+        if (sortedHistory.length > 0) {
+          const mostRecent = sortedHistory[sortedHistory.length - 1];
+          value = mostRecent.value;
+          vectorValue = mostRecent.vectorValue;
+
+          // Add natural continuation
+          value += Math.random() * 0.04 - 0.02;
+          vectorValue += Math.random() * 0.03 - 0.015;
+
+          // Ensure values stay in valid range
+          value = Math.max(0.1, Math.min(0.9, value));
+          vectorValue = Math.max(0.1, Math.min(0.9, vectorValue));
+        }
+
+        fullWidthData.push({
+          x: x,
+          timestamp: timestamp,
+          value: value,
+          vectorValue: vectorValue,
+          observed: i % 2 === 0, // Alternate observation of future points
+          quantumEffects: [],
+        });
+      }
+
+      // Draw time grid
+      ctx.lineWidth = 0.5;
+      ctx.strokeStyle = "rgba(30, 60, 110, 0.15)";
+
+      for (let t = Math.floor(startTime / 1000) * 1000; t <= now; t += 1000) {
+        const x = Math.round(canvas.width - (now - t) * timeScale);
+        if (x >= 0 && x <= canvas.width) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, canvas.height);
+          ctx.stroke();
+
+          // Add timestamp labels (seconds)
+          if (t % 2000 === 0) {
+            // Every 2 seconds
+            ctx.fillStyle = "rgba(80, 120, 180, 0.6)";
+            ctx.font = "9px monospace";
+            ctx.fillText(`-${Math.round((now - t) / 1000)}s`, x + 2, 10);
+          }
+        }
+      }
+
+      // Draw horizontal value grid lines
+      const valueLines = [0.25, 0.5, 0.75];
+      valueLines.forEach((value) => {
+        const y = Math.floor((1 - value) * canvas.height);
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      });
+
+      // Draw quantum observation window if active
+      const { observationWindow } = timelineDataRef.current;
+      if (
+        observationWindow.active &&
+        observationWindow.start >= 0 &&
+        observationWindow.end >= 0
+      ) {
+        // Calculate pixel positions for observation window
+        const startX = observationWindow.start;
+        const endX = observationWindow.end;
+        const centerX = observationWindow.center;
+        const width = endX - startX;
+
+        // MODIFIED: Use a radial gradient for more subtle highlight
+        // This creates a smoother visual effect without disrupting data flow
+        const gradient = ctx.createRadialGradient(
+          centerX,
+          canvas.height / 2,
+          0,
+          centerX,
+          canvas.height / 2,
+          width / 1.5,
+        );
+
+        // Use subtle colors that don't overwhelm the visualization
+        gradient.addColorStop(
+          0,
+          mindMirrorConnected
+            ? "rgba(220, 130, 255, 0.12)"
+            : "rgba(30, 100, 180, 0.12)",
+        );
+        gradient.addColorStop(1, "rgba(30, 60, 110, 0)");
+
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw observation boundary with thin line
+        ctx.strokeStyle = mindMirrorConnected
+          ? "rgba(220, 130, 255, 0.3)"
+          : "rgba(30, 100, 180, 0.3)";
+        ctx.lineWidth = 0.5;
+
+        // Left boundary
+        ctx.beginPath();
+        ctx.moveTo(startX, 0);
+        ctx.lineTo(startX, canvas.height);
+        ctx.stroke();
+
+        // Right boundary
+        ctx.beginPath();
+        ctx.moveTo(endX, 0);
+        ctx.lineTo(endX, canvas.height);
+        ctx.stroke();
+      }
+
+      // Draw "NOW" timestamp indicator
+      ctx.fillStyle = "rgba(180, 200, 255, 0.8)";
+      ctx.font = "10px monospace";
+      ctx.textAlign = "right"; // Right align text
+      ctx.fillText("NOW", canvas.width - 2, 10);
+      ctx.textAlign = "left"; // Reset text alignment
+
+      // Draw vector timeline (amber/gold)
+      ctx.strokeStyle = mindMirrorConnected
+        ? "rgba(220, 130, 255, 0.8)" // Brighter, more vibrant purple for mind mirror
+        : "rgba(255, 180, 50, 0.7)"; // Default amber - increased opacity for consistency
+      ctx.lineWidth = mindMirrorConnected ? 1.8 : 1.5; // Slightly thicker line when connected
+
+      // Draw vector timeline using guaranteed full-width data
+      ctx.beginPath();
+
+      // Always start from left edge (oldest) to right edge (newest)
+      for (let i = 0; i < fullWidthData.length; i++) {
+        const point = fullWidthData[i];
+        const x = point.x;
+        const y = (1.0 - point.vectorValue) * canvas.height;
+
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+      ctx.stroke();
+
+      // Draw quantum data timeline (blue/purple)
+      ctx.strokeStyle = mindMirrorConnected
+        ? "rgba(240, 150, 255, 0.95)" // More vibrant purple when connected
+        : "rgba(120, 200, 255, 0.9)"; // Brighter blue for better visibility in regular mode
+      ctx.lineWidth = mindMirrorConnected ? 2.2 : 2.0; // Slightly thicker when connected
+
+      // Draw main data timeline using guaranteed full-width data
+      ctx.beginPath();
+
+      // Use a bezier curve for smoother line
+      let previousX = -1;
+      let previousY = -1;
+
+      // Always start from left edge (oldest) to right edge (newest)
+      for (let i = 0; i < fullWidthData.length; i++) {
+        const point = fullWidthData[i];
+        const x = point.x;
+        const y = (1.0 - point.value) * canvas.height;
+
+        if (i === 0) {
+          ctx.moveTo(x, y);
+          previousX = x;
+          previousY = y;
+        } else {
+          // Use a slight curve between points for more natural flow
+          // This creates a more organic, continuous line
+          const cpx1 = previousX + (x - previousX) * 0.5;
+          const cpy1 = previousY;
+          const cpx2 = x - (x - previousX) * 0.5;
+          const cpy2 = y;
+
+          // For very close points, just use a straight line
+          if (x - previousX < 3) {
+            ctx.lineTo(x, y);
+          } else {
+            // Use bezier curve for smoother transitions
+            ctx.bezierCurveTo(cpx1, cpy1, cpx2, cpy2, x, y);
+          }
+
+          previousX = x;
+          previousY = y;
+        }
+
+        // Draw markers for observed data points (white dots)
+        if (
+          point.observed ||
+          i %
+            Math.max(
+              1,
+              Math.floor(dotStepSize / (mindMirrorConnected ? 3 : 4)),
+            ) ===
+            0
+        ) {
+          const distanceFromEdge = Math.min(i, fullWidthData.length - i - 1);
+
+          // Determine if point is in observation window for highlighting
+          const isInObservationWindow =
+            observationWindow.active &&
+            point.x >= observationWindow.fadeInStart &&
+            point.x <= observationWindow.fadeOutEnd;
+
+          // Calculate fade factor based on distance from center
+          let fadeFactor = 1.0;
+          if (isInObservationWindow && observationWindow.center) {
+            const distFromCenter = Math.abs(point.x - observationWindow.center);
+            const maxDist =
+              (observationWindow.fadeOutEnd - observationWindow.fadeInStart) /
+              2;
+            fadeFactor = 1.0 - Math.min(1.0, distFromCenter / maxDist) * 0.3;
+          }
+
+          // IMPORTANT: Use similar opacity values for both states to maintain consistency
+          const edgeFactor = distanceFromEdge < 10 ? 1.0 : 0.95;
+          const midpointFactor = distanceFromEdge < numPoints / 4 ? 0.95 : 0.9;
+
+          // Only slight difference in opacity between Mind Mirror and regular state
+          let dotOpacity = mindMirrorConnected
+            ? Math.max(edgeFactor, midpointFactor)
+            : Math.max(edgeFactor - 0.05, midpointFactor - 0.05);
+
+          // Boost opacity slightly for observed points
+          if (isInObservationWindow) {
+            dotOpacity = Math.min(1.0, dotOpacity * fadeFactor * 1.2);
+          }
+
+          // Colors still differ based on Mind Mirror state, but opacity and size are more consistent
+          ctx.fillStyle = mindMirrorConnected
+            ? `rgba(240, 160, 255, ${dotOpacity})` // Brighter purple dots
+            : `rgba(200, 225, 255, ${dotOpacity})`; // Brighter white-blue for better visibility
+
+          ctx.beginPath();
+
+          // Use same dot sizing regardless of Mind Mirror state
+          // Slightly larger dots in observation window
+          const baseDotSize = mindMirrorConnected
+            ? distanceFromEdge < 10
+              ? 3.0
+              : distanceFromEdge < numPoints / 4
+                ? 2.5
+                : 2.2 // Larger dots when connected
+            : distanceFromEdge < 10
+              ? 2.8
+              : distanceFromEdge < numPoints / 4
+                ? 2.3
+                : 2.0; // Standard dots when not connected
+          const dotSize = isInObservationWindow
+            ? baseDotSize * (1.0 + (fadeFactor - 1.0) * 0.5)
+            : baseDotSize;
+
+          ctx.arc(x, y, dotSize, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // Finish drawing the curve
+      ctx.stroke();
+    } catch (error) {
+      console.error("Error in drawCanvas:", error);
+      emergencyDraw();
+    }
+  }, [mindMirrorConnected]);
+
+  // Wrap the functions in useCallback to avoid unnecessary recreation
+  const handleVisibilityChange = useCallback(() => {
+    // ... existing code ...
+  }, [createCanvas, updateData]);
+
+  // Fix dependencies in useEffect hooks
+  useEffect(() => {
+    const updateInterval = setInterval(() => {
+      updateData();
+      drawCanvas();
+    }, 100);
+
+    return () => clearInterval(updateInterval);
+  }, [updateData, drawCanvas]);
+
+  // Use proper dependencies in useEffect
+  useEffect(() => {
+    // Create canvas if it doesn't exist
+    if (!canvasRef.current) {
+      createCanvas();
+    }
+
+    // Set up event listeners
+    window.addEventListener("resize", updateCanvasSize);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    // Do initial update
+    updateData();
+    drawCanvas();
+
+    return () => {
+      window.removeEventListener("resize", updateCanvasSize);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [
+    createCanvas,
+    updateData,
+    drawCanvas,
+    updateCanvasSize,
+    handleVisibilityChange,
+  ]);
+
+  // ... existing code ...
+
+  // MODIFIED: For Mind Mirror connection, only adjust the quantum canvas - not the entire UI
+  // This keeps the same layout and just changes the visualization colors
+  return (
+    <div className="real-time-data-container">
+      <div className="sensor-container">
+        <SensorItem
+          label="Neural Activity"
+          valueProp="neuralActivity"
+          sensorValue={sensorDataRef.current.neuralActivity}
+          maxValue={100}
+          isMindMirrorConnected={mindMirrorConnected}
+        />
+        <SensorItem
+          label="Perception Shift"
+          valueProp="perceptionShift"
+          sensorValue={sensorDataRef.current.perceptionShift}
+          maxValue={100}
+          isMindMirrorConnected={mindMirrorConnected}
+        />
+        <SensorItem
+          label="Reality Coherence"
+          valueProp="realityCoherence"
+          sensorValue={sensorDataRef.current.realityCoherence}
+          maxValue={100}
+          isMindMirrorConnected={mindMirrorConnected}
+        />
+        <SensorItem
+          label="Temporal Sync"
+          valueProp="temporalSync"
+          sensorValue={sensorDataRef.current.temporalSync}
+          maxValue={100}
+          isMindMirrorConnected={mindMirrorConnected}
+        />
+        <SensorItem
+          label="Cognitive Dissonance"
+          valueProp="cognitiveDissonance"
+          sensorValue={sensorDataRef.current.cognitiveDissonance}
+          maxValue={100}
+          isMindMirrorConnected={mindMirrorConnected}
+        />
+        <SensorItem
+          label="Quantum Entanglement"
+          valueProp="quantumEntanglement"
+          sensorValue={sensorDataRef.current.quantumEntanglement}
+          maxValue={100}
+          isMindMirrorConnected={mindMirrorConnected}
+        />
+        <SensorItem
+          label="Reality Vector"
+          valueProp="realityVector"
+          sensorValue={sensorDataRef.current.realityVector}
+          maxValue={100}
+          isMindMirrorConnected={mindMirrorConnected}
+        />
+      </div>
+
+      <div className="canvas-container" ref={canvasContainerRef}>
+        <canvas
+          ref={canvasRef}
+          width={0}
+          height={0}
+          className={mindMirrorConnected ? "mind-mirror-connected" : ""}
+        />
+      </div>
+    </div>
+  );
+};
+
+export default RealTimeData;
