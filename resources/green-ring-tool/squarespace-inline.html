@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Agent Halo Forge</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #05010f;
+        --bg-secondary: rgba(14, 0, 40, 0.9);
+        --accent: #1cff9b;
+        --accent-strong: #3cffea;
+        --text-primary: #f1f6ff;
+        --text-secondary: rgba(241, 246, 255, 0.7);
+        --danger: #ff4f6d;
+        font-family: "Orbitron", "Rajdhani", "Exo", "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: radial-gradient(circle at 20% 20%, rgba(28, 255, 155, 0.25), transparent 45%),
+          radial-gradient(circle at 80% 0%, rgba(60, 255, 234, 0.25), transparent 55%),
+          var(--bg);
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2.5rem 1.25rem;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .glow-grid {
+        position: absolute;
+        inset: 0;
+        background-image: linear-gradient(
+            rgba(28, 255, 155, 0.06) 1px,
+            transparent 1px
+          ),
+          linear-gradient(90deg, rgba(60, 255, 234, 0.04) 1px, transparent 1px);
+        background-size: 140px 140px;
+        mix-blend-mode: screen;
+        pointer-events: none;
+        animation: pulse 16s infinite linear;
+      }
+
+      @keyframes pulse {
+        from {
+          transform: translate3d(0, 0, 0);
+        }
+        to {
+          transform: translate3d(-70px, -70px, 0);
+        }
+      }
+
+      .app-shell {
+        width: min(1100px, 100%);
+        background: linear-gradient(140deg, rgba(12, 0, 32, 0.9), rgba(12, 12, 40, 0.65));
+        border: 1px solid rgba(60, 255, 234, 0.25);
+        border-radius: 22px;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), 0 0 40px rgba(28, 255, 155, 0.15);
+        padding: 2.5rem;
+        backdrop-filter: blur(18px);
+        position: relative;
+      }
+
+      .app-shell::after {
+        content: "";
+        position: absolute;
+        inset: 20px;
+        border: 1px solid rgba(28, 255, 155, 0.2);
+        border-radius: 16px;
+        pointer-events: none;
+      }
+
+      .app-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        position: relative;
+        z-index: 1;
+      }
+
+      .title {
+        font-size: clamp(2rem, 4vw, 3rem);
+        letter-spacing: 0.3rem;
+        text-transform: uppercase;
+        margin: 0 0 0.5rem;
+        color: var(--accent);
+        text-shadow: 0 0 16px rgba(28, 255, 155, 0.55), 0 0 32px rgba(60, 255, 234, 0.35);
+      }
+
+      .subtitle {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 1rem;
+        line-height: 1.6;
+      }
+
+      .workspace {
+        display: grid;
+        gap: 2rem;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      }
+
+      .panel {
+        background: rgba(5, 0, 20, 0.75);
+        border: 1px solid rgba(60, 255, 234, 0.15);
+        border-radius: 18px;
+        padding: 1.75rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        position: relative;
+      }
+
+      .panel::before {
+        content: "";
+        position: absolute;
+        inset: 12px;
+        border: 1px solid rgba(28, 255, 155, 0.15);
+        border-radius: 12px;
+        pointer-events: none;
+      }
+
+      .upload-zone {
+        border: 2px dashed rgba(60, 255, 234, 0.4);
+        border-radius: 16px;
+        padding: 2rem 1.5rem;
+        text-align: center;
+        color: var(--text-secondary);
+        display: grid;
+        gap: 0.65rem;
+        cursor: pointer;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+      }
+
+      .upload-zone:hover,
+      .upload-zone:focus-within,
+      .upload-zone.dragover {
+        border-color: var(--accent);
+        box-shadow: 0 0 24px rgba(28, 255, 155, 0.4);
+        transform: translateY(-2px);
+      }
+
+      .upload-instructions {
+        font-size: 1.1rem;
+        letter-spacing: 0.08em;
+      }
+
+      .upload-meta {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+      }
+
+      .controls,
+      .download-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        align-items: center;
+      }
+
+      .range-label,
+      .select-label {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-size: 0.78rem;
+        color: var(--text-secondary);
+      }
+
+      input[type="range"] {
+        flex: 1;
+        appearance: none;
+        height: 6px;
+        border-radius: 999px;
+        background: rgba(241, 246, 255, 0.1);
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 16px rgba(28, 255, 155, 0.5);
+      }
+
+      input[type="range"]::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--accent);
+        border: none;
+        box-shadow: 0 0 16px rgba(28, 255, 155, 0.5);
+      }
+
+      .btn {
+        padding: 0.75rem 1.4rem;
+        border-radius: 999px;
+        border: 1px solid rgba(60, 255, 234, 0.4);
+        background: rgba(5, 0, 20, 0.6);
+        color: var(--text-primary);
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        font-size: 0.78rem;
+        cursor: pointer;
+        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+      }
+
+      .btn:disabled {
+        cursor: not-allowed;
+        opacity: 0.4;
+        border-color: rgba(241, 246, 255, 0.1);
+      }
+
+      .btn:not(:disabled):hover,
+      .btn:not(:disabled):focus-visible {
+        transform: translateY(-2px);
+        border-color: var(--accent);
+        box-shadow: 0 0 18px rgba(28, 255, 155, 0.45);
+      }
+
+      .btn--primary {
+        background: linear-gradient(120deg, rgba(28, 255, 155, 0.9), rgba(60, 255, 234, 0.85));
+        color: #051014;
+        border-color: transparent;
+        text-shadow: none;
+      }
+
+      .canvas-frame {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        border-radius: 18px;
+        overflow: hidden;
+        background: radial-gradient(circle, rgba(28, 255, 155, 0.12), transparent 70%),
+          rgba(5, 0, 20, 0.85);
+        border: 1px solid rgba(60, 255, 234, 0.15);
+        box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.6);
+      }
+
+      #avatar-canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+        filter: saturate(1.05) contrast(1.05);
+      }
+
+      #ring-overlay {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        pointer-events: none;
+        filter: drop-shadow(0 0 30px rgba(28, 255, 155, 0.45));
+        mix-blend-mode: screen;
+      }
+
+      .app-footer {
+        margin-top: 2.5rem;
+        text-align: center;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        letter-spacing: 0.08em;
+      }
+
+      @media (max-width: 680px) {
+        body {
+          padding: 1.5rem 1rem;
+        }
+        .app-shell {
+          padding: 1.75rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="glow-grid"></div>
+    <main class="app-shell">
+      <header class="app-header">
+        <h1 class="title">Agent Halo Forge</h1>
+        <p class="subtitle">
+          Upload your portrait, align it inside the calibration frame, and export an
+          official neon halo avatar in seconds.
+        </p>
+      </header>
+
+      <section class="workspace">
+        <div class="panel panel--upload" id="upload-panel">
+          <label for="file-input" class="upload-zone" id="drop-zone">
+            <span class="upload-instructions">
+              <strong>Drop</strong> an image or <strong>browse</strong>
+            </span>
+            <span class="upload-meta">PNG or JPG · Max 5&nbsp;MB · 512px+</span>
+            <input type="file" id="file-input" accept="image/png, image/jpeg" hidden />
+          </label>
+          <div class="controls" aria-live="polite">
+            <button class="btn" id="reset-btn" type="button" disabled>Reset</button>
+            <label class="range-label">
+              Zoom
+              <input type="range" id="zoom-range" min="0.5" max="3" step="0.01" value="1" disabled />
+            </label>
+          </div>
+        </div>
+
+        <div class="panel panel--canvas">
+          <div class="canvas-frame">
+            <canvas id="avatar-canvas" width="1024" height="1024" role="img" aria-label="Avatar preview"></canvas>
+            <!-- Replace the src below with your hosted halo asset URL -->
+            <img id="ring-overlay" src="green-ring.png" alt="Neon halo overlay" />
+          </div>
+          <div class="download-controls">
+            <label class="select-label">
+              Export size
+              <select id="size-select" disabled>
+                <option value="512">512 × 512</option>
+                <option value="768">768 × 768</option>
+                <option value="1024" selected>1024 × 1024</option>
+              </select>
+            </label>
+            <button class="btn btn--primary" id="download-png" type="button" disabled>
+              Download PNG
+            </button>
+            <button class="btn" id="download-jpg" type="button" disabled>
+              Download JPG
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <footer class="app-footer">
+        <p>
+          Tip: Keep your subject centered and scaled so their face sits comfortably inside the ring. This tool processes
+          everything locally—your uploads never leave the page.
+        </p>
+      </footer>
+    </main>
+
+    <script>
+      (function () {
+        const fileInput = document.getElementById("file-input");
+        const dropZone = document.getElementById("drop-zone");
+        const resetBtn = document.getElementById("reset-btn");
+        const zoomRange = document.getElementById("zoom-range");
+        const sizeSelect = document.getElementById("size-select");
+        const downloadPngBtn = document.getElementById("download-png");
+        const downloadJpgBtn = document.getElementById("download-jpg");
+        const canvas = document.getElementById("avatar-canvas");
+        const ctx = canvas.getContext("2d");
+        const ringOverlay = document.getElementById("ring-overlay");
+
+        const MAX_FILE_SIZE_MB = 5;
+        const MIN_DIMENSION = 512;
+
+        const state = {
+          image: null,
+          baseScale: 1,
+          zoom: 1,
+          offset: { x: 0, y: 0 },
+          pointer: {
+            active: false,
+            start: { x: 0, y: 0 },
+            offset: { x: 0, y: 0 },
+          },
+        };
+
+        const ringBuffer = document.createElement("canvas");
+        const ringCtx = ringBuffer.getContext("2d");
+        let ringReady = false;
+
+        function prepareRing() {
+          if (!ringOverlay.complete) {
+            ringOverlay.addEventListener("load", prepareRing, { once: true });
+            return;
+          }
+
+          ringBuffer.width = ringOverlay.naturalWidth || canvas.width;
+          ringBuffer.height = ringOverlay.naturalHeight || canvas.height;
+          ringCtx.clearRect(0, 0, ringBuffer.width, ringBuffer.height);
+          ringCtx.drawImage(ringOverlay, 0, 0, ringBuffer.width, ringBuffer.height);
+          ringReady = true;
+        }
+
+        prepareRing();
+
+        drawPlaceholder();
+
+        function drawPlaceholder() {
+          const { width, height } = canvas;
+          ctx.clearRect(0, 0, width, height);
+
+          const gridSize = 64;
+          ctx.save();
+          ctx.fillStyle = "rgba(15, 8, 40, 0.85)";
+          ctx.fillRect(0, 0, width, height);
+          ctx.globalAlpha = 0.4;
+          ctx.fillStyle = "#1cff9b";
+          for (let x = 0; x < width; x += gridSize) {
+            for (let y = 0; y < height; y += gridSize) {
+              if (((x + y) / gridSize) % 2 === 0) {
+                ctx.fillRect(x, y, gridSize, gridSize);
+              }
+            }
+          }
+          ctx.restore();
+
+          ctx.strokeStyle = "rgba(60, 255, 234, 0.45)";
+          ctx.lineWidth = 4;
+          ctx.setLineDash([18, 12]);
+          ctx.beginPath();
+          ctx.arc(width / 2, height / 2, width * 0.42, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.fillStyle = "rgba(241, 246, 255, 0.7)";
+          ctx.font = "600 28px 'Rajdhani', 'Segoe UI', sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("Awaiting upload", width / 2, height / 2 + 10);
+        }
+
+        function enableControls(enabled) {
+          resetBtn.disabled = !enabled;
+          zoomRange.disabled = !enabled;
+          sizeSelect.disabled = !enabled;
+          downloadPngBtn.disabled = !enabled;
+          downloadJpgBtn.disabled = !enabled;
+        }
+
+        function resetState() {
+          state.image = null;
+          state.baseScale = 1;
+          state.zoom = 1;
+          state.offset = { x: 0, y: 0 };
+          zoomRange.value = "1";
+          enableControls(false);
+          drawPlaceholder();
+        }
+
+        function handleFile(file) {
+          if (!file) return;
+
+          if (!/image\/png|image\/jpeg/.test(file.type)) {
+            announce("Unsupported file. Please choose a PNG or JPG.");
+            return;
+          }
+
+          if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+            announce(`File is larger than ${MAX_FILE_SIZE_MB}MB.`);
+            return;
+          }
+
+          const image = new Image();
+          image.onload = () => {
+            if (image.width < MIN_DIMENSION || image.height < MIN_DIMENSION) {
+              announce(`Image must be at least ${MIN_DIMENSION}px on each side.`);
+              return;
+            }
+
+            state.image = image;
+            computeBaseScale();
+            state.zoom = 1;
+            zoomRange.value = "1";
+            state.offset = { x: 0, y: 0 };
+            enableControls(true);
+            draw();
+            announce("Image loaded. Use zoom and drag to align inside the halo.");
+          };
+          image.onerror = () => announce("Unable to read that image. Try a different file.");
+
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            image.src = event.target.result;
+          };
+          reader.readAsDataURL(file);
+        }
+
+        function computeBaseScale() {
+          if (!state.image) return;
+          const scale = Math.max(canvas.width / state.image.width, canvas.height / state.image.height);
+          state.baseScale = scale;
+        }
+
+        function clampOffset() {
+          if (!state.image) return;
+          const scale = state.baseScale * state.zoom;
+          const drawWidth = state.image.width * scale;
+          const drawHeight = state.image.height * scale;
+          const maxOffsetX = Math.max(0, (drawWidth - canvas.width) / 2);
+          const maxOffsetY = Math.max(0, (drawHeight - canvas.height) / 2);
+          state.offset.x = Math.min(maxOffsetX, Math.max(-maxOffsetX, state.offset.x));
+          state.offset.y = Math.min(maxOffsetY, Math.max(-maxOffsetY, state.offset.y));
+        }
+
+        function draw() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          if (!state.image) {
+            drawPlaceholder();
+            return;
+          }
+
+          const scale = state.baseScale * state.zoom;
+          const drawWidth = state.image.width * scale;
+          const drawHeight = state.image.height * scale;
+          const drawX = canvas.width / 2 - drawWidth / 2 + state.offset.x;
+          const drawY = canvas.height / 2 - drawHeight / 2 + state.offset.y;
+
+          ctx.save();
+          ctx.fillStyle = "rgba(5, 0, 20, 0.9)";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(state.image, drawX, drawY, drawWidth, drawHeight);
+          ctx.restore();
+        }
+
+        function announce(message) {
+          dropZone.setAttribute("data-status", message);
+          dropZone.title = message;
+        }
+
+        function onPointerDown(event) {
+          if (!state.image) return;
+          state.pointer.active = true;
+          state.pointer.start = { x: event.clientX, y: event.clientY };
+          state.pointer.offset = { ...state.offset };
+          canvas.setPointerCapture(event.pointerId);
+        }
+
+        function onPointerMove(event) {
+          if (!state.pointer.active) return;
+          const dx = event.clientX - state.pointer.start.x;
+          const dy = event.clientY - state.pointer.start.y;
+          state.offset.x = state.pointer.offset.x + dx;
+          state.offset.y = state.pointer.offset.y + dy;
+          clampOffset();
+          draw();
+        }
+
+        function onPointerUp(event) {
+          if (!state.pointer.active) return;
+          state.pointer.active = false;
+          canvas.releasePointerCapture(event.pointerId);
+        }
+
+        function onWheel(event) {
+          if (!state.image) return;
+          event.preventDefault();
+          const delta = event.deltaY;
+          const zoomChange = delta > 0 ? -0.05 : 0.05;
+          const newZoom = Math.min(3, Math.max(0.5, state.zoom + zoomChange));
+          state.zoom = newZoom;
+          zoomRange.value = newZoom.toFixed(2);
+          clampOffset();
+          draw();
+        }
+
+        function exportImage(type) {
+          if (!state.image || !ringReady) return;
+          const size = Number(sizeSelect.value);
+          const output = document.createElement("canvas");
+          const outputCtx = output.getContext("2d");
+          output.width = size;
+          output.height = size;
+
+          outputCtx.fillStyle = "rgba(5, 0, 20, 1)";
+          outputCtx.fillRect(0, 0, size, size);
+
+          const scale = state.baseScale * state.zoom * (size / canvas.width);
+          const drawWidth = state.image.width * scale;
+          const drawHeight = state.image.height * scale;
+          const drawX = size / 2 - drawWidth / 2 + state.offset.x * (size / canvas.width);
+          const drawY = size / 2 - drawHeight / 2 + state.offset.y * (size / canvas.height);
+
+          outputCtx.drawImage(state.image, drawX, drawY, drawWidth, drawHeight);
+          outputCtx.drawImage(ringBuffer, 0, 0, size, size);
+
+          const mime = type === "png" ? "image/png" : "image/jpeg";
+          const quality = type === "png" ? undefined : 0.92;
+          output.toBlob((blob) => {
+            if (!blob) return;
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `agent-halo-${size}.${type}`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+          }, mime, quality);
+        }
+
+        fileInput.addEventListener("change", (event) => {
+          const [file] = event.target.files || [];
+          handleFile(file);
+        });
+
+        resetBtn.addEventListener("click", resetState);
+        zoomRange.addEventListener("input", (event) => {
+          state.zoom = Number(event.target.value);
+          clampOffset();
+          draw();
+        });
+
+        downloadPngBtn.addEventListener("click", () => exportImage("png"));
+        downloadJpgBtn.addEventListener("click", () => exportImage("jpg"));
+
+        sizeSelect.addEventListener("change", () => {
+          if (state.image) {
+            draw();
+          }
+        });
+
+        canvas.addEventListener("pointerdown", onPointerDown);
+        canvas.addEventListener("pointermove", onPointerMove);
+        canvas.addEventListener("pointerup", onPointerUp);
+        canvas.addEventListener("pointercancel", onPointerUp);
+        canvas.addEventListener("wheel", onWheel, { passive: false });
+
+        ["dragenter", "dragover"].forEach((type) => {
+          dropZone.addEventListener(type, (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            dropZone.classList.add("dragover");
+          });
+        });
+
+        ["dragleave", "drop"].forEach((type) => {
+          dropZone.addEventListener(type, (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            dropZone.classList.remove("dragover");
+          });
+        });
+
+        dropZone.addEventListener("drop", (event) => {
+          const [file] = event.dataTransfer.files || [];
+          handleFile(file);
+        });
+
+        dropZone.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            fileInput.click();
+          }
+        });
+
+        dropZone.setAttribute("tabindex", "0");
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Agent Halo Forge</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="glow-grid"></div>
+    <main class="app-shell">
+      <header class="app-header">
+        <h1 class="title">Agent Halo Forge</h1>
+        <p class="subtitle">
+          Upload your portrait, align it inside the calibration frame, and export an
+          official neon halo avatar in seconds.
+        </p>
+      </header>
+
+      <section class="workspace">
+        <div class="panel panel--upload" id="upload-panel">
+          <label for="file-input" class="upload-zone" id="drop-zone">
+            <span class="upload-instructions">
+              <strong>Drop</strong> an image or <strong>browse</strong>
+            </span>
+            <span class="upload-meta">PNG or JPG · Max 5&nbsp;MB · 512px+</span>
+            <input type="file" id="file-input" accept="image/png, image/jpeg" hidden />
+          </label>
+          <div class="controls" aria-live="polite">
+            <button class="btn" id="reset-btn" type="button" disabled>Reset</button>
+            <label class="range-label">
+              Zoom
+              <input type="range" id="zoom-range" min="0.5" max="3" step="0.01" value="1" disabled />
+            </label>
+          </div>
+        </div>
+
+        <div class="panel panel--canvas">
+          <div class="canvas-frame">
+            <canvas id="avatar-canvas" width="1024" height="1024" role="img" aria-label="Avatar preview"></canvas>
+            <img id="ring-overlay" src="green-ring.png" alt="Neon halo overlay" />
+          </div>
+          <div class="download-controls">
+            <label class="select-label">
+              Export size
+              <select id="size-select" disabled>
+                <option value="512">512 × 512</option>
+                <option value="768">768 × 768</option>
+                <option value="1024" selected>1024 × 1024</option>
+              </select>
+            </label>
+            <button class="btn btn--primary" id="download-png" type="button" disabled>
+              Download PNG
+            </button>
+            <button class="btn" id="download-jpg" type="button" disabled>
+              Download JPG
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <footer class="app-footer">
+        <p>
+          Tip: Keep your subject centered and scaled so their face sits comfortably inside the ring. This tool processes
+          everything locally—your uploads never leave the page.
+        </p>
+      </footer>
+    </main>
+    <script src="script.js"></script>
+  </body>
+</html>
