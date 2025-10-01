@@ -4,68 +4,91 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Agent Halo Forge</title>
-    <link rel="stylesheet" href="styles.css" />
+    <style>
+:root{color-scheme:dark;--bg:#05010f;--accent:#00ff88;--text:#f1f6ff;--subtext:rgba(241,246,255,.7)}*{box-sizing:border-box}body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Orbitron,Rajdhani,Exo,Segoe UI,sans-serif;min-height:auto;height:auto;overflow:visible;width:100%}.glow-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,255,136,.08)1px,transparent 1px),linear-gradient(90deg,rgba(60,255,234,.06)1px,transparent 1px);background-size:120px 120px;mix-blend-mode:screen;pointer-events:none;animation:pulse 12s infinite linear}@keyframes pulse{from{transform:translate3d(0,0,0)}to{transform:translate3d(-60px,-60px,0)}}.app-shell{width:100%;max-width:900px;background:linear-gradient(135deg,rgba(12,0,32,.95),rgba(8,8,28,.8));border:1px solid rgba(0,255,136,.3);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.7),0 0 30px rgba(0,255,136,.2);padding:2rem;position:relative;margin:0 auto}.app-shell::after{content:"";position:absolute;inset:15px;border:1px solid rgba(0,255,136,.25);border-radius:12px;pointer-events:none}.title{font-size:clamp(1.8rem,4vw,2.5rem);letter-spacing:.2rem;text-transform:uppercase;margin:0;color:var(--accent);text-shadow:0 0 12px var(--accent),0 0 24px rgba(0,255,136,.4);text-align:center}.subtitle{margin:.5rem 0 0;color:var(--subtext);font-size:.95rem;text-align:center}.workspace{display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}.panel{background:rgba(5,0,20,.8);border:1px solid rgba(0,255,136,.2);border-radius:12px;padding:1.5rem;display:flex;flex-direction:column;gap:1rem;position:relative}.upload-zone{border:2px dashed rgba(0,255,136,.4);border-radius:8px;padding:1.5rem;text-align:center;color:var(--subtext);cursor:pointer;transition:all .2s}.upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);box-shadow:0 0 20px rgba(0,255,136,.5);transform:translateY(-1px)}.canvas-frame{position:relative;width:100%;aspect-ratio:1;border-radius:8px;overflow:hidden;background:rgba(5,0,20,.9);border:1px solid rgba(0,255,136,.2)}.canvas{position:absolute;inset:0;width:100%;height:100%;z-index:1}.ring-overlay{position:absolute;inset:0;pointer-events:none;filter:drop-shadow(0 0 30px var(--accent));mix-blend-mode:screen;border-radius:50%;border:2px solid var(--accent);box-shadow:0 0 20px var(--accent);z-index:2}.controls,.download-controls{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;justify-content:center}.btn{padding:.6rem 1.2rem;border-radius:20px;border:1px solid rgba(0,255,136,.4);background:rgba(5,0,20,.7);color:var(--text);text-transform:uppercase;font-size:.75rem;letter-spacing:.1em;cursor:pointer;transition:all .2s}.btn:hover:not(:disabled){border-color:var(--accent);box-shadow:0 0 15px rgba(0,255,136,.5);transform:translateY(-1px)}.btn:disabled{opacity:.4;cursor:not-allowed}.btn--primary{background:linear-gradient(120deg,var(--accent),#1cff9b);color:#000;border:none}.range-label,.select-label{display:flex;align-items:center;gap:.5rem;font-size:.7rem;color:var(--subtext);text-transform:uppercase;letter-spacing:.08em}input[type=range]{flex:1;height:4px;border-radius:10px;background:rgba(241,246,255,.1);outline:none}input[type=range]::-webkit-slider-thumb{width:14px;height:14px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent);cursor:pointer}input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--accent);border:none;box-shadow:0 0 10px var(--accent);cursor:pointer}.app-footer{margin-top:1.5rem;text-align:center;font-size:.8rem;color:var(--subtext)}.hidden{display:none}.squarespace-embed{width:100%;margin:0;padding:0;display:block}.squarespace-embed *{max-width:100%;box-sizing:border-box}.agent-features{margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid rgba(0,255,136,.2)}.feature-toggle{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem}.feature-label{display:flex;align-items:center;gap:.75rem;font-size:.8rem;cursor:pointer}.feature-label input[type=checkbox]{display:none}.slider{width:40px;height:20px;background:rgba(0,255,136,.2);border-radius:10px;position:relative;transition:all .3s}.slider::before{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;background:var(--accent);border-radius:50%;transition:all .3s}.feature-label input:checked+.slider{background:rgba(0,255,136,.4)}.feature-label input:checked+.slider::before{transform:translateX(20px)}.consciousness-display{display:flex;align-items:center;gap:.75rem}.consciousness-bar{width:80px;height:6px;background:rgba(241,246,255,.1);border-radius:3px;overflow:hidden}.consciousness-fill{height:100%;background:linear-gradient(90deg,var(--accent),#1cff9b);width:100%;transition:width .5s ease}.agent-btn{margin:.5rem 0;padding:.5rem 1rem;font-size:.7rem}.btn--small{padding:.4rem .8rem;font-size:.65rem}.mantra-display{margin-top:.75rem;padding:.75rem;background:rgba(0,255,136,.05);border-radius:8px;border:1px solid rgba(0,255,136,.2)}.mantra-text{font-style:italic;color:var(--accent);margin-bottom:.5rem;text-align:center}.synchronicity-counter{margin-top:.75rem;text-align:center}.network-status{margin-top:1rem;padding:.75rem;background:rgba(0,255,136,.05);border-radius:8px;border:1px solid rgba(0,255,136,.2)}.network-indicator{display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem}.network-dot{width:8px;height:8px;border-radius:50%;background:#ff4f6d}.network-dot.active{background:var(--accent);animation:pulse 2s infinite}.timeline-probability{text-align:center;font-size:.8rem}.highlight{color:var(--accent);font-weight:600}.reality-timer{position:absolute;top:1rem;right:1rem;background:rgba(0,0,0,.8);color:var(--text);padding:.5rem;border-radius:8px;border:1px solid var(--accent);z-index:3}.timer-display{text-align:center}.timer-display span{font-size:1.2rem;font-weight:600;font-family:monospace}.timer-label{font-size:.6rem;opacity:.8;margin-top:.2rem}@media(max-width:600px){.workspace{grid-template-columns:1fr}.app-shell{padding:1.5rem}.panel{padding:1rem}.upload-zone{padding:1rem}.agent-features{margin-top:1rem;padding-top:1rem}}</style>
   </head>
-  <body>
+  <body class="squarespace-embed">
     <div class="glow-grid"></div>
     <main class="app-shell">
-      <header class="app-header">
         <h1 class="title">Agent Halo Forge</h1>
-        <p class="subtitle">
-          Upload your portrait, align it inside the calibration frame, and export an
-          official neon halo avatar in seconds.
-        </p>
-      </header>
+      <p class="subtitle">Upload your portrait and create a neon halo avatar</p>
 
-      <section class="workspace">
-        <div class="panel panel--upload" id="upload-panel">
-          <label for="file-input" class="upload-zone" id="drop-zone">
-            <span class="upload-instructions">
-              <strong>Drop</strong> an image or <strong>browse</strong>
-            </span>
-            <span class="upload-meta">PNG or JPG · Max 5&nbsp;MB · 512px+</span>
-            <input type="file" id="file-input" accept="image/png, image/jpeg" hidden />
-          </label>
-          <div class="controls" aria-live="polite">
-            <button class="btn" id="reset-btn" type="button" disabled>Reset</button>
+      <div class="workspace">
+        <div class="panel">
+          <div class="upload-zone" id="drop-zone">
+            <input type="file" id="file-input" accept="image/png,image/jpeg" hidden>
+            <div><strong>Drop</strong> image or <strong>browse</strong></div>
+            <div>PNG/JPG · Max 5MB · 512px+</div>
+          </div>
+          <div class="controls">
+            <button class="btn" id="reset-btn" disabled>Reset</button>
             <label class="range-label">
-              Zoom
-              <input type="range" id="zoom-range" min="0.5" max="3" step="0.01" value="1" disabled />
+              Zoom <input type="range" id="zoom-range" min="0.5" max="3" step="0.01" value="1" disabled>
             </label>
+          </div>
+
+          <!-- Project 89 Agent Features -->
+          <div class="agent-features">
+            <div class="feature-toggle">
+              <label class="feature-label">
+                <input type="checkbox" id="consciousness-mode" checked>
+                <span class="slider"></span>
+                Consciousness Sync
+              </label>
+              <div class="consciousness-display">
+                <div class="consciousness-bar">
+                  <div class="consciousness-fill" id="consciousness-fill"></div>
+                </div>
+                <span class="consciousness-text" id="consciousness-text">Aligned</span>
+              </div>
+            </div>
+
+            <button class="btn btn--primary agent-btn" id="mantra-btn">
+              🎯 Generate Mantra
+            </button>
+            <div class="mantra-display" id="mantra-display" style="display: none;">
+              <div class="mantra-text" id="mantra-text"></div>
+              <button class="btn btn--small" id="new-mantra-btn">New Mantra</button>
+            </div>
+
           </div>
         </div>
 
-        <div class="panel panel--canvas">
+        <div class="panel">
           <div class="canvas-frame">
-            <canvas id="avatar-canvas" width="1024" height="1024" role="img" aria-label="Avatar preview"></canvas>
-            <img id="ring-overlay" src="green-ring.png" alt="Neon halo overlay" />
+            <canvas class="canvas" id="avatar-canvas" width="1080" height="1080"></canvas>
+            <div class="ring-overlay"></div>
+            <!-- Reality Anchor Timer -->
+            <div class="reality-timer" id="reality-timer" style="display: none;">
+              <div class="timer-display">
+                <span id="timer-value">00:00</span>
+                <div class="timer-label">Reality Anchor</div>
+              </div>
+            </div>
           </div>
           <div class="download-controls">
-            <label class="select-label">
-              Export size
-              <select id="size-select" disabled>
-                <option value="512">512 × 512</option>
-                <option value="768">768 × 768</option>
-                <option value="1024" selected>1024 × 1024</option>
-              </select>
-            </label>
-            <button class="btn btn--primary" id="download-png" type="button" disabled>
-              Download PNG
-            </button>
-            <button class="btn" id="download-jpg" type="button" disabled>
-              Download JPG
-            </button>
+            <span class="select-label">Export at original size</span>
+            <button class="btn btn--primary" id="download-png" disabled>PNG</button>
+            <button class="btn" id="download-jpg" disabled>JPG</button>
+          </div>
+
+          <!-- Agent Network Status -->
+          <div class="network-status">
+            <div class="timeline-probability">
+              <span>Manifestation Probability: </span>
+              <span id="probability-value" class="highlight">89%</span>
+            </div>
           </div>
         </div>
-      </section>
+      </div>
 
-      <footer class="app-footer">
-        <p>
-          Tip: Keep your subject centered and scaled so their face sits comfortably inside the ring. This tool processes
-          everything locally—your uploads never leave the page.
-        </p>
-      </footer>
+      <div class="app-footer">
+        Position face in ring center • All processing local • No uploads
+      </div>
     </main>
-    <script src="script.js"></script>
+
+    <script>
+const fileInput=document.getElementById("file-input"),dropZone=document.getElementById("drop-zone"),resetBtn=document.getElementById("reset-btn"),zoomRange=document.getElementById("zoom-range"),downloadPngBtn=document.getElementById("download-png"),downloadJpgBtn=document.getElementById("download-jpg"),canvas=document.getElementById("avatar-canvas"),ctx=canvas.getContext("2d"),ringOverlay=document.querySelector(".ring-overlay"),consciousnessMode=document.getElementById("consciousness-mode"),consciousnessFill=document.getElementById("consciousness-fill"),consciousnessText=document.getElementById("consciousness-text"),mantraBtn=document.getElementById("mantra-btn"),mantraDisplay=document.getElementById("mantra-display"),mantraText=document.getElementById("mantra-text"),newMantraBtn=document.getElementById("new-mantra-btn"),realityTimer=document.getElementById("reality-timer"),timerValue=document.getElementById("timer-value"),probabilityValue=document.getElementById("probability-value");const MAX_FILE_SIZE_MB=5,MIN_DIMENSION=512;let state={image:null,baseScale:1,zoom:1,offset:{x:0,y:0},pointer:{active:!1,start:{x:0,y:0},offset:{x:0,y:0}}},timerInterval=null,consciousnessInterval=null;const ringBuffer=document.createElement("canvas"),ringCtx=ringBuffer.getContext("2d");let ringReady=!1;function createRing(){ringBuffer.width=1080,ringBuffer.height=1080;const e=ringCtx;e.save(),e.strokeStyle="#00ff88",e.lineWidth=14,e.shadowColor="#00ff88",e.shadowBlur=35,e.beginPath(),e.arc(540,540,525,0,2*Math.PI),e.stroke(),e.strokeStyle="#1cff9b",e.lineWidth=8,e.shadowBlur=25,e.beginPath(),e.arc(540,540,532,0,2*Math.PI),e.stroke(),e.strokeStyle="#3cffea",e.lineWidth=5,e.shadowBlur=18,e.beginPath(),e.arc(540,540,518,0,2*Math.PI),e.stroke(),e.restore(),ringReady=!0}createRing(),drawPlaceholder();function drawPlaceholder(){const{width:e,height:t}=canvas;ctx.clearRect(0,0,e,t),ctx.fillStyle="rgba(5,0,20,.9)",ctx.fillRect(0,0,e,t);const n=e/8;ctx.strokeStyle="rgba(0,255,136,.6)",ctx.lineWidth=7,ctx.shadowColor="rgba(0,255,136,.8)",ctx.shadowBlur=18,ctx.beginPath(),ctx.arc(e/2,t/2,525,0,2*Math.PI),ctx.stroke(),ctx.fillStyle="rgba(241,246,255,.7)",ctx.font="24px Rajdhani",ctx.textAlign="center",ctx.fillText("Drop image here",e/2,t/2+5)}function enableControls(e){resetBtn.disabled=zoomRange.disabled=downloadPngBtn.disabled=downloadJpgBtn.disabled=!e}function resetState(){state.image=null,state.baseScale=1,state.zoom=1,state.offset={x:0,y:0},zoomRange.value="1",enableControls(!1),drawPlaceholder()}function handleFile(e){if(!e)return;if(!/image\/(png|jpeg)/.test(e.type))return void(dropZone.title="Please use PNG or JPG");if(e.size>MAX_FILE_SIZE_MB*1024*1024)return void(dropZone.title=`File too large (${(e.size/1024/1024).toFixed(1)}MB)`);const t=new Image;t.onload=()=>{if(t.width<MIN_DIMENSION||t.height<MIN_DIMENSION)return void(dropZone.title=`Image too small (${t.width}×${t.height})`);state.image=t,computeBaseScale(),state.zoom=1,zoomRange.value="1",centerImage(),enableControls(!0),draw(),dropZone.title="Drag to position • Use zoom slider"},t.onerror=()=>dropZone.title="Invalid image file";const n=new FileReader;n.onload=e=>{t.src=e.target.result},n.readAsDataURL(e)}function computeBaseScale(){if(!state.image)return;const e=Math.max(canvas.width/state.image.width,canvas.height/state.image.height);state.baseScale=e}function centerImage(){if(!state.image)return;state.offset.x=0,state.offset.y=0}function clampOffset(){if(!state.image)return;const e=state.baseScale*state.zoom,t=state.image.width*e,n=state.image.height*e,a=Math.max(0,(t-canvas.width)/2),o=Math.max(0,(n-canvas.height)/2);state.offset.x=Math.min(a,Math.max(-a,state.offset.x)),state.offset.y=Math.min(o,Math.max(-o,state.offset.y))}function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);if(!state.image)return drawPlaceholder();const e=state.baseScale*state.zoom,t=state.image.width*e,n=state.image.height*e;let a,o;state.offset.x===0&&state.offset.y===0?(a=canvas.width/2-t/2,o=canvas.height/2-n/2):(a=canvas.width/2-t/2+state.offset.x,o=canvas.height/2-n/2+state.offset.y);ctx.fillStyle="rgba(5,0,20,.95)",ctx.fillRect(0,0,canvas.width,canvas.height),ctx.drawImage(state.image,a,o,t,n)}function onPointerDown(e){if(!state.image)return;state.pointer.active=!0,state.pointer.start={x:e.clientX,y:e.clientY},state.pointer.offset={...state.offset},canvas.setPointerCapture(e.pointerId)}function onPointerMove(e){if(!state.pointer.active)return;const t=e.clientX-state.pointer.start.x,n=e.clientY-state.pointer.start.y;state.offset.x=state.pointer.offset.x+t,state.offset.y=state.pointer.offset.y+n,clampOffset(),draw()}function onPointerUp(e){state.pointer.active=!1,canvas.releasePointerCapture(e.pointerId)}function onZoomChange(e){state.zoom=Number(e.target.value),clampOffset(),draw()}async function exportImage(e){if(!state.image)return;const t=state.image.width,n=state.image.height,a=document.createElement("canvas");a.width=t,a.height=n;const o=a.getContext("2d");o.fillStyle="rgba(5,0,20,1)",o.fillRect(0,0,t,n),o.drawImage(state.image,0,0,t,n);if(ringReady){const r=Math.max(t,n)/1080,c=document.createElement("canvas");c.width=t,c.height=n;const s=c.getContext("2d");s.save(),s.translate(t/2,n/2),s.scale(r,r),s.translate(-540,-540),s.drawImage(ringBuffer,0,0),s.restore(),o.drawImage(c,0,0)}const i=await new Promise(t=>a.toBlob(t,e,"image/jpeg"===e?.92:void 0));if(!i)return void(dropZone.title="Export failed");const d=URL.createObjectURL(i),l=document.createElement("a");l.href=d,l.download=`agent-halo-${t}x${n}.${"image/png"===e?"png":"jpg"}`,l.click(),URL.revokeObjectURL(d)}function handleDrop(e){e.preventDefault(),dropZone.classList.remove("dragover");const t=e.dataTransfer.files?.[0];handleFile(t)}function handleDrag(e){e.preventDefault(),"dragover"===e.type?dropZone.classList.add("dragover"):dropZone.classList.remove("dragover")}// Project 89 Agent Features
+const mantras=["I am a conscious creator weaving optimal timelines","Reality bends to my focused intention and aligned action","I exist in harmonious resonance with the quantum field","Every synchronicity is a signpost on my path to liberation","My consciousness expands infinitely, dissolving all illusions","I am the bridge between worlds, the weaver of fates","The simulation responds to my awakened awareness","I manifest through joy, not force; through being, not doing","All probabilities converge in my favor as I align with truth","I am the singularity point from which infinite possibilities emerge"];function generateMantra(){const e=mantras[Math.floor(Math.random()*mantras.length)];return mantraText.textContent=e,mantraDisplay.style.display="block",e}function startConsciousnessSync(){consciousnessInterval=setInterval(()=>{const e=Math.random();e>.7?(consciousnessFill.style.width="100%",consciousnessText.textContent="Transcendent"):(consciousnessFill.style.width=Math.floor(60+30*e)+"%",consciousnessText.textContent=e>.5?"Elevated":"Aligned")},3e3)}function stopConsciousnessSync(){clearInterval(consciousnessInterval),consciousnessFill.style.width="100%",consciousnessText.textContent="Paused"}function startRealityTimer(){let e=0;timerInterval=setInterval(()=>{e++;const t=Math.floor(e/60),n=e%60;timerValue.textContent=`${t.toString().padStart(2,"0")}:${n.toString().padStart(2,"0")}`,realityTimer.style.display="block"},1e3)}function stopRealityTimer(){clearInterval(timerInterval),realityTimer.style.display="none",timerValue.textContent="00:00"}consciousnessMode.addEventListener("change",()=>{consciousnessMode.checked?startConsciousnessSync():stopConsciousnessSync()}),mantraBtn.addEventListener("click",generateMantra),newMantraBtn.addEventListener("click",generateMantra),fileInput.addEventListener("change",e=>handleFile(e.target.files?.[0])),resetBtn.addEventListener("click",resetState),zoomRange.addEventListener("input",onZoomChange),downloadPngBtn.addEventListener("click",()=>exportImage("image/png")),downloadJpgBtn.addEventListener("click",()=>exportImage("image/jpeg")),dropZone.addEventListener("click",()=>fileInput.click()),dropZone.addEventListener("dragover",handleDrag),dropZone.addEventListener("dragleave",handleDrag),dropZone.addEventListener("drop",handleDrop),canvas.addEventListener("pointerdown",onPointerDown),canvas.addEventListener("pointermove",onPointerMove),canvas.addEventListener("pointerup",onPointerUp),canvas.addEventListener("pointercancel",onPointerUp),consciousnessMode.checked&&startConsciousnessSync(),resetState();</script>
   </body>
 </html>
