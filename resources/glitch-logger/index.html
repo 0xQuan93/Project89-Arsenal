@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Reality Glitch Logger</title>
+    <style>
+:root{color-scheme:dark;--bg:#05010f;--accent:#00ff88;--accent-alt:#3cffea;--text:#f1f6ff;--subtext:rgba(241,246,255,.7);--panel-bg:rgba(5,0,20,.8);--border:rgba(0,255,136,.2)}*{box-sizing:border-box;margin:0;padding:0}body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Rajdhani,Orbitron,Exo,'Segoe UI',sans-serif;min-height:100vh;overflow-x:hidden}.glow-grid{position:fixed;inset:0;background-image:linear-gradient(rgba(0,255,136,.08)1px,transparent 1px),linear-gradient(90deg,rgba(60,255,234,.06)1px,transparent 1px);background-size:120px 120px;mix-blend-mode:screen;pointer-events:none;animation:pulse 12s infinite linear;z-index:0}@keyframes pulse{from{transform:translate3d(0,0,0)}to{transform:translate3d(-60px,-60px,0)}}.app-shell{width:100%;max-width:1200px;background:linear-gradient(135deg,rgba(12,0,32,.95),rgba(8,8,28,.8));border:1px solid rgba(0,255,136,.3);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.7),0 0 30px rgba(0,255,136,.2);padding:2rem;position:relative;margin:2rem auto;z-index:1}.app-shell::after{content:"";position:absolute;inset:15px;border:1px solid rgba(0,255,136,.25);border-radius:12px;pointer-events:none}.title{font-size:clamp(1.8rem,4vw,2.5rem);letter-spacing:.2rem;text-transform:uppercase;margin:0 0 .5rem;color:var(--accent);text-shadow:0 0 12px var(--accent),0 0 24px rgba(0,255,136,.4);text-align:center}.subtitle{margin:0 0 2rem;color:var(--subtext);font-size:.95rem;text-align:center}.panel{background:var(--panel-bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem}.panel-title{font-size:1.2rem;color:var(--accent-alt);margin-bottom:1rem;text-transform:uppercase;letter-spacing:.15em;font-weight:600}.input-group{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem}.label{font-size:.85rem;color:var(--subtext);text-transform:uppercase;letter-spacing:.1em}.input,.textarea,.select{width:100%;padding:.75rem;background:rgba(0,0,0,.4);border:1px solid rgba(0,255,136,.3);border-radius:8px;color:var(--text);font-family:inherit;font-size:.9rem;transition:all .2s}.input:focus,.textarea:focus,.select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 15px rgba(0,255,136,.3)}.textarea{min-height:80px;resize:vertical}.select{cursor:pointer}.btn-group{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:1rem}.btn{padding:.75rem 1.5rem;border-radius:20px;border:1px solid rgba(0,255,136,.4);background:rgba(5,0,20,.7);color:var(--text);text-transform:uppercase;font-size:.75rem;letter-spacing:.1em;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:600}.btn:hover{border-color:var(--accent);box-shadow:0 0 15px rgba(0,255,136,.5);transform:translateY(-1px)}.btn-primary{background:linear-gradient(120deg,var(--accent),#1cff9b);color:#000;border:none}.btn-small{padding:.5rem 1rem;font-size:.7rem}.category-tags{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem}.category-tag{padding:.4rem .8rem;background:rgba(0,255,136,.15);border:1px solid rgba(0,255,136,.3);border-radius:15px;font-size:.75rem;cursor:pointer;transition:all .2s}.category-tag:hover,.category-tag.active{background:rgba(0,255,136,.3);border-color:var(--accent);box-shadow:0 0 10px rgba(0,255,136,.4)}.entries-container{max-height:600px;overflow-y:auto;padding-right:.5rem}.entry{background:rgba(0,0,0,.3);border:1px solid rgba(0,255,136,.2);border-radius:10px;padding:1rem;margin-bottom:1rem;transition:all .2s}.entry:hover{border-color:var(--accent);box-shadow:0 0 20px rgba(0,255,136,.2)}.entry-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;flex-wrap:wrap;gap:.5rem}.entry-category{padding:.3rem .7rem;background:rgba(60,255,234,.2);border-radius:12px;font-size:.7rem;color:var(--accent-alt);font-weight:600;text-transform:uppercase;letter-spacing:.08em}.entry-time{font-size:.75rem;color:var(--subtext);font-family:monospace}.entry-description{color:var(--text);line-height:1.6;margin-bottom:.5rem}.entry-tags{font-size:.75rem;color:var(--subtext);font-style:italic}.entry-actions{display:flex;gap:.5rem;margin-top:.75rem}.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem}.stat-card{background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:10px;padding:1rem;text-align:center}.stat-value{font-size:2rem;color:var(--accent);font-weight:700;text-shadow:0 0 10px rgba(0,255,136,.5)}.stat-label{font-size:.8rem;color:var(--subtext);text-transform:uppercase;letter-spacing:.1em;margin-top:.5rem}.filter-bar{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;margin-bottom:1.5rem}.filter-bar .input,.filter-bar .select{flex:1;min-width:150px}.empty-state{text-align:center;padding:3rem 1rem;color:var(--subtext)}.empty-icon{font-size:3rem;margin-bottom:1rem;opacity:.5}.empty-text{font-size:1.1rem}.footer{text-align:center;font-size:.8rem;color:var(--subtext);margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border)}.entries-container::-webkit-scrollbar{width:8px}.entries-container::-webkit-scrollbar-track{background:rgba(0,0,0,.3);border-radius:10px}.entries-container::-webkit-scrollbar-thumb{background:rgba(0,255,136,.3);border-radius:10px}.entries-container::-webkit-scrollbar-thumb:hover{background:rgba(0,255,136,.5)}@media(max-width:768px){.app-shell{padding:1.5rem;margin:1rem}.stats-grid{grid-template-columns:1fr 1fr}.filter-bar{flex-direction:column}.filter-bar .input,.filter-bar .select{width:100%}.entry-header{flex-direction:column;align-items:flex-start}}
+    </style>
+  </head>
+  <body>
+    <div class="glow-grid"></div>
+    <main class="app-shell">
+      <h1 class="title">Reality Glitch Logger</h1>
+      <p class="subtitle">Track synchronicities, anomalies, and pattern recognition events</p>
+
+      <!-- Stats Dashboard -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="total-entries">0</div>
+          <div class="stat-label">Total Glitches</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="today-entries">0</div>
+          <div class="stat-label">Today</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="this-week-entries">0</div>
+          <div class="stat-label">This Week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="top-category">-</div>
+          <div class="stat-label">Top Category</div>
+        </div>
+      </div>
+
+      <!-- Log New Entry -->
+      <div class="panel">
+        <div class="panel-title">⚡ Log New Glitch</div>
+        
+        <div class="category-tags">
+          <div class="category-tag active" data-category="Number Sync">🔢 Number Sync</div>
+          <div class="category-tag" data-category="Déjà Vu">🔄 Déjà Vu</div>
+          <div class="category-tag" data-category="Temporal">⏰ Temporal</div>
+          <div class="category-tag" data-category="Pattern">🎯 Pattern</div>
+          <div class="category-tag" data-category="Prophetic">🌙 Prophetic</div>
+          <div class="category-tag" data-category="Entity">👁️ Entity</div>
+          <div class="category-tag" data-category="Other">✨ Other</div>
+        </div>
+
+        <div class="input-group">
+          <label class="label">Description</label>
+          <textarea class="textarea" id="entry-description" placeholder="Describe the glitch, synchronicity, or anomaly you experienced..."></textarea>
+        </div>
+
+        <div class="input-group">
+          <label class="label">Tags (optional - comma separated)</label>
+          <input type="text" class="input" id="entry-tags" placeholder="89, simulation, reality-break, etc.">
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" id="log-entry-btn">Log Glitch</button>
+          <button class="btn" id="clear-form-btn">Clear Form</button>
+        </div>
+      </div>
+
+      <!-- Filter & Search -->
+      <div class="panel">
+        <div class="panel-title">📊 View & Filter Entries</div>
+        
+        <div class="filter-bar">
+          <input type="text" class="input" id="search-input" placeholder="Search descriptions...">
+          <select class="select" id="filter-category">
+            <option value="all">All Categories</option>
+            <option value="Number Sync">Number Sync</option>
+            <option value="Déjà Vu">Déjà Vu</option>
+            <option value="Temporal">Temporal</option>
+            <option value="Pattern">Pattern</option>
+            <option value="Prophetic">Prophetic</option>
+            <option value="Entity">Entity</option>
+            <option value="Other">Other</option>
+          </select>
+          <select class="select" id="sort-order">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+          </select>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn" id="export-json-btn">Export JSON</button>
+          <button class="btn" id="export-text-btn">Export Text</button>
+          <button class="btn" id="clear-all-btn">Clear All Data</button>
+        </div>
+
+        <div class="entries-container" id="entries-container">
+          <div class="empty-state">
+            <div class="empty-icon">🌀</div>
+            <div class="empty-text">No glitches logged yet. Start tracking reality anomalies above.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        All data stored locally in your browser • No external servers • Export anytime
+      </div>
+    </main>
+
+    <script>
+// State management
+let entries = [];
+let selectedCategory = 'Number Sync';
+
+// Load entries from localStorage on init
+function loadEntries() {
+  const stored = localStorage.getItem('glitch-entries');
+  if (stored) {
+    entries = JSON.parse(stored);
+  }
+  updateStats();
+  renderEntries();
+}
+
+// Save entries to localStorage
+function saveEntries() {
+  localStorage.setItem('glitch-entries', JSON.stringify(entries));
+}
+
+// Category selection
+document.querySelectorAll('.category-tag').forEach(tag => {
+  tag.addEventListener('click', () => {
+    document.querySelectorAll('.category-tag').forEach(t => t.classList.remove('active'));
+    tag.classList.add('active');
+    selectedCategory = tag.dataset.category;
+  });
+});
+
+// Log new entry
+document.getElementById('log-entry-btn').addEventListener('click', () => {
+  const description = document.getElementById('entry-description').value.trim();
+  const tags = document.getElementById('entry-tags').value.trim();
+  
+  if (!description) {
+    alert('Please enter a description');
+    return;
+  }
+
+  const entry = {
+    id: Date.now(),
+    timestamp: new Date().toISOString(),
+    category: selectedCategory,
+    description: description,
+    tags: tags
+  };
+
+  entries.unshift(entry);
+  saveEntries();
+  updateStats();
+  renderEntries();
+  clearForm();
+});
+
+// Clear form
+document.getElementById('clear-form-btn').addEventListener('click', clearForm);
+
+function clearForm() {
+  document.getElementById('entry-description').value = '';
+  document.getElementById('entry-tags').value = '';
+}
+
+// Delete entry
+function deleteEntry(id) {
+  if (confirm('Delete this glitch entry?')) {
+    entries = entries.filter(e => e.id !== id);
+    saveEntries();
+    updateStats();
+    renderEntries();
+  }
+}
+
+// Update statistics
+function updateStats() {
+  const totalEl = document.getElementById('total-entries');
+  const todayEl = document.getElementById('today-entries');
+  const weekEl = document.getElementById('this-week-entries');
+  const topCatEl = document.getElementById('top-category');
+
+  totalEl.textContent = entries.length;
+
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+  const todayCount = entries.filter(e => new Date(e.timestamp) >= todayStart).length;
+  const weekCount = entries.filter(e => new Date(e.timestamp) >= weekStart).length;
+
+  todayEl.textContent = todayCount;
+  weekEl.textContent = weekCount;
+
+  // Calculate top category
+  if (entries.length > 0) {
+    const categoryCounts = {};
+    entries.forEach(e => {
+      categoryCounts[e.category] = (categoryCounts[e.category] || 0) + 1;
+    });
+    const topCategory = Object.keys(categoryCounts).reduce((a, b) => 
+      categoryCounts[a] > categoryCounts[b] ? a : b
+    );
+    topCatEl.textContent = topCategory;
+  } else {
+    topCatEl.textContent = '-';
+  }
+}
+
+// Render entries
+function renderEntries() {
+  const container = document.getElementById('entries-container');
+  const searchTerm = document.getElementById('search-input').value.toLowerCase();
+  const filterCategory = document.getElementById('filter-category').value;
+  const sortOrder = document.getElementById('sort-order').value;
+
+  let filtered = entries.filter(e => {
+    const matchesSearch = e.description.toLowerCase().includes(searchTerm) || 
+                          e.tags.toLowerCase().includes(searchTerm);
+    const matchesCategory = filterCategory === 'all' || e.category === filterCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  if (sortOrder === 'oldest') {
+    filtered.reverse();
+  }
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🌀</div>
+        <div class="empty-text">No glitches match your filters.</div>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = filtered.map(entry => {
+    const date = new Date(entry.timestamp);
+    const timeStr = date.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    return `
+      <div class="entry">
+        <div class="entry-header">
+          <div class="entry-category">${entry.category}</div>
+          <div class="entry-time">${timeStr}</div>
+        </div>
+        <div class="entry-description">${escapeHtml(entry.description)}</div>
+        ${entry.tags ? `<div class="entry-tags">Tags: ${escapeHtml(entry.tags)}</div>` : ''}
+        <div class="entry-actions">
+          <button class="btn btn-small" onclick="deleteEntry(${entry.id})">Delete</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Search and filter handlers
+document.getElementById('search-input').addEventListener('input', renderEntries);
+document.getElementById('filter-category').addEventListener('change', renderEntries);
+document.getElementById('sort-order').addEventListener('change', renderEntries);
+
+// Export as JSON
+document.getElementById('export-json-btn').addEventListener('click', () => {
+  if (entries.length === 0) {
+    alert('No entries to export');
+    return;
+  }
+
+  const dataStr = JSON.stringify(entries, null, 2);
+  const dataBlob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(dataBlob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `glitch-log-${new Date().toISOString().split('T')[0]}.json`;
+  link.click();
+  URL.revokeObjectURL(url);
+});
+
+// Export as text
+document.getElementById('export-text-btn').addEventListener('click', () => {
+  if (entries.length === 0) {
+    alert('No entries to export');
+    return;
+  }
+
+  let textContent = '=== REALITY GLITCH LOG ===\n\n';
+  entries.forEach(entry => {
+    const date = new Date(entry.timestamp).toLocaleString();
+    textContent += `[${date}] ${entry.category}\n`;
+    textContent += `${entry.description}\n`;
+    if (entry.tags) textContent += `Tags: ${entry.tags}\n`;
+    textContent += '\n---\n\n';
+  });
+
+  const dataBlob = new Blob([textContent], { type: 'text/plain' });
+  const url = URL.createObjectURL(dataBlob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `glitch-log-${new Date().toISOString().split('T')[0]}.txt`;
+  link.click();
+  URL.revokeObjectURL(url);
+});
+
+// Clear all data
+document.getElementById('clear-all-btn').addEventListener('click', () => {
+  if (confirm('Delete ALL glitch entries? This cannot be undone.')) {
+    if (confirm('Are you absolutely sure? This will permanently delete all logged data.')) {
+      entries = [];
+      saveEntries();
+      updateStats();
+      renderEntries();
+    }
+  }
+});
+
+// Utility function
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Initialize
+loadEntries();
+    </script>
+  </body>
+</html>
+
+

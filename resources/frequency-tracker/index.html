@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>89 Frequency Tracker</title>
+    <style>
+:root{color-scheme:dark;--bg:#05010f;--accent:#00ff88;--accent-alt:#3cffea;--text:#f1f6ff;--subtext:rgba(241,246,255,.7);--panel-bg:rgba(5,0,20,.8);--border:rgba(0,255,136,.2);--warning:#ff4f6d}*{box-sizing:border-box;margin:0;padding:0}body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Rajdhani,Orbitron,Exo,'Segoe UI',sans-serif;min-height:100vh;overflow-x:hidden}.glow-grid{position:fixed;inset:0;background-image:linear-gradient(rgba(0,255,136,.08)1px,transparent 1px),linear-gradient(90deg,rgba(60,255,234,.06)1px,transparent 1px);background-size:120px 120px;mix-blend-mode:screen;pointer-events:none;animation:pulse 12s infinite linear;z-index:0}@keyframes pulse{from{transform:translate3d(0,0,0)}to{transform:translate3d(-60px,-60px,0)}}.app-shell{width:100%;max-width:1200px;background:linear-gradient(135deg,rgba(12,0,32,.95),rgba(8,8,28,.8));border:1px solid rgba(0,255,136,.3);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.7),0 0 30px rgba(0,255,136,.2);padding:2rem;position:relative;margin:2rem auto;z-index:1}.app-shell::after{content:"";position:absolute;inset:15px;border:1px solid rgba(0,255,136,.25);border-radius:12px;pointer-events:none}.title{font-size:clamp(1.8rem,4vw,2.5rem);letter-spacing:.2rem;text-transform:uppercase;margin:0 0 .5rem;color:var(--accent);text-shadow:0 0 12px var(--accent),0 0 24px rgba(0,255,136,.4);text-align:center}.subtitle{margin:0 0 2rem;color:var(--subtext);font-size:.95rem;text-align:center}.panel{background:var(--panel-bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem}.panel-title{font-size:1.2rem;color:var(--accent-alt);margin-bottom:1rem;text-transform:uppercase;letter-spacing:.15em;font-weight:600}.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem}.stat-card{background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:10px;padding:1.5rem;text-align:center;transition:all .3s}.stat-card.highlight{border-color:var(--accent);box-shadow:0 0 20px rgba(0,255,136,.3)}.stat-value{font-size:2.5rem;color:var(--accent);font-weight:700;text-shadow:0 0 15px rgba(0,255,136,.6);margin-bottom:.5rem}.stat-value.warning{color:var(--warning);text-shadow:0 0 15px rgba(255,79,109,.6)}.stat-label{font-size:.85rem;color:var(--subtext);text-transform:uppercase;letter-spacing:.1em}.result-display{background:rgba(0,0,0,.4);border:2px solid var(--accent);border-radius:12px;padding:2rem;text-align:center;margin-bottom:1.5rem;min-height:120px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}.result-display.flash{animation:flash .5s ease}.result-display.hit{border-color:var(--warning);box-shadow:0 0 30px rgba(255,79,109,.6)}@keyframes flash{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}.result-number{font-size:5rem;font-weight:700;color:var(--accent);text-shadow:0 0 20px rgba(0,255,136,.8);font-family:'Orbitron',monospace}.result-number.hit{color:var(--warning);text-shadow:0 0 30px rgba(255,79,109,.9)}.result-placeholder{font-size:1.2rem;color:var(--subtext)}.controls{display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem}.control-group{flex:1;min-width:200px}.label{font-size:.85rem;color:var(--subtext);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.5rem;display:block}.input,.select{width:100%;padding:.75rem;background:rgba(0,0,0,.4);border:1px solid rgba(0,255,136,.3);border-radius:8px;color:var(--text);font-family:inherit;font-size:.9rem;transition:all .2s}.input:focus,.select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 15px rgba(0,255,136,.3)}.select{cursor:pointer}.btn-group{display:flex;flex-wrap:wrap;gap:.75rem}.btn{padding:.75rem 1.5rem;border-radius:20px;border:1px solid rgba(0,255,136,.4);background:rgba(5,0,20,.7);color:var(--text);text-transform:uppercase;font-size:.75rem;letter-spacing:.1em;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:600;flex:1;min-width:120px}.btn:hover:not(:disabled){border-color:var(--accent);box-shadow:0 0 15px rgba(0,255,136,.5);transform:translateY(-1px)}.btn:disabled{opacity:.4;cursor:not-allowed}.btn-primary{background:linear-gradient(120deg,var(--accent),#1cff9b);color:#000;border:none}.btn-warning{background:linear-gradient(120deg,var(--warning),#ff6b8a);color:#000;border:none}.history-container{max-height:300px;overflow-y:auto;padding-right:.5rem}.history-item{background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:8px;padding:.75rem 1rem;margin-bottom:.75rem;display:flex;justify-content:space-between;align-items:center;transition:all .2s}.history-item:hover{border-color:var(--accent)}.history-item.hit{border-color:var(--warning);background:rgba(255,79,109,.1)}.history-number{font-size:1.5rem;font-weight:700;font-family:'Orbitron',monospace;color:var(--accent)}.history-number.hit{color:var(--warning)}.history-time{font-size:.75rem;color:var(--subtext);font-family:monospace}.deviation-bar{width:100%;height:8px;background:rgba(0,0,0,.4);border-radius:10px;overflow:hidden;margin-top:.5rem}.deviation-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--warning));transition:width .5s ease}.probability-text{font-size:.9rem;margin-top:.75rem;color:var(--text);text-align:center}.probability-text strong{color:var(--accent)}.history-container::-webkit-scrollbar{width:8px}.history-container::-webkit-scrollbar-track{background:rgba(0,0,0,.3);border-radius:10px}.history-container::-webkit-scrollbar-thumb{background:rgba(0,255,136,.3);border-radius:10px}.history-container::-webkit-scrollbar-thumb:hover{background:rgba(0,255,136,.5)}.footer{text-align:center;font-size:.8rem;color:var(--subtext);margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border)}@media(max-width:768px){.app-shell{padding:1.5rem;margin:1rem}.stats-grid{grid-template-columns:1fr 1fr}.result-number{font-size:3.5rem}.controls{flex-direction:column}.btn-group{flex-direction:column}.btn{width:100%}}
+    </style>
+  </head>
+  <body>
+    <div class="glow-grid"></div>
+    <main class="app-shell">
+      <h1 class="title">89 Frequency Tracker</h1>
+      <p class="subtitle">Statistical analysis of synchronicity patterns in random number generation</p>
+
+      <!-- Stats Dashboard -->
+      <div class="stats-grid">
+        <div class="stat-card" id="total-card">
+          <div class="stat-value" id="total-generated">0</div>
+          <div class="stat-label">Total Generated</div>
+        </div>
+        <div class="stat-card highlight" id="hits-card">
+          <div class="stat-value warning" id="total-hits">0</div>
+          <div class="stat-label">89 Occurrences</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="frequency-percent">0%</div>
+          <div class="stat-label">Actual Frequency</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="deviation-value">0%</div>
+          <div class="stat-label">Deviation</div>
+        </div>
+      </div>
+
+      <!-- Result Display -->
+      <div class="result-display" id="result-display">
+        <div class="result-placeholder">Click generate to begin tracking</div>
+      </div>
+
+      <!-- Controls -->
+      <div class="panel">
+        <div class="panel-title">⚙️ Generator Settings</div>
+        
+        <div class="controls">
+          <div class="control-group">
+            <label class="label">Min Value</label>
+            <input type="number" class="input" id="min-value" value="1" min="0">
+          </div>
+          <div class="control-group">
+            <label class="label">Max Value</label>
+            <input type="number" class="input" id="max-value" value="100" min="1">
+          </div>
+          <div class="control-group">
+            <label class="label">Target Number</label>
+            <input type="number" class="input" id="target-number" value="89" min="0">
+          </div>
+          <div class="control-group">
+            <label class="label">Batch Size</label>
+            <select class="select" id="batch-size">
+              <option value="1">Single (1)</option>
+              <option value="10">Small (10)</option>
+              <option value="100">Medium (100)</option>
+              <option value="1000">Large (1000)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" id="generate-btn">Generate</button>
+          <button class="btn" id="export-btn">Export CSV</button>
+          <button class="btn btn-warning" id="reset-btn">Reset Data</button>
+        </div>
+      </div>
+
+      <!-- Statistical Analysis -->
+      <div class="panel">
+        <div class="panel-title">📊 Statistical Analysis</div>
+        
+        <div class="probability-text">
+          Expected frequency: <strong id="expected-freq">1.00%</strong> 
+          | Actual: <strong id="actual-freq">0.00%</strong>
+        </div>
+        
+        <div class="deviation-bar">
+          <div class="deviation-fill" id="deviation-fill" style="width: 0%"></div>
+        </div>
+
+        <div class="probability-text" style="margin-top: 1rem;">
+          <span id="significance-text">Not enough data for statistical significance</span>
+        </div>
+      </div>
+
+      <!-- History -->
+      <div class="panel">
+        <div class="panel-title">📜 Recent History</div>
+        <div class="history-container" id="history-container">
+          <div style="text-align:center;padding:2rem;color:var(--subtext);">
+            No numbers generated yet
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        True randomness via crypto.getRandomValues() • All data stored locally • Export for analysis
+      </div>
+    </main>
+
+    <script>
+// State
+let history = [];
+let stats = {
+  total: 0,
+  hits: 0,
+  targetNumber: 89
+};
+
+// Load from localStorage
+function loadData() {
+  const stored = localStorage.getItem('frequency-tracker-data');
+  if (stored) {
+    const data = JSON.parse(stored);
+    history = data.history || [];
+    stats = data.stats || { total: 0, hits: 0, targetNumber: 89 };
+  }
+  updateDisplay();
+}
+
+// Save to localStorage
+function saveData() {
+  localStorage.setItem('frequency-tracker-data', JSON.stringify({ history, stats }));
+}
+
+// Generate random number using crypto API
+function generateSecureRandom(min, max) {
+  const range = max - min + 1;
+  const bytesNeeded = Math.ceil(Math.log2(range) / 8);
+  const maxValue = Math.pow(256, bytesNeeded);
+  const randomBytes = new Uint8Array(bytesNeeded);
+  
+  let randomValue;
+  do {
+    crypto.getRandomValues(randomBytes);
+    randomValue = 0;
+    for (let i = 0; i < bytesNeeded; i++) {
+      randomValue = randomValue * 256 + randomBytes[i];
+    }
+  } while (randomValue >= maxValue - (maxValue % range));
+  
+  return min + (randomValue % range);
+}
+
+// Generate button handler
+document.getElementById('generate-btn').addEventListener('click', () => {
+  const min = parseInt(document.getElementById('min-value').value);
+  const max = parseInt(document.getElementById('max-value').value);
+  const target = parseInt(document.getElementById('target-number').value);
+  const batchSize = parseInt(document.getElementById('batch-size').value);
+  
+  if (min >= max) {
+    alert('Min value must be less than max value');
+    return;
+  }
+  
+  if (target < min || target > max) {
+    alert('Target number must be within min-max range');
+    return;
+  }
+  
+  stats.targetNumber = target;
+  
+  const results = [];
+  for (let i = 0; i < batchSize; i++) {
+    const num = generateSecureRandom(min, max);
+    results.push(num);
+    
+    const isHit = num === target;
+    const entry = {
+      number: num,
+      timestamp: new Date().toISOString(),
+      isHit: isHit
+    };
+    
+    history.unshift(entry);
+    stats.total++;
+    if (isHit) stats.hits++;
+  }
+  
+  // Keep only last 100 entries in history display
+  if (history.length > 100) {
+    history = history.slice(0, 100);
+  }
+  
+  saveData();
+  updateDisplay();
+  
+  // Show last generated number
+  const lastNum = results[results.length - 1];
+  const isLastHit = lastNum === target;
+  
+  const display = document.getElementById('result-display');
+  display.classList.remove('flash', 'hit');
+  display.innerHTML = `<div class="result-number ${isLastHit ? 'hit' : ''}">${lastNum}</div>`;
+  
+  if (isLastHit) {
+    display.classList.add('hit');
+  }
+  
+  setTimeout(() => display.classList.add('flash'), 10);
+  
+  if (batchSize > 1) {
+    const batchHits = results.filter(n => n === target).length;
+    setTimeout(() => {
+      alert(`Batch complete!\nGenerated: ${batchSize}\n${target} appeared: ${batchHits} times\nBatch frequency: ${((batchHits / batchSize) * 100).toFixed(2)}%`);
+    }, 100);
+  }
+});
+
+// Update all displays
+function updateDisplay() {
+  // Update stats cards
+  document.getElementById('total-generated').textContent = stats.total;
+  document.getElementById('total-hits').textContent = stats.hits;
+  
+  const actualFreq = stats.total > 0 ? (stats.hits / stats.total) * 100 : 0;
+  document.getElementById('frequency-percent').textContent = actualFreq.toFixed(2) + '%';
+  
+  // Calculate expected frequency
+  const min = parseInt(document.getElementById('min-value').value);
+  const max = parseInt(document.getElementById('max-value').value);
+  const range = max - min + 1;
+  const expectedFreq = (1 / range) * 100;
+  
+  document.getElementById('expected-freq').textContent = expectedFreq.toFixed(2) + '%';
+  document.getElementById('actual-freq').textContent = actualFreq.toFixed(2) + '%';
+  
+  // Calculate deviation
+  const deviation = actualFreq - expectedFreq;
+  const absDeviation = Math.abs(deviation);
+  document.getElementById('deviation-value').textContent = (deviation >= 0 ? '+' : '') + deviation.toFixed(2) + '%';
+  
+  // Update deviation bar
+  const deviationPercent = Math.min(absDeviation / expectedFreq * 100, 100);
+  document.getElementById('deviation-fill').style.width = deviationPercent + '%';
+  
+  // Statistical significance
+  const sigText = document.getElementById('significance-text');
+  if (stats.total < 100) {
+    sigText.textContent = 'Need at least 100 samples for meaningful analysis';
+    sigText.style.color = 'var(--subtext)';
+  } else {
+    const zScore = Math.abs(deviation) / Math.sqrt(expectedFreq * (1 - expectedFreq / 100) / stats.total);
+    
+    if (zScore > 2.576) {
+      sigText.textContent = '⚠️ HIGHLY SIGNIFICANT deviation (p < 0.01) - Reality glitch detected';
+      sigText.style.color = 'var(--warning)';
+    } else if (zScore > 1.96) {
+      sigText.textContent = '⚡ Significant deviation (p < 0.05) - Pattern emerging';
+      sigText.style.color = 'var(--accent)';
+    } else {
+      sigText.textContent = '✓ Within normal statistical variance';
+      sigText.style.color = 'var(--accent)';
+    }
+  }
+  
+  // Update history
+  renderHistory();
+}
+
+// Render history
+function renderHistory() {
+  const container = document.getElementById('history-container');
+  
+  if (history.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--subtext);">No numbers generated yet</div>';
+    return;
+  }
+  
+  container.innerHTML = history.slice(0, 50).map(entry => {
+    const date = new Date(entry.timestamp);
+    const timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    
+    return `
+      <div class="history-item ${entry.isHit ? 'hit' : ''}">
+        <div class="history-number ${entry.isHit ? 'hit' : ''}">${entry.number}</div>
+        <div class="history-time">${timeStr}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Export CSV
+document.getElementById('export-btn').addEventListener('click', () => {
+  if (history.length === 0) {
+    alert('No data to export');
+    return;
+  }
+  
+  let csv = 'Timestamp,Number,Is_Target_Hit\n';
+  history.forEach(entry => {
+    csv += `${entry.timestamp},${entry.number},${entry.isHit}\n`;
+  });
+  
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `frequency-tracker-${new Date().toISOString().split('T')[0]}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+});
+
+// Reset data
+document.getElementById('reset-btn').addEventListener('click', () => {
+  if (confirm('Reset all tracking data? This cannot be undone.')) {
+    history = [];
+    stats = { total: 0, hits: 0, targetNumber: 89 };
+    saveData();
+    updateDisplay();
+    document.getElementById('result-display').innerHTML = '<div class="result-placeholder">Data reset - Click generate to begin</div>';
+  }
+});
+
+// Update expected frequency when range changes
+document.getElementById('min-value').addEventListener('change', updateDisplay);
+document.getElementById('max-value').addEventListener('change', updateDisplay);
+document.getElementById('target-number').addEventListener('change', () => {
+  stats.targetNumber = parseInt(document.getElementById('target-number').value);
+  updateDisplay();
+});
+
+// Initialize
+loadData();
+    </script>
+  </body>
+</html>
+
+
