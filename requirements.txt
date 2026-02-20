@@ -1,0 +1,5 @@
+# Project 89 Arsenal requirements
+# Assuming some basic reality hacking libs :)
+numpy>=1.24.0
+requests>=2.31.0
+Pillow>=10.0.0
